@@ -1,0 +1,57 @@
+{
+  "module": "L1",
+  "gene_sets": {
+    "n_ferroptosis": 72,
+    "n_senescence": 140,
+    "n_shared": 12
+  },
+  "meta_analysis": {
+    "fisher": {
+      "ferroptosis_p": 3.5793590313915047e-13,
+      "senescence_p": 5.303135708345508e-11
+    },
+    "stouffer_weighted": {
+      "ferroptosis_p": 1.2870687173593964e-05,
+      "senescence_p": 7.344113844465205e-05
+    },
+    "random_effects": {
+      "ferroptosis": {
+        "d": 2.483867857866927,
+        "p": 0.0026448418954678754,
+        "I2": 92.35791334665964,
+        "tau2": 2.603063705815648,
+        "pi_lower": -3.2848141196888987,
+        "pi_upper": 8.252549835422752,
+        "k": 5
+      },
+      "senescence": {
+        "d": 2.148079058127581,
+        "p": 0.004888486676534187,
+        "I2": 91.07360630753266,
+        "tau2": 2.108911610551811,
+        "pi_lower": -3.07297671961558,
+        "pi_upper": 7.369134835870742,
+        "k": 5
+      }
+    },
+    "bayesian": {
+      "ferroptosis": {
+        "mu_mean": 2.82,
+        "mu_hdi_lower": -0.41,
+        "mu_hdi_upper": 6.3,
+        "p_mu_gt_0": 0.962,
+        "converged": true
+      },
+      "senescence": {
+        "mu_mean": 2.83,
+        "mu_hdi_lower": -0.79,
+        "mu_hdi_upper": 6.8,
+        "p_mu_gt_0": 0.949,
+        "converged": true
+      }
+    }
+  },
+  "gpx4": "4/5 数据集支持IDSP",
+  "temporal": "PASS",
+  "lodo_stable": 5
+}

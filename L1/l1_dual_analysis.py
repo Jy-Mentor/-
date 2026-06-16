@@ -27,7 +27,7 @@ L1: 双评分分析 — 在CIRI中识别铁驱动的衰老程序 (IDSP)
 =====================================================================
 """
 
-import os, sys, re, gzip, json, warnings, logging
+import os, sys, re, gzip, json, warnings, logging, hashlib
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Set
 import matplotlib
@@ -38,10 +38,25 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
+try:
+    from joblib import Memory
+    _HAS_JOBLIB = True
+except ImportError:
+    _HAS_JOBLIB = False
 
 warnings.filterwarnings('ignore')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# ============================================================
+# joblib 缓存 (加速重计算 — 敏感性分析)
+# ============================================================
+_JOBLIB_MEMORY = None
+if _HAS_JOBLIB:
+    _CACHE_DIR = Path(__file__).parent / '.l1_cache'
+    _CACHE_DIR.mkdir(exist_ok=True)
+    _JOBLIB_MEMORY = Memory(_CACHE_DIR, verbose=0)
+    logger.info(f"joblib 缓存已启用: {_CACHE_DIR}")
 
 # ============================================================
 # 导入三基因集（带 fallback 保护）
@@ -313,17 +328,18 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
     merged_centered = merged_expr.sub(gene_means, axis=0)
     
     # 4. 构建生物学设计矩阵 (Leek 2012 最佳实践)
-    #    将 case/control 作为 mod 参数传入, 防止 ComBat 将生物信号当作批次效应校正
+    #    将 case/control 作为 X 参数传入, 防止 ComBat 将生物信号当作批次效应校正
+    #    注意: 仅传入简单指示变量 (1列), 不含截距, 避免与批次效应共线导致奇异矩阵
     group_array = np.array(group_labels)
     has_covariate = len(np.unique(group_array)) > 1
     if has_covariate:
-        from patsy import dmatrix
-        # 简化设计矩阵: case/control 二分类
-        design_matrix = dmatrix('~ group', {'group': group_labels}, return_type='dataframe')
-        logger.info(f"  ComBat 生物学协变量 (mod): {len(np.unique(group_array))} 类别, "
-                    f"{sum(group_array)} case / {len(group_array) - sum(group_array)} control")
+        # 简单 0/1 指示变量, 无截距列 (与 patsy dmatrix 不同)
+        X_matrix = group_array.reshape(-1, 1).astype(float)
+        logger.info(f"  ComBat 生物学协变量 (X): {len(np.unique(group_array))} 类别, "
+                    f"{sum(group_array)} case / {len(group_array) - sum(group_array)} control, "
+                    f"shape={X_matrix.shape}")
     else:
-        design_matrix = None
+        X_matrix = None
         logger.info("  ComBat: 无生物学协变量, 使用标准参数化校正")
 
     # 5. 运行 ComBat
@@ -334,15 +350,16 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
         # Y 需要是 (n_samples, n_features), 我们的矩阵是 (genes, samples), 转置
         Y_input = merged_centered.T.values
         try:
-            if has_covariate and design_matrix is not None:
-                combat.fit(Y_input, batch_labels, mod=design_matrix.values)
-                corrected_raw = combat.transform(Y_input, batch_labels, mod=design_matrix.values)
+            if has_covariate and X_matrix is not None:
+                # pycombat API: X=生物协变量矩阵 (不含截距, 等价于R/sva的mod参数)
+                combat.fit(Y_input, batch_labels, X=X_matrix)
+                corrected_raw = combat.transform(Y_input, batch_labels, X=X_matrix)
             else:
                 combat.fit(Y_input, batch_labels)
                 corrected_raw = combat.transform(Y_input, batch_labels)
-        except TypeError:
-            # pycombat 版本不支持 mod 参数 → 降级到标准 ComBat
-            logger.warning("  pycombat 不支持 mod 参数, 使用标准 ComBat (无生物学协变量保护)")
+        except (TypeError, ValueError) as e:
+            # X参数不支持或奇异矩阵 → 降级到标准 ComBat
+            logger.warning(f"  ComBat 生物协变量保护失败 ({e}), 使用标准 ComBat")
             combat.fit(Y_input, batch_labels)
             corrected_raw = combat.transform(Y_input, batch_labels)
         # 转置回 (genes, samples)
@@ -509,6 +526,118 @@ def compute_enrichment_score_matrix(expr_df: pd.DataFrame, gene_set: Set[str]) -
     result = pd.Series(scores)
     logger.info(f"  富集评分: {len(common_genes)}/{len(gene_set)} 匹配, {result.notna().sum()} 样本有效")
     return result
+
+
+# ============================================================
+# 基因集扰动敏感性分析
+# ============================================================
+def gene_set_sensitivity_analysis(expr_dict: Dict[str, pd.DataFrame],
+                                  sample_info: Dict,
+                                  gene_pool_size: int = 5000,
+                                  n_iterations: int = 100,
+                                  replace_fraction: float = 0.10) -> pd.DataFrame:
+    """
+    基因集扰动敏感性分析
+
+    对纯铁死亡和纯衰老基因集各执行 n 次随机扰动:
+      1. 随机移除 replace_fraction (10%) 的原始基因
+      2. 从背景基因池中随机补入等量基因
+      3. 重新计算所有数据集的 Cohen's d 效应量
+
+    目的: 验证 IDSP 推断在基因集微小变化下的稳定性，
+    堵住"结果依赖特定基因集选择"的审稿漏洞。
+
+    Returns:
+        DataFrame: 每行 = 一次扰动, 列 = 各数据集的 d_ferr / d_sene
+    """
+    from idsp_gene_sets import PURE_FERROPTOSIS as PF, PURE_SENESCENCE as PS
+
+    # 构建背景基因池 (表达矩阵中除纯铁死亡/纯衰老/共享基因外的所有基因)
+    all_expr_genes = set()
+    for df in expr_dict.values():
+        if df is not None:
+            all_expr_genes.update(df.index)
+    excluded = PF | PS | SHARED_GENES
+    background_pool = sorted(all_expr_genes - excluded)
+    if len(background_pool) < gene_pool_size:
+        gene_pool_size = len(background_pool)
+        logger.warning(f"  背景基因池不足, 降为 {gene_pool_size}")
+    np.random.seed(42)
+
+    results = []
+    ferr_base = sorted(PF)
+    sene_base = sorted(PS)
+    n_replace_ferr = max(1, int(len(ferr_base) * replace_fraction))
+    n_replace_sene = max(1, int(len(sene_base) * replace_fraction))
+
+    for iteration in range(n_iterations):
+        rng = np.random.RandomState(iteration + 42)
+        # 扰动铁死亡基因集
+        drop_ferr = set(rng.choice(ferr_base, size=n_replace_ferr, replace=False))
+        add_ferr = set(rng.choice(background_pool, size=n_replace_ferr, replace=False))
+        perturbed_ferr = set(ferr_base) - drop_ferr | add_ferr
+
+        # 扰动衰老基因集
+        drop_sene = set(rng.choice(sene_base, size=n_replace_sene, replace=False))
+        add_sene = set(rng.choice(background_pool, size=n_replace_sene, replace=False))
+        perturbed_sene = set(sene_base) - drop_sene | add_sene
+
+        row = {'iteration': iteration}
+        for ds_name, expr_df in expr_dict.items():
+            if ds_name not in sample_info:
+                continue
+            case_cols, ctrl_cols = sample_info[ds_name]
+            is_paired = (ds_name == 'GSE37587')
+
+            ferr_score = compute_enrichment_score_matrix(expr_df, perturbed_ferr)
+            sene_score = compute_enrichment_score_matrix(expr_df, perturbed_sene)
+
+            case = ferr_score[ferr_score.index.isin(case_cols or [])]
+            ctrl = ferr_score[ferr_score.index.isin(ctrl_cols or [])]
+            if len(case) >= 2 and len(ctrl) >= 2:
+                if is_paired and len(case) == len(ctrl):
+                    d = cohens_d(case.values, ctrl.values, paired=True)
+                else:
+                    d = cohens_d(case.values, ctrl.values)
+                row[f'{ds_name}_d_ferr'] = d
+            else:
+                row[f'{ds_name}_d_ferr'] = np.nan
+
+            case_s = sene_score[sene_score.index.isin(case_cols or [])]
+            ctrl_s = sene_score[sene_score.index.isin(ctrl_cols or [])]
+            if len(case_s) >= 2 and len(ctrl_s) >= 2:
+                if is_paired and len(case_s) == len(ctrl_s):
+                    d = cohens_d(case_s.values, ctrl_s.values, paired=True)
+                else:
+                    d = cohens_d(case_s.values, ctrl_s.values)
+                row[f'{ds_name}_d_sene'] = d
+            else:
+                row[f'{ds_name}_d_sene'] = np.nan
+
+        results.append(row)
+
+    result_df = pd.DataFrame(results)
+
+    # 汇总统计
+    logger.info("=" * 60)
+    logger.info("基因集扰动敏感性分析 (100 iterations, 10% 替换)")
+    for col in result_df.columns:
+        if col == 'iteration':
+            continue
+        vals = result_df[col].dropna()
+        if len(vals) == 0:
+            continue
+        logger.info(f"  {col}: μ={vals.mean():.3f}, σ={vals.std():.3f}, "
+                    f"CV={abs(vals.std() / vals.mean()) if abs(vals.mean()) > 0.01 else np.nan:.3f}, "
+                    f"95%CI=[{vals.quantile(0.025):.3f}, {vals.quantile(0.975):.3f}]")
+    return result_df
+
+
+def _cohens_d_paired(case_vals, ctrl_vals) -> float:
+    """配对设计的 Cohen's d"""
+    diff = np.array(case_vals) - np.array(ctrl_vals)
+    sd_diff = np.std(diff, ddof=1)
+    return float(np.mean(diff) / sd_diff) if sd_diff > 0 else 0.0
 
 # ============================================================
 # 新增: 双评分 + IDSP Index + GPX4验证
@@ -712,9 +841,15 @@ def gpx4_validation(expr_df: pd.DataFrame, scores_df: pd.DataFrame,
     }
 
 
-def cohens_d(case: np.ndarray, control: np.ndarray) -> float:
-    """Cohen's d 效应量"""
+def cohens_d(case: np.ndarray, control: np.ndarray, paired: bool = False) -> float:
+    """Cohen's d 效应量 (支持配对/独立设计)"""
+    if paired and len(case) == len(control):
+        diff = case - control
+        sd_diff = np.std(diff, ddof=1)
+        return float(np.mean(diff) / sd_diff) if sd_diff > 0 else 0.0
     n1, n2 = len(case), len(control)
+    if n1 < 2 or n2 < 2:
+        return 0.0
     s1, s2 = np.var(case, ddof=1), np.var(control, ddof=1)
     pooled = np.sqrt(((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2))
     return (np.mean(case) - np.mean(control)) / pooled if pooled > 0 else 0.0
@@ -1259,6 +1394,32 @@ def temporal_dual_analysis(expr_df: pd.DataFrame, timepoint_dict: dict,
         logger.info(f"    {tp_name}: ferr={ferr_tp.mean():.3f}(p={p_ferr:.4e}), "
                     f"sene={sene_tp.mean():.3f}(p={p_sene:.4e})")
 
+    # 多时间点FDR校正 — 避免假阳性累积 (BH-FDR)
+    if len(results) >= 2:
+        p_ferr_all = [r['p_ferroptosis'] for r in results]
+        p_sene_all = [r['p_senescence'] for r in results]
+        valid_ferr = [p for p in p_ferr_all if pd.notna(p)]
+        valid_sene = [p for p in p_sene_all if pd.notna(p)]
+
+        if valid_ferr:
+            _, padj_ferr, _, _ = multipletests(valid_ferr, method='fdr_bh')
+            padj_idx = 0
+            for r in results:
+                if pd.notna(r['p_ferroptosis']):
+                    r['p_ferroptosis_fdr'] = padj_ferr[padj_idx]
+                    padj_idx += 1
+                else:
+                    r['p_ferroptosis_fdr'] = np.nan
+        if valid_sene:
+            _, padj_sene, _, _ = multipletests(valid_sene, method='fdr_bh')
+            padj_idx = 0
+            for r in results:
+                if pd.notna(r['p_senescence']):
+                    r['p_senescence_fdr'] = padj_sene[padj_idx]
+                    padj_idx += 1
+                else:
+                    r['p_senescence_fdr'] = np.nan
+
     # 加入sham基线
     sham_ferr_mean = sham_ferr.mean()
     sham_sene_mean = sham_sene.mean()
@@ -1728,10 +1889,17 @@ def jsd_and_ks_comparison(scores_df: pd.DataFrame, case_cols: List[str],
 # 可视化
 # ============================================================
 
-def plot_forest_dual(comparisons: List[dict], save_path: str):
-    """双评分效应量森林图 (自动过滤NaN)"""
-    valid_comp = [c for c in comparisons if not (np.isnan(c.get('d_ferroptosis', np.nan)) or
-                                                  np.isnan(c.get('d_senescence', np.nan)))]
+def plot_forest_dual(comparisons: List[dict], save_path: str,
+                     re_ferr: dict = None, re_sene: dict = None):
+    """双评分效应量森林图 (Cohen's d + 95%CI + 预测区间 + 汇总菱形)
+
+    Parameters:
+        comparisons: 每个数据集的效应量信息
+        re_ferr:     随机效应Meta结果 (含 summary_effect, pi_lower, pi_upper)
+        re_sene:     随机效应Meta结果 (含 summary_effect, pi_lower, pi_upper)
+    """
+    valid_comp = [c for c in comparisons if pd.notna(c.get('d_ferroptosis', np.nan))
+                  and pd.notna(c.get('d_senescence', np.nan))]
     if not valid_comp:
         logger.warning("  森林图: 无有效数据, 跳过")
         return
@@ -1739,18 +1907,70 @@ def plot_forest_dual(comparisons: List[dict], save_path: str):
     ds_names = [c['dataset'] for c in valid_comp]
     d_ferr = [c['d_ferroptosis'] for c in valid_comp]
     d_sene = [c['d_senescence'] for c in valid_comp]
+    n = [c.get('n_ferroptosis', 6) + c.get('n_control', 6) for c in valid_comp]
 
-    fig, ax = plt.subplots(figsize=(8, 4))
-    y = np.arange(len(ds_names))
-    h = 0.3
-    ax.barh(y - h/2, d_ferr, h, label='Ferroptosis', color='#E74C3C', alpha=0.8)
-    ax.barh(y + h/2, d_sene, h, label='Senescence', color='#3498DB', alpha=0.8)
-    ax.set_yticks(y)
-    ax.set_yticklabels(ds_names)
-    ax.axvline(0, color='gray', ls='--', lw=0.8)
-    ax.set_xlabel("Cohen's d (Effect Size)")
-    ax.set_title('Dual Scoring: Ferroptosis vs Senescence in CIRI')
-    ax.legend()
+    # 计算SE (从 d 和 n 近似)
+    se_from_n = lambda d, nn: np.sqrt(1.0/nn + d**2 / (2*nn)) if nn > 0 else np.nan
+    se_ferr = [se_from_n(d_ferr[i], n[i]) for i in range(len(n))]
+    se_sene = [se_from_n(d_sene[i], n[i]) for i in range(len(n))]
+
+    n_studies = len(valid_comp)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, max(5, n_studies * 0.7)),
+                                    gridspec_kw={'width_ratios': [1, 1]})
+
+    for ax, ds, se_list, label, color, re_res in [
+        (ax1, d_ferr, se_ferr, 'Ferroptosis', '#E74C3C', re_ferr),
+        (ax2, d_sene, se_sene, 'Senescence', '#3498DB', re_sene),
+    ]:
+        y_positions = list(range(n_studies - 1, -1, -1))
+
+        for i, y in enumerate(y_positions):
+            # 95% CI 水平线
+            ci_low = ds[i] - 1.96 * se_list[i]
+            ci_hi = ds[i] + 1.96 * se_list[i]
+            ax.plot([ci_low, ci_hi], [y, y], color=color, lw=2, alpha=0.7, zorder=1)
+            # 效应量散点
+            ax.scatter(ds[i], y, c=color, s=80, zorder=3, edgecolors='white', linewidth=1.5)
+
+        ax.axvline(0, color='gray', ls='--', lw=1, alpha=0.6, zorder=0)
+        ax.set_yticks(y_positions)
+        ax.set_yticklabels(ds_names, fontsize=9)
+        ax.set_xlabel("Cohen's d", fontsize=11)
+        ax.set_title(label, fontsize=13, fontweight='bold', color=color)
+
+        # 汇总菱形 (随机效应 Meta)
+        if re_res and 'summary_effect' in re_res and pd.notna(re_res.get('summary_effect')):
+            sum_d = re_res['summary_effect']
+            sum_se = re_res.get('se_random', np.nan)
+            # 汇总菱形
+            diamond_y = -1
+            if pd.notna(sum_se):
+                ci_lo = sum_d - 1.96 * sum_se
+                ci_hi = sum_d + 1.96 * sum_se
+                # 预测区间 (虚线)
+                pi_lo = re_res.get('pi_lower', np.nan)
+                pi_hi = re_res.get('pi_upper', np.nan)
+                if pd.notna(pi_lo) and pd.notna(pi_hi):
+                    ax.plot([pi_lo, pi_hi], [diamond_y, diamond_y], color=color,
+                            lw=1.5, ls=':', alpha=0.5, zorder=1)
+
+                ax.plot([ci_lo - 0.05, sum_d, ci_hi + 0.05, sum_d,
+                         ci_lo - 0.05],
+                        [diamond_y, diamond_y - 0.35, diamond_y, diamond_y + 0.35, diamond_y],
+                        color=color, lw=1.2, alpha=0.6, zorder=2)
+
+            # 标签
+            ax.set_ylim(diamond_y - 1.2, n_studies - 0.2)
+            ytick_labels = list(ds_names) + ['◆ Summary']
+            ytick_pos = y_positions + [diamond_y]
+            ax.set_yticks(ytick_pos)
+            ax.set_yticklabels(ytick_labels, fontsize=9)
+        else:
+            ax.set_ylim(-0.5, n_studies - 0.2)
+
+    fig.suptitle('Forest Plot: Ferroptosis & Senescence Effect Sizes in CIRI\n'
+                 '◆ = Summary (random-effects), ··· = 95% Prediction interval',
+                 fontsize=12, fontweight='bold')
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()
@@ -2359,6 +2579,17 @@ def main():
     comp_df.to_csv(OUTPUT_DIR / 'L1_dual_comparison_summary.csv', index=False)
     logger.info(f"  comparison: {OUTPUT_DIR / 'L1_dual_comparison_summary.csv'}")
 
+    # 4b2. 基因集扰动敏感性分析 (100次, 10%替换)
+    logger.info("\n  基因集扰动敏感性分析 (100 iterations, 10% 替换):")
+    try:
+        sensitivity_df = gene_set_sensitivity_analysis(
+            valid_expr_dict, sample_info, n_iterations=100, replace_fraction=0.10)
+        sensitivity_df.to_csv(
+            OUTPUT_DIR / 'L1_gene_set_sensitivity.csv', index=False)
+        logger.info(f"  敏感性分析保存: L1_gene_set_sensitivity.csv")
+    except Exception as e:
+        logger.warning(f"  敏感性分析失败: {e} (非关键)")
+
     # 4c. 时间动态
     if not temporal_df.empty:
         temporal_df.to_csv(OUTPUT_DIR / 'L1_temporal_dual_scores.csv', index=False)
@@ -2381,8 +2612,9 @@ def main():
     logger.info("\n" + "=" * 50)
     logger.info("生成图表")
 
-    # Fig1A: 效应量森林图
-    plot_forest_dual(all_comparisons, str(FIGS_DIR / 'Fig1A_forest_dual.png'))
+    # Fig1A: 效应量森林图 (含95%CI + 预测区间 + 汇总菱形)
+    plot_forest_dual(all_comparisons, str(FIGS_DIR / 'Fig1A_forest_dual.png'),
+                     re_ferr=re_ferr, re_sene=re_sene)
 
     # Fig1B: 时间动态
     if not temporal_df.empty:
@@ -2544,10 +2776,65 @@ def main():
             f.write(f"    衰老双相激活模式={'检测到' if biphasic else '未检测到'}\n")
             f.write(f"    衰老/铁死亡AUC负荷比={safe_fmt(sene_auc_ratio)}\n")
 
-    logger.info(f"\n  报告保存: {report_path}")
+    logger.info(f"  报告保存: {report_path}")
     logger.info(f"\n{'='*60}")
     logger.info("L1 分析完成!")
     logger.info(f"结果目录: {OUTPUT_DIR}")
+
+    # ============================================================
+    # 7. JSON 统计摘要 (供下游模块直接读取)
+    # ============================================================
+    _json_meta = {
+        'module': 'L1',
+        'gene_sets': {
+            'n_ferroptosis': len(PURE_FERROPTOSIS),
+            'n_senescence': len(PURE_SENESCENCE),
+            'n_shared': len(SHARED_GENES),
+        },
+        'meta_analysis': {
+            'fisher': {'ferroptosis_p': float(meta_p_f) if pd.notna(meta_p_f) else None,
+                       'senescence_p': float(meta_p_s) if pd.notna(meta_p_s) else None},
+            'stouffer_weighted': {'ferroptosis_p': float(meta_p_stouffer_f) if pd.notna(meta_p_stouffer_f) else None,
+                                  'senescence_p': float(meta_p_stouffer_s) if pd.notna(meta_p_stouffer_s) else None},
+            'random_effects': {
+                'ferroptosis': {'d': re_ferr['summary_effect'] if re_ferr else None,
+                                'p': re_ferr['p_value'] if re_ferr else None,
+                                'I2': re_ferr['I2'] if re_ferr else None,
+                                'tau2': re_ferr['tau2'] if re_ferr else None,
+                                'pi_lower': re_ferr.get('pi_lower') if re_ferr else None,
+                                'pi_upper': re_ferr.get('pi_upper') if re_ferr else None,
+                                'k': re_ferr['k'] if re_ferr else 0},
+                'senescence': {'d': re_sene['summary_effect'] if re_sene else None,
+                               'p': re_sene['p_value'] if re_sene else None,
+                               'I2': re_sene['I2'] if re_sene else None,
+                               'tau2': re_sene['tau2'] if re_sene else None,
+                               'pi_lower': re_sene.get('pi_lower') if re_sene else None,
+                               'pi_upper': re_sene.get('pi_upper') if re_sene else None,
+                               'k': re_sene['k'] if re_sene else 0},
+            },
+            'bayesian': {
+                'ferroptosis': {'mu_mean': bayes_ferr.get('mu_mean') if bayes_ferr else None,
+                                'mu_hdi_lower': bayes_ferr.get('mu_hdi_2.5') if bayes_ferr else None,
+                                'mu_hdi_upper': bayes_ferr.get('mu_hdi_97.5') if bayes_ferr else None,
+                                'p_mu_gt_0': bayes_ferr.get('p_mu_gt_0') if bayes_ferr else None,
+                                'converged': bayes_ferr.get('converged') if bayes_ferr else False},
+                'senescence': {'mu_mean': bayes_sene.get('mu_mean') if bayes_sene else None,
+                               'mu_hdi_lower': bayes_sene.get('mu_hdi_2.5') if bayes_sene else None,
+                               'mu_hdi_upper': bayes_sene.get('mu_hdi_97.5') if bayes_sene else None,
+                               'p_mu_gt_0': bayes_sene.get('p_mu_gt_0') if bayes_sene else None,
+                               'converged': bayes_sene.get('converged') if bayes_sene else False},
+            },
+        },
+        'gpx4': gpx4_verdict,
+        'temporal': temporal_verdict,
+        'lodo_stable': n_stable if n_stable else 0,
+    }
+    json_path = OUTPUT_DIR / 'L1_statistical_summary.json'
+    with open(json_path, 'w', encoding='utf-8') as jf:
+        json.dump(_json_meta, jf, indent=2, ensure_ascii=False,
+                  default=lambda o: None if pd.isna(o) else (
+                      float(o) if isinstance(o, (np.floating,)) else o))
+    logger.info(f"  JSON摘要保存: L1_statistical_summary.json")
     logger.info(f"{'='*60}")
 
 
