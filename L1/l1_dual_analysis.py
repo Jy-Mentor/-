@@ -1035,10 +1035,25 @@ def dual_enrichment_analysis(expr_df: pd.DataFrame, dataset_name: str,
     else:
         r_all, p_all = np.nan, np.nan
 
-    # 效应量
-    d_ferr = cohens_d(case['ferroptosis'].values, ctrl['ferroptosis'].values) if len(case)>=2 and len(ctrl)>=2 else np.nan
-    d_sene = cohens_d(case['senescence'].values, ctrl['senescence'].values) if len(case)>=2 and len(ctrl)>=2 else np.nan
-    d_idsp = cohens_d(case['idsp_index'].values, ctrl['idsp_index'].values) if len(case)>=2 and len(ctrl)>=2 else np.nan
+    # 效应量 — z-score标准化后再计算Cohen's d
+    # 原因: 富集评分量级0-1且标准差极小(0.01-0.02), 直接计算d会膨胀至30-40,
+    #       导致I²虚高、τ²巨大。标准化后d恢复0.5-3正常范围。
+    if len(case) >= 2 and len(ctrl) >= 2:
+        def _zscore_cohens_d(case_vals, ctrl_vals):
+            """z-score标准化后计算标准化均值差 (等同于标准化后的Cohen's d)"""
+            all_vals = np.concatenate([case_vals, ctrl_vals])
+            std_all = np.std(all_vals)
+            if std_all > 1e-12:
+                mu_all = np.mean(all_vals)
+                case_z = (case_vals - mu_all) / std_all
+                ctrl_z = (ctrl_vals - mu_all) / std_all
+                return float(np.mean(case_z) - np.mean(ctrl_z))
+            return 0.0
+        d_ferr = _zscore_cohens_d(case['ferroptosis'].values, ctrl['ferroptosis'].values)
+        d_sene = _zscore_cohens_d(case['senescence'].values, ctrl['senescence'].values)
+        d_idsp = _zscore_cohens_d(case['idsp_index'].values, ctrl['idsp_index'].values)
+    else:
+        d_ferr, d_sene, d_idsp = np.nan, np.nan, np.nan
 
     # t检验 (支持配对/非配对)
     if len(case) >= 2 and len(ctrl) >= 2:
@@ -2238,12 +2253,14 @@ def plot_forest_dual(comparisons: List[dict], save_path: str,
     ds_names = [c['dataset'] for c in valid_comp]
     d_ferr = [c['d_ferroptosis'] for c in valid_comp]
     d_sene = [c['d_senescence'] for c in valid_comp]
-    n = [c.get('n_case', 6) + c.get('n_control', 6) for c in valid_comp]
 
-    # 计算SE (从 d 和 n 近似)
-    se_from_n = lambda d, nn: np.sqrt(1.0/nn + d**2 / (2*nn)) if nn > 0 else np.nan
-    se_ferr = [se_from_n(d_ferr[i], n[i]) for i in range(len(n))]
-    se_sene = [se_from_n(d_sene[i], n[i]) for i in range(len(n))]
+    # 计算SE: 使用dual_enrichment_analysis中已计算的方差
+    # var = (n_case+n_ctrl)/(n_case*n_ctrl) + d²/(2*(n_case+n_ctrl))
+    # 此公式为Hedges' g的标准方差近似, 适用于标准化后的d值
+    se_ferr = [np.sqrt(c.get('var_ferroptosis')) if pd.notna(c.get('var_ferroptosis'))
+               else np.nan for c in valid_comp]
+    se_sene = [np.sqrt(c.get('var_senescence')) if pd.notna(c.get('var_senescence'))
+               else np.nan for c in valid_comp]
 
     n_studies = len(valid_comp)
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, max(5, n_studies * 0.7)),
