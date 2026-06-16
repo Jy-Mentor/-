@@ -923,25 +923,28 @@ def gene_set_sensitivity_analysis(expr_dict: Dict[str, pd.DataFrame],
             ferr_score = compute_enrichment_score_matrix(expr_df, perturbed_ferr)
             sene_score = compute_enrichment_score_matrix(expr_df, perturbed_sene)
 
+            # z-score标准化后计算Cohen's d (同dual_enrichment_analysis修复)
+            def _zscore_d(case_vals, ctrl_vals):
+                all_vals = np.concatenate([case_vals, ctrl_vals])
+                std_all = np.std(all_vals)
+                if std_all > 1e-12:
+                    mu_all = np.mean(all_vals)
+                    case_z = (case_vals - mu_all) / std_all
+                    ctrl_z = (ctrl_vals - mu_all) / std_all
+                    return float(np.mean(case_z) - np.mean(ctrl_z))
+                return 0.0
+
             case = ferr_score[ferr_score.index.isin(case_cols or [])]
             ctrl = ferr_score[ferr_score.index.isin(ctrl_cols or [])]
             if len(case) >= 2 and len(ctrl) >= 2:
-                if is_paired and len(case) == len(ctrl):
-                    d = cohens_d(case.values, ctrl.values, paired=True)
-                else:
-                    d = cohens_d(case.values, ctrl.values)
-                row[f'{ds_name}_d_ferr'] = d
+                row[f'{ds_name}_d_ferr'] = _zscore_d(case.values, ctrl.values)
             else:
                 row[f'{ds_name}_d_ferr'] = np.nan
 
             case_s = sene_score[sene_score.index.isin(case_cols or [])]
             ctrl_s = sene_score[sene_score.index.isin(ctrl_cols or [])]
             if len(case_s) >= 2 and len(ctrl_s) >= 2:
-                if is_paired and len(case_s) == len(ctrl_s):
-                    d = cohens_d(case_s.values, ctrl_s.values, paired=True)
-                else:
-                    d = cohens_d(case_s.values, ctrl_s.values)
-                row[f'{ds_name}_d_sene'] = d
+                row[f'{ds_name}_d_sene'] = _zscore_d(case_s.values, ctrl_s.values)
             else:
                 row[f'{ds_name}_d_sene'] = np.nan
 
@@ -1967,7 +1970,15 @@ def permutation_enrichment_test(scores: pd.Series, case_cols: List[str],
             n_extreme += 1
 
     p_perm = (n_extreme + 1) / (n_perm + 1)
-    d = obs_diff / (np.std(pooled, ddof=1) + 1e-12)
+    # z-score标准化后计算效应量 (同dual_enrichment_analysis修复)
+    std_pooled = np.std(pooled)
+    if std_pooled > 1e-12:
+        mu_pooled = np.mean(pooled)
+        case_z = (case - mu_pooled) / std_pooled
+        ctrl_z = (ctrl - mu_pooled) / std_pooled
+        d = float(np.mean(case_z) - np.mean(ctrl_z))
+    else:
+        d = 0.0
 
     return {
         'n_perm': n_perm,
