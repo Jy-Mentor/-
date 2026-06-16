@@ -29,7 +29,7 @@ L1: 双评分分析 — 在CIRI中识别铁驱动的衰老程序 (IDSP)
 
 import os, sys, re, gzip, json, warnings, logging, hashlib
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, List, Tuple, Optional, Set, Any
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -310,9 +310,11 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
                         group_labels.append(0)
                     else:
                         group_labels.append(0)  # unknown → control
-                continue
-        # 无分组信息: 全部填 0 (无保护)
-        group_labels.extend([0] * sub.shape[1])
+            else:
+                group_labels.extend([0] * sub.shape[1])
+        else:
+            # 无分组信息: 全部填 0 (无保护)
+            group_labels.extend([0] * sub.shape[1])
 
         dataset_order.append((name, sub.shape[1]))
 
@@ -327,51 +329,49 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
     gene_means = merged_expr.mean(axis=1)
     merged_centered = merged_expr.sub(gene_means, axis=0)
     
-    # 4. 构建生物学设计矩阵 (Leek 2012 最佳实践)
-    #    将 case/control 作为 X 参数传入, 防止 ComBat 将生物信号当作批次效应校正
-    #    注意: 仅传入简单指示变量 (1列), 不含截距, 避免与批次效应共线导致奇异矩阵
+    # 4. 构建 neuroCombat covars DataFrame (Leek 2012 最佳实践)
+    #    neuroCombat 的 categorical_cols 参数直接指定需要保护的生物学变量
     group_array = np.array(group_labels)
     has_covariate = len(np.unique(group_array)) > 1
+    n_samples = merged_centered.shape[1]
+    assert len(group_labels) == n_samples, \
+        f"group_labels 长度 {len(group_labels)} != 样本数 {n_samples}"
+    assert len(batch_labels) == n_samples, \
+        f"batch_labels 长度 {len(batch_labels)} != 样本数 {n_samples}"
+    covars = pd.DataFrame({
+        'batch': batch_labels,
+        'disease': ['case' if g == 1 else 'control' for g in group_labels],
+    }, index=merged_centered.columns)
     if has_covariate:
-        # 简单 0/1 指示变量, 无截距列 (与 patsy dmatrix 不同)
-        X_matrix = group_array.reshape(-1, 1).astype(float)
-        logger.info(f"  ComBat 生物学协变量 (X): {len(np.unique(group_array))} 类别, "
-                    f"{sum(group_array)} case / {len(group_array) - sum(group_array)} control, "
-                    f"shape={X_matrix.shape}")
-    else:
-        X_matrix = None
-        logger.info("  ComBat: 无生物学协变量, 使用标准参数化校正")
+        logger.info(f"  ComBat covars: batch={len(set(batch_labels))} 批次, "
+                    f"disease={sum(group_array)} case / {len(group_array) - sum(group_array)} control")
 
-    # 5. 运行 ComBat
+    # 5. 运行 neuroCombat (Fortin 2018, Jupyter/Python port)
     combat_applied = False
     try:
-        from pycombat.pycombat import Combat
-        combat = Combat()
-        # Y 需要是 (n_samples, n_features), 我们的矩阵是 (genes, samples), 转置
-        Y_input = merged_centered.T.values
-        try:
-            if has_covariate and X_matrix is not None:
-                # pycombat API: X=生物协变量矩阵 (不含截距, 等价于R/sva的mod参数)
-                combat.fit(Y_input, batch_labels, X=X_matrix)
-                corrected_raw = combat.transform(Y_input, batch_labels, X=X_matrix)
-            else:
-                combat.fit(Y_input, batch_labels)
-                corrected_raw = combat.transform(Y_input, batch_labels)
-        except (TypeError, ValueError) as e:
-            # X参数不支持或奇异矩阵 → 降级到标准 ComBat
-            logger.warning(f"  ComBat 生物协变量保护失败 ({e}), 使用标准 ComBat")
-            combat.fit(Y_input, batch_labels)
-            corrected_raw = combat.transform(Y_input, batch_labels)
-        # 转置回 (genes, samples)
+        from neuroCombat import neuroCombat
+        # neuroCombat 需要 (n_features, n_samples) 输入
+        harmonized = neuroCombat(
+            dat=merged_centered.values,  # (genes, samples)
+            covars=covars,
+            batch_col='batch',
+            categorical_cols=['disease'] if has_covariate else None,
+            eb=True,
+            parametric=True,
+            mean_only=False,
+            ref_batch=None
+        )
+        corrected_raw = harmonized['data']  # shape (genes, samples)
         corrected = pd.DataFrame(
-            corrected_raw.T,
+            corrected_raw,
             index=merged_centered.index,
             columns=merged_centered.columns
         )
         combat_applied = True
-        logger.info(f"  ComBat 校正完成: {corrected.shape}")
+        logger.info(f"  neuroCombat 校正完成: {corrected.shape}"
+                    f"{' (含生物学协变量保护: disease)' if has_covariate else ''}")
     except ImportError:
-        logger.warning("  pycombat 未安装, 使用简化中位数对齐替代")
+        logger.warning("  neuroCombat 未安装, 使用简化中位数对齐替代")
         # 备用方案: 中位数对齐 (量级校正)
         corrected = merged_centered.copy()
         global_med = np.median(corrected.values)
@@ -382,8 +382,23 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
         combat_applied = True
         logger.info("  中位数对齐完成 (ComBat 替代)")
     except Exception as e:
-        logger.warning(f"  ComBat 失败 ({e}), 返回原始数据")
-        return expr_dict
+        logger.warning(f"  neuroCombat 失败 ({e}), 使用 pycombat 降级方案")
+        try:
+            from pycombat.pycombat import Combat
+            combat = Combat()
+            Y_input = merged_centered.T.values
+            combat.fit(Y_input, batch_labels)
+            corrected_raw = combat.transform(Y_input, batch_labels)
+            corrected = pd.DataFrame(
+                corrected_raw.T,
+                index=merged_centered.index,
+                columns=merged_centered.columns
+            )
+            combat_applied = True
+            logger.info(f"  pycombat (降级) 校正完成: {corrected.shape}")
+        except Exception as e2:
+            logger.warning(f"  pycombat 降级也失败 ({e2}), 返回原始数据")
+            return expr_dict
     
     # 6. 恢复基因均值 (加回全局均值)
     corrected = corrected.add(gene_means, axis=0)
@@ -394,8 +409,8 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
     for name, n_cols in dataset_order:
         result[name] = corrected.iloc[:, col_start:col_start + n_cols].copy()
         col_start += n_cols
-    
-    logger.info(f"  ComBat 拆分完成: {list(result.keys())} "
+    logger.info(f"  ComBat 拆分: {list(result.keys())} "
+                f"(corrected.shape={corrected.shape}, dataset_order={dataset_order}) "
                 f"{'(含生物学协变量保护)' if has_covariate else ''}")
     return result
 
@@ -526,6 +541,322 @@ def compute_enrichment_score_matrix(expr_df: pd.DataFrame, gene_set: Set[str]) -
     result = pd.Series(scores)
     logger.info(f"  富集评分: {len(common_genes)}/{len(gene_set)} 匹配, {result.notna().sum()} 样本有效")
     return result
+
+
+# ============================================================
+# Bulk免疫细胞特征基因集 (MCPcounter / xCell / 文献策展)
+# ============================================================
+
+# 人血免疫细胞特征基因签名 [Newman 2015 Nat Methods; Aran 2017 Genome Biol; Becht 2016]
+HUMAN_IMMUNE_SIGNATURES: Dict[str, Set[str]] = {
+    'Monocyte': {
+        'CD14', 'FCGR3A', 'CSF1R', 'ITGAM', 'CD68', 'CCR2',
+        'FCN1', 'S100A8', 'S100A9', 'LYZ', 'VCAN', 'CLEC4A',
+        'MS4A6A', 'CTSS', 'SPI1', 'MAFB',
+    },
+    'Macrophage_M1': {
+        'IL1B', 'TNF', 'IL6', 'CCL2', 'CCL3', 'CCL4', 'CCL5',
+        'CXCL9', 'CXCL10', 'CXCL11', 'NOS2', 'IL12B', 'IL23A',
+        'CD80', 'CD86', 'TLR2', 'TLR4', 'STAT1', 'IRF5', 'SOCS3',
+    },
+    'Macrophage_M2': {
+        'IL10', 'TGFB1', 'ARG1', 'MRC1', 'CD163', 'CLEC10A',
+        'MSR1', 'CCL18', 'CCL22', 'CCL24', 'F13A1', 'TGM2',
+        'VEGFA', 'CHI3L1', 'SELENOP', 'FOLR2', 'IL1RN',
+    },
+    'Neutrophil': {
+        'FCGR3B', 'CEACAM8', 'CSF3R', 'CXCR1', 'CXCR2',
+        'MMP8', 'MMP9', 'ELANE', 'MPO', 'CTSG', 'PRTN3',
+        'S100A12', 'LCN2', 'DEFA1', 'DEFA3', 'FPR1', 'FPR2', 'ITGAM',
+    },
+    'Tcell_CD8': {
+        'CD8A', 'CD8B', 'GZMA', 'GZMB', 'GZMK', 'PRF1',
+        'NKG7', 'CCL5', 'IFNG', 'TBX21', 'EOMES',
+    },
+    'Tcell_CD4': {
+        'CD4', 'CD3E', 'CD3D', 'CD3G', 'IL7R', 'CCR7',
+        'TCF7', 'LEF1', 'SELL', 'CD27', 'CD28',
+    },
+    'Treg': {
+        'FOXP3', 'IL2RA', 'CTLA4', 'TNFRSF18', 'TNFRSF4',
+        'IKZF2', 'IL10', 'TGFB1', 'LRRC32', 'ENTPD1', 'TIGIT',
+    },
+    'NK_cell': {
+        'KLRD1', 'KLRF1', 'NKG7', 'GNLY', 'PRF1', 'GZMB',
+        'NCR1', 'NCR3', 'KLRK1', 'CD160', 'FCGR3A', 'KIR2DL1',
+        'KIR3DL1', 'KIR2DS4',
+    },
+    'B_cell': {
+        'MS4A1', 'CD79A', 'CD79B', 'CD19', 'PAX5', 'BLK',
+        'BANK1', 'FCRL1', 'FCRL2', 'TNFRSF17', 'MZB1',
+        'IGHA1', 'IGHG1', 'IGHM', 'IGKC', 'JCHAIN',
+    },
+    'Plasma_cell': {
+        'SDC1', 'MZB1', 'DERL3', 'TNFRSF17', 'SLAMF7',
+        'XBP1', 'IRF4', 'PRDM1', 'FKBP11', 'SSR4',
+    },
+    'Dendritic_cell': {
+        'FCER1A', 'CLEC10A', 'CLEC4C', 'NRP1', 'NDRG2',
+        'FLT3', 'CLEC9A', 'XCR1', 'BDCA2', 'BDCA4',
+        'BATF3', 'IRF8', 'ZBTB46', 'ITGAX', 'HLA-DRA', 'HLA-DRB1',
+    },
+}
+
+# 鼠脑细胞类型特征基因 [Saunders 2018 Cell; McKenzie 2019 Cell Rep; Zeisel 2018 Cell]
+MOUSE_BRAIN_SIGNATURES: Dict[str, Set[str]] = {
+    'Microglia': {
+        'Aif1', 'Cx3cr1', 'P2ry12', 'Tmem119', 'Trem2',
+        'Csf1r', 'Itgam', 'Hexb', 'C1qa', 'C1qb', 'C1qc',
+        'Sparc', 'Olfml3', 'Siglech', 'Gpr34', 'Sall1',
+        'Fcrls', 'Mertk', 'Cst3', 'Ctss', 'Ccl2',
+    },
+    'Astrocyte': {
+        'Gfap', 'Aldh1l1', 'Aqp4', 'Slc1a3', 'Slc1a2',
+        'Gjb6', 'S100b', 'Aldoc', 'Clu', 'Mlc1',
+        'Agt', 'Fgfr3', 'Gja1', 'Apoe', 'Vim',
+    },
+    'Neuron': {
+        'Syp', 'Rbfox3', 'Map2', 'Tubb3', 'Nefl',
+        'Nefm', 'Snap25', 'Syt1', 'Dlg4', 'Grin1',
+        'Grin2a', 'Gad1', 'Slc17a7', 'Bdnf', 'Npy',
+    },
+    'Oligodendrocyte': {
+        'Mog', 'Mbp', 'Plp1', 'Mobp', 'Mag',
+        'Olig1', 'Olig2', 'Sox10', 'Cnp', 'Cldn11',
+        'Mobp', 'Ermn', 'Gpr17', 'PdgfRa', 'Ugt8',
+    },
+    'Endothelial': {
+        'Cldn5', 'Pecam1', 'Cdh5', 'Tek', 'Flt1',
+        'Kdr', 'Vwf', 'Eng', 'Icam1', 'Vcam1',
+        'Esam', 'Rgs5', 'Pdgfrb', 'Acta2', 'Cspg4',
+    },
+    'Pericyte': {
+        'Pdgfrb', 'Rgs5', 'Cspg4', 'Anpep', 'Des',
+        'Abcc9', 'Kcnj8', 'Cox4i2', 'Notch3', 'Mylk',
+    },
+    'Oligodendrocyte_Precursor': {
+        'Pdgfra', 'Cspg4', 'Sox10', 'Olig1', 'Olig2',
+        'Gpr17', 'Cspg5', 'Myt1', 'Nkx2-2', 'Cndp1',
+    },
+}
+
+
+def deconvolve_immune_cells(expr_df: pd.DataFrame,
+                            cell_type_sigs: Dict[str, Set[str]],
+                            method_label: str = 'immune') -> pd.DataFrame:
+    """
+    Bulk免疫细胞反卷积 (特征基因集富集评分法)
+
+    替代 immunedeconv::EPIC (R包, PyPI不可用), 使用基于文献策展的
+    特征基因签名 + 秩和富集评分, 原理等同 MCPcounter (Becht 2016)。
+
+    对每种细胞类型的特征基因集计算单样本秩和富集得分,
+    得分反映该细胞类型的相对丰度。
+
+    来源: Newman 2015 Nat Methods (CIBERSORT/LM22);
+          Becht 2016 Genome Biol (MCPcounter);
+          Aran 2017 Genome Biol (xCell)
+
+    Parameters:
+        expr_df:         基因表达矩阵 (行=基因, 列=样本)
+        cell_type_sigs:  {细胞类型: 特征基因集合}
+        method_label:    方法标签 (用于日志)
+
+    Returns:
+        细胞比例矩阵 (样本 × 细胞类型)
+    """
+    cell_scores = {}
+    for ct_name, sig_genes in cell_type_sigs.items():
+        detected = [g for g in sig_genes if g in expr_df.index]
+        if len(detected) < 3:
+            logger.debug(f"  [{method_label}] {ct_name}: 仅 {len(detected)} 基因, 跳过")
+            continue
+        scores = compute_enrichment_score_matrix(expr_df, sig_genes)
+        cell_scores[ct_name] = scores
+    if not cell_scores:
+        return pd.DataFrame()
+    result = pd.DataFrame(cell_scores)
+    result = result.reindex(index=expr_df.columns)
+    n_valid = result.dropna(how='all').shape[0]
+    logger.info(f"  [{method_label}] 反卷积完成: {len(cell_scores)} 细胞类型 × {n_valid} 样本")
+    return result
+
+
+def idsp_immune_correlation(idsp_scores: pd.DataFrame,
+                            deconv_df: pd.DataFrame,
+                            dataset_name: str,
+                            alpha_bonf: float = 0.05) -> Dict[str, Any]:
+    """
+    IDSP 评分与免疫细胞比例的 Spearman 相关性分析
+
+    对每种细胞类型计算与铁死亡/衰老/IDSP评分的 Spearman ρ,
+    并用 Bonferroni 校正多重比较。
+
+    Returns:
+        dict with correlations, top_celltype, etc.
+    """
+    results = {'dataset': dataset_name, 'correlations': [], 'top_types': {}}
+    n_tests = deconv_df.shape[1] * 3  # 细胞类型 × 3个IDSP指标
+    alpha_corrected = alpha_bonf / n_tests if n_tests > 0 else alpha_bonf
+
+    for col in deconv_df.columns:
+        valid_mask = deconv_df[col].notna() & idsp_scores['ferroptosis'].notna()
+        if valid_mask.sum() < 5:
+            continue
+
+        for metric in ['ferroptosis', 'senescence', 'idsp_index']:
+            try:
+                rho, pval = stats.spearmanr(
+                    deconv_df.loc[valid_mask, col],
+                    idsp_scores.loc[valid_mask, metric]
+                )
+                results['correlations'].append({
+                    'cell_type': col,
+                    'metric': metric,
+                    'rho': float(rho),
+                    'p_value': float(pval),
+                    'significant': pval < alpha_corrected,
+                    'n_samples': int(valid_mask.sum()),
+                })
+            except Exception:
+                continue
+
+    # 找与 IDSP index 最显著正相关的细胞类型
+    idsp_corrs = [c for c in results['correlations'] if c['metric'] == 'idsp_index']
+    if idsp_corrs:
+        # 按 ρ 降序
+        idsp_corrs.sort(key=lambda x: x['rho'], reverse=True)
+        best = idsp_corrs[0]
+        results['top_types'] = {
+            'cell_type': best['cell_type'],
+            'rho': best['rho'],
+            'p_value': best['p_value'],
+            'dataset': dataset_name,
+        }
+
+    return results
+
+
+def plot_deconvolution_heatmap(all_correlations: List[Dict[str, Any]],
+                               save_path: str = None):
+    """
+    Fig1E: IDSP-免疫细胞相关性热图
+
+    行=数据集 × 细胞类型, 列=IDSP指标 (铁死亡/衰老/IDSP)
+    """
+    if not all_correlations:
+        return
+
+    # 构建相关性矩阵
+    rows = []
+    for d in all_correlations:
+        for c in d.get('correlations', []):
+            rows.append({
+                'label': f"{d['dataset']}_{c['cell_type']}",
+                'dataset': d['dataset'],
+                'cell_type': c['cell_type'],
+                'metric': c['metric'],
+                'rho': c['rho'],
+                'sig': c['significant'],
+            })
+
+    if not rows:
+        return
+    df = pd.DataFrame(rows)
+
+    # 透视
+    pivot = df.pivot_table(values='rho', index='label', columns='metric',
+                           aggfunc='first')
+    sig_pivot = df.pivot_table(values='sig', index='label', columns='metric',
+                               aggfunc='first')
+
+    if pivot.empty:
+        return
+
+    fig, ax = plt.subplots(figsize=(6, max(4, len(pivot) * 0.35)))
+    im = ax.imshow(pivot.values, cmap='RdBu_r', vmin=-1, vmax=1, aspect='auto')
+
+    # 标注显著记号
+    for i in range(pivot.shape[0]):
+        for j in range(pivot.shape[1]):
+            val = pivot.values[i, j]
+            if pd.notna(val):
+                marker = '★' if sig_pivot.values[i, j] else '·'
+                color = 'white' if abs(val) > 0.5 else 'black'
+                ax.text(j, i, f'{val:.2f}{marker}', ha='center', va='center',
+                        fontsize=8, color=color)
+
+    ax.set_xticks(range(len(pivot.columns)))
+    ax.set_xticklabels(pivot.columns, fontsize=9, rotation=45, ha='right')
+    ax.set_yticks(range(len(pivot.index)))
+    ax.set_yticklabels(pivot.index, fontsize=7)
+    ax.set_title('IDSP × 免疫细胞 Spearman 相关性 (★=Bonferroni显著)',
+                 fontsize=11, fontweight='bold')
+    plt.colorbar(im, ax=ax, label="Spearman ρ", shrink=0.8)
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"  免疫相关性热图保存: {save_path}")
+    plt.close()
+
+
+def plot_microglia_idsp_scatter(idsp_scores: pd.DataFrame,
+                                deconv_df: pd.DataFrame,
+                                dataset_name: str,
+                                microglia_col: str = 'Microglia',
+                                save_path: str = None):
+    """
+    小胶质细胞/单核细胞 vs IDSP 散点图
+    """
+    if microglia_col not in deconv_df.columns:
+        # 尝试人血对应类型
+        alt_cols = ['Monocyte', 'Macrophage_M1', 'Macrophage_M2']
+        found = [c for c in alt_cols if c in deconv_df.columns]
+        if not found:
+            return
+        microglia_col = found[0]  # 使用第一个可用的
+
+    valid = (deconv_df[microglia_col].notna() &
+             idsp_scores['idsp_index'].notna())
+    if valid.sum() < 5:
+        return
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+    x = deconv_df.loc[valid, microglia_col]
+    y = idsp_scores.loc[valid, 'idsp_index']
+
+    rho, pval = stats.spearmanr(x, y)
+
+    # 按 group 着色
+    if 'group' in idsp_scores.columns:
+        groups = idsp_scores.loc[valid, 'group']
+        palette = {'case': '#E74C3C', 'control': '#3498DB', 'unknown': '#95A5A6'}
+        colors = groups.map(lambda g: palette.get(g, '#95A5A6'))
+        ax.scatter(x, y, c=colors.tolist(), alpha=0.7, s=50, edgecolors='none')
+        # 图例
+        for grp in sorted(set(groups)):
+            mask = groups == grp
+            if mask.any():
+                ax.scatter([], [], c=palette.get(grp, '#95A5A6'), label=grp, alpha=0.7, s=50)
+        ax.legend(fontsize=8)
+    else:
+        ax.scatter(x, y, c='#8E44AD', alpha=0.7, s=50, edgecolors='none')
+
+    # 趋势线
+    if len(x) > 2:
+        slope, intercept, _, _, _ = stats.linregress(x, y)
+        x_line = np.linspace(x.min(), x.max(), 100)
+        ax.plot(x_line, slope * x_line + intercept, '--', color='gray', alpha=0.6)
+
+    ax.set_xlabel(f'{microglia_col} Enrichment Score', fontsize=11)
+    ax.set_ylabel('IDSP Index', fontsize=11)
+    ax.set_title(f'{dataset_name}: {microglia_col} vs IDSP\n'
+                 f'Spearman ρ={rho:.3f}, p={pval:.3e}', fontsize=10)
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"  IDSP-{microglia_col}散点图保存: {save_path}")
+    plt.close()
 
 
 # ============================================================
@@ -1907,7 +2238,7 @@ def plot_forest_dual(comparisons: List[dict], save_path: str,
     ds_names = [c['dataset'] for c in valid_comp]
     d_ferr = [c['d_ferroptosis'] for c in valid_comp]
     d_sene = [c['d_senescence'] for c in valid_comp]
-    n = [c.get('n_ferroptosis', 6) + c.get('n_control', 6) for c in valid_comp]
+    n = [c.get('n_case', 6) + c.get('n_control', 6) for c in valid_comp]
 
     # 计算SE (从 d 和 n 近似)
     se_from_n = lambda d, nn: np.sqrt(1.0/nn + d**2 / (2*nn)) if nn > 0 else np.nan
@@ -2365,6 +2696,7 @@ def main():
                     f"{'(低异质性)' if i2_sene < 25 else '(中异质性)' if i2_sene < 50 else '(高异质性)'}")
 
     # 4e. LODO 交叉验证 (meta_func 需接受 (pvals, dirs) 两个参数)
+    n_stable = 0  # 初始化, 防止 LODO 跳过时 JSON 摘要 NameError
     lodo_df = lodo_cross_validation(
         all_comparisons,
         meta_func=lambda pvals, dirs: stouffer_meta(list(pvals), directions=list(dirs))
@@ -2562,6 +2894,111 @@ def main():
             logger.info(f"  铁死亡 JSD: mean={np.mean(jsd_ferr):.4f}")
         if jsd_sene:
             logger.info(f"  衰老 JSD: mean={np.mean(jsd_sene):.4f}")
+
+    # ============================================================
+    # 4i. Bulk免疫细胞反卷积 × IDSP 关联分析 (新增 🔧)
+    # ============================================================
+    # 原理: 特征基因集富集评分法 (MCPcounter风格)
+    #   - 人血数据集 (GSE16561, GSE37587) → HUMAN_IMMUNE_SIGNATURES (12种免疫细胞)
+    #   - 鼠脑数据集 (GSE104036) → MOUSE_BRAIN_SIGNATURES (7种脑细胞, 含小胶质)
+    #   - 关联分析: IDSP评分与细胞比例的Spearman ρ + Bonferroni校正
+    logger.info("\n" + "=" * 50)
+    logger.info("Bulk免疫细胞反卷积 x IDSP关联分析")
+
+    all_deconv_correlations = []  # 收集所有数据集的关联结果
+    deconv_summary_rows = []      # CSV导出用
+    top_celltype_global = None    # 全局最佳细胞类型
+
+    for ds_name in sample_info:
+        try:
+            expr_gene = harmonized_dict.get(ds_name, raw_expr_dict.get(ds_name))
+            if expr_gene is None or expr_gene.empty:
+                continue
+
+            # 选择细胞类型签名: 人 vs 鼠
+            if ds_name == 'GSE104036':
+                # 鼠脑数据集 — 基因名需大写匹配 (mouse genes are title-case in the sigs)
+                mouse_upper = {ct: {g.upper() for g in genes}
+                               for ct, genes in MOUSE_BRAIN_SIGNATURES.items()}
+                deconv_df = deconvolve_immune_cells(
+                    expr_gene, mouse_upper, method_label=f'{ds_name}/mouse_brain')
+                microglia_col = 'Microglia'
+            else:
+                deconv_df = deconvolve_immune_cells(
+                    expr_gene, HUMAN_IMMUNE_SIGNATURES, method_label=f'{ds_name}/human_blood')
+                microglia_col = None  # 自动选择 Monocyte/Macrophage
+
+            if deconv_df.empty:
+                continue
+
+            # 获取对应数据集的 IDSP 评分 (样本对齐)
+            # 注: scores_df 的 index.name 未设定, 用 'dataset' 列直接匹配
+            idsp_matched = None
+            for sc in all_scores:
+                if 'dataset' in sc.columns and sc['dataset'].iloc[0] == ds_name:
+                    idsp_matched = sc
+                    break
+            if idsp_matched is None:
+                # 后备: 用空IDSP占位
+                idsp_matched = pd.DataFrame({
+                    'ferroptosis': 0.0, 'senescence': 0.0,
+                    'idsp_index': 0.0, 'group': 'unknown'
+                }, index=deconv_df.index)
+
+            common_samples = deconv_df.index.intersection(idsp_matched.index)
+            if len(common_samples) < 5:
+                logger.warning(f"  [{ds_name}] 样本对齐不足 ({len(common_samples)}), 跳过")
+                continue
+            deconv_aligned = deconv_df.loc[common_samples]
+            idsp_aligned = idsp_matched.loc[common_samples]
+
+            # Spearman ρ + Bonferroni
+            corr_results = idsp_immune_correlation(idsp_aligned, deconv_aligned, ds_name)
+            all_deconv_correlations.append(corr_results)
+
+            # 全局最优追踪
+            if corr_results['top_types']:
+                tt = corr_results['top_types']
+                if (top_celltype_global is None or
+                        tt['rho'] > top_celltype_global.get('rho', -999)):
+                    top_celltype_global = dict(tt)
+
+            for c in corr_results['correlations']:
+                deconv_summary_rows.append({
+                    'dataset': ds_name, 'cell_type': c['cell_type'],
+                    'metric': c['metric'], 'rho': c['rho'],
+                    'p_value': c['p_value'], 'significant_bonf': c['significant'],
+                    'n_samples': c['n_samples'],
+                })
+
+            # 散点图
+            plot_microglia_idsp_scatter(
+                idsp_aligned, deconv_aligned, ds_name,
+                microglia_col=microglia_col,
+                save_path=FIGS_DIR / f'L1_{ds_name}_idsp_scatter.png')
+
+            if corr_results['top_types']:
+                tt = corr_results['top_types']
+                logger.info(f"  [{ds_name}] Top: {tt['cell_type']} "
+                            f"ρ={tt['rho']:.3f}, p={tt['p_value']:.2e}")
+
+        except Exception as e:
+            logger.warning(f"  [{ds_name}] 反卷积/关联分析失败: {e} (非关键)")
+
+    # 输出
+    if deconv_summary_rows:
+        pd.DataFrame(deconv_summary_rows).to_csv(
+            OUTPUT_DIR / 'L1_deconvolution_correlations.csv', index=False)
+        logger.info(f"  反卷积关联保存: L1_deconvolution_correlations.csv "
+                    f"({len(deconv_summary_rows)} 条)")
+
+    if all_deconv_correlations:
+        plot_deconvolution_heatmap(all_deconv_correlations,
+                                   save_path=FIGS_DIR / 'Fig1E_immune_correlation_heatmap.png')
+
+    if top_celltype_global:
+        logger.info(f"  全局最佳: {top_celltype_global['cell_type']} "
+                    f"(ρ={top_celltype_global['rho']:.3f}, {top_celltype_global.get('dataset')})")
 
     # ============================================================
     # 5. 输出文件
@@ -2776,6 +3213,16 @@ def main():
             f.write(f"    衰老双相激活模式={'检测到' if biphasic else '未检测到'}\n")
             f.write(f"    衰老/铁死亡AUC负荷比={safe_fmt(sene_auc_ratio)}\n")
 
+        # 4i. 免疫反卷积关联
+        f.write(f"\n免疫细胞反卷积 × IDSP 关联:\n")
+        if top_celltype_global:
+            f.write(f"  全局最佳细胞类型: {top_celltype_global['cell_type']} "
+                    f"(ρ={safe_fmt(top_celltype_global['rho'])}, "
+                    f"p={safe_fmt(top_celltype_global.get('p_value'), '.2e')}, "
+                    f"dataset={top_celltype_global.get('dataset')})\n")
+        else:
+            f.write("  无显著IDSP-免疫细胞关联\n")
+
     logger.info(f"  报告保存: {report_path}")
     logger.info(f"\n{'='*60}")
     logger.info("L1 分析完成!")
@@ -2828,6 +3275,7 @@ def main():
         'gpx4': gpx4_verdict,
         'temporal': temporal_verdict,
         'lodo_stable': n_stable if n_stable else 0,
+        'top_celltype_associated_with_idsp': top_celltype_global if top_celltype_global else None,
     }
     json_path = OUTPUT_DIR / 'L1_statistical_summary.json'
     with open(json_path, 'w', encoding='utf-8') as jf:
