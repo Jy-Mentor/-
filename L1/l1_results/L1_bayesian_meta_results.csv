@@ -1,0 +1,3 @@
+score,mu_mean,mu_sd,mu_hdi_2.5,mu_hdi_97.5,tau_mean,tau_sd,tau2_mean,tau2_sd,rho_mean,rhat_max,converged,mu_significant,k
+Ferroptosis,1.55,1.0,-0.29,3.8,1.94,0.96,4.686412088902754,6.401447481707074,0.1571255774445341,1.0,True,False,5
+Senescence,2.86,1.77,-0.56,6.6,3.53,1.7,15.454587020344247,22.033112518964888,0.14943346420763168,1.0,True,False,5

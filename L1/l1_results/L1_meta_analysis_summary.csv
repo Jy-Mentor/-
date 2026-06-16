@@ -1,0 +1,9 @@
+method,score,p_value,summary_d,I2_pct,tau2,k
+Fisher,Ferroptosis,3.4248949232207337e-09,,,,5
+Fisher,Senescence,1.7963408538435033e-13,,,,5
+Stouffer_weighted,Ferroptosis,0.00021871580714960537,,,,5
+Stouffer_weighted,Senescence,1.101737658881774e-07,,,,5
+Random_effects,Ferroptosis,0.016675480931007902,1.439538344837757,88.37572788386838,1.4145602065040732,5
+Random_effects,Senescence,0.0025085558584725387,2.323807570779807,90.9885739417053,2.15105243569561,5
+Bayesian_MCMC,Ferroptosis,,1.55,,4.686412088902754,5
+Bayesian_MCMC,Senescence,,2.86,,15.454587020344247,5

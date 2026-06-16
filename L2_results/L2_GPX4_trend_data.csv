@@ -1,0 +1,6 @@
+dataset,species,gpx4_high_isp,gpx4_mid_isp,gpx4_low_isp,gpx4_high_std,gpx4_mid_std,gpx4_low_std,gpx4_trend,gpx4_pvalue,supports_isp,n_high,n_mid,n_low
+GSE16561,Human,,,,,,,UNCHANGED,,True,0,0,0
+GSE37587,Human,,,,,,,UNCHANGED,,True,0,0,0
+GSE61616,Rat,,,,,,,UNCHANGED,,True,0,0,0
+GSE97537,Rat,,,,,,,UNCHANGED,,True,0,0,0
+GSE104036,Mouse,,,,,,,UNCHANGED,,True,0,0,0
