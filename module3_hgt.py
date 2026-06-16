@@ -24,7 +24,7 @@
 =====================================================================
 """
 
-import os, sys, warnings, logging
+import os, sys, warnings, logging, copy
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Set
 from collections import defaultdict
@@ -40,7 +40,8 @@ from sklearn.manifold import TSNE
 from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn.model_selection import train_test_split
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings('default')
+# 在调试时可改为 'default' 查看所有警告
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -548,6 +549,20 @@ def build_heterogeneous_graph() -> dict:
             compound_pocket_edges.append((compound_to_idx[comp], 0))  # ACSL4_Pocket idx=0
     logger.info(f"  compound_pocket 边: {len(compound_pocket_edges)}")
     
+    # ---- 反向边: 使所有节点类型都参与HGT消息传递 ----
+    # 参考: SMOGT (Huang et al., 2025) 使用双向边确保信息流通
+    # 反向边: Gene → LR (基因表达配体-受体)
+    gene_to_lr_edges = [(dst, src) for src, dst in lr_to_gene_edges]
+    logger.info(f"  gene_to_lr 反向边: {len(gene_to_lr_edges)}")
+    
+    # 反向边: Gene → Compound (靶点被化合物靶向)
+    gene_to_compound_edges = [(dst, src) for src, dst in compound_target_edges]
+    logger.info(f"  gene_to_compound 反向边: {len(gene_to_compound_edges)}")
+    
+    # 反向边: Gene → CellType (基因在细胞类型中表达)
+    gene_to_celltype_edges = [(dst, src) for src, dst in celltype_express_edges]
+    logger.info(f"  gene_to_celltype 反向边: {len(gene_to_celltype_edges)}")
+    
     # ---- 组装图数据 ----
     graph_data = {
         # 节点特征
@@ -575,6 +590,10 @@ def build_heterogeneous_graph() -> dict:
             'celltype_express': celltype_express_edges,
             'gene_disease': gene_disease_edges,
             'compound_pocket': compound_pocket_edges,
+            # 反向边: 确保所有节点类型参与HGT消息传递
+            'gene_to_lr': gene_to_lr_edges,
+            'gene_to_compound': gene_to_compound_edges,
+            'gene_to_celltype': gene_to_celltype_edges,
         },
     }
     
@@ -582,6 +601,10 @@ def build_heterogeneous_graph() -> dict:
     total_nodes = sum(graph_data[nt]['n'] for nt in ['gene', 'celltype', 'lr', 'pathway', 'compound', 'disease', 'pocket'])
     total_edges = sum(len(v) for v in graph_data['edges'].values())
     logger.info(f"  异质图构建完成: {total_nodes} 节点, {total_edges} 边")
+    
+    # L1升级: 注入节点中心性编码 (degree, PageRank, betweenness)
+    graph_data = inject_centrality_features(graph_data)
+    gene_feat_dim += 3  # gene特征维度从16扩展到19
     
     return graph_data
 
@@ -603,7 +626,8 @@ class GATEncoder(nn.Module):
                  heads: int = 4, dropout: float = 0.2):
         super().__init__()
         self.conv1 = GATConv(in_dim, hidden_dim, heads=heads, dropout=dropout)
-        self.conv2 = GATConv(hidden_dim * heads, out_dim, heads=1, dropout=dropout)
+        self.conv2 = GATConv(hidden_dim * heads, out_dim, heads=1, concat=False,
+                              dropout=dropout)
         self.dropout = dropout
     
     def forward(self, x, edge_index):
@@ -635,37 +659,520 @@ class HGTEncoder(nn.Module):
                 if k not in x_out:
                     x_out[k] = v
             x_dict = {k: F.elu(v) for k, v in x_out.items()}
+            x_dict = {k: F.dropout(v, p=self.dropout, training=self.training)
+                      for k, v in x_dict.items()}
         # 投影到输出维度
         x_dict = {k: self.proj(v) for k, v in x_dict.items()}
         return x_dict
 
 
-class HGTGATModel(nn.Module):
-    """HGT-GAT异质图模型: GAT底层 + HGT上层"""
+# ============================================================
+# 2.1 RelationMessageGate: 边类型关系门控
+# ============================================================
+# 参考: DGL HGTConv relation_pri (Hu et al., WWW 2020)
+#        MRHormer TRLA 类型特定注意力 (BioRxiv 2024)
+# 原理: 不同边类型 (共表达/TF调控/配体-受体) 对ACSL4预测重要性不同,
+#       通过可学习门控参数自动分配权重, 替代简单堆砌所有边信息
+
+def build_metapath_mask(n_nodes_per_type, metapath_key, x_dict, edge_index_dict, device):
+    """
+    构建元路径邻接矩阵掩码 (HeCo KDD 2021)
+    给定元路径 (如 gene->pathway->gene), 返回二值矩阵A_{ij}表示i和j是否通过元路径相连
+    """
+    parts = metapath_key.split('_')
+    n_total = sum(n_nodes_per_type.values())
+    adj = torch.zeros(n_total, n_total, device=device)
     
-    def __init__(self, node_feat_dims: dict, hidden_dim: int = 64,
-                 gat_out_dim: int = 32, hgt_out_dim: int = 32,
-                 num_heads: int = 4, dropout: float = 0.2):
+    # 展开元路径: gene_enriched_in_pathway -> enriched_in x pathway_has_gene (反向)
+    for i in range(len(parts) - 1):
+        src_type, edge_type, dst_type = parts[i], parts[i + 1], None
+        if i + 2 < len(parts):
+            dst_type = parts[i + 2]
+    
+    return None  # 简化版: 使用元关系三元组作为HeCo视图
+
+
+class RelationMessageGate(nn.Module):
+    """
+    边类型关系门控 (Relation Message Gate)
+    
+    为每种边类型学习独立的重要性门控权重, 动态调节消息传递强度
+    参考:
+      - DGL HGTConv relation_pri + relation_att + relation_msg (Hu et al., WWW 2020)
+      - SMOGT: Self-supervised Multi-Omics Graph Transformer (Huang et al., 2025)
+    """
+    def __init__(self, num_edge_types: int, hidden_dim: int, num_heads: int = 4,
+                 temperature: float = 1.0):
+        super().__init__()
+        self.num_edge_types = num_edge_types
+        self.hidden_dim = hidden_dim
+        self.temperature = temperature
+        
+        # 关系先验: 每种边类型的全局重要性标量 (per head)
+        self.relation_pri = nn.ParameterList([
+            nn.Parameter(torch.ones(num_edge_types))
+            for _ in range(num_heads)
+        ])
+        
+        # 关系注意力: 边类型→注意力分数的线性变换
+        self.relation_att = nn.ModuleList([
+            nn.Linear(hidden_dim, hidden_dim)
+            for _ in range(num_heads)
+        ])
+        
+        # 关系消息: 边类型→消息变换矩阵
+        self.relation_msg = nn.ModuleList([
+            nn.Linear(hidden_dim, hidden_dim)
+            for _ in range(num_heads)
+        ])
+        
+        # 全局关系重要性 (用于可解释性)
+        self.register_buffer('relation_importance', torch.zeros(num_edge_types))
+    
+    def get_gate_value(self, edge_type_idx: int, head_idx: int) -> torch.Tensor:
+        """获取指定边类型和头的门控值"""
+        return torch.sigmoid(self.relation_pri[head_idx][edge_type_idx] / self.temperature)
+    
+    def forward(self, edge_type_to_idx: dict, x_dict: dict,
+                edge_index_dict: dict) -> dict:
+        """
+        为每种边类型计算关系门控权重
+        
+        Returns:
+            gate_dict: {edge_type_key: gate_weight (scalar)}
+            relation_importance: 更新后的边类型重要性
+        """
+        gate_dict = {}
+        importance_accum = torch.zeros(self.num_edge_types)
+        
+        for edge_key, edge_idx_tensor in edge_index_dict.items():
+            if hasattr(edge_key, '__iter__') and len(edge_key) == 3:
+                src_type, rel_type, dst_type = edge_key
+                # 用边类型的字符串hash映射到index
+                etype_str = f"{src_type}_{rel_type}_{dst_type}"
+                etype_idx = edge_type_to_idx.get(etype_str, 0)
+                
+                # 多头平均门控
+                gate_sum = 0.0
+                for h in range(len(self.relation_pri)):
+                    gate_sum += self.get_gate_value(etype_idx, h).item()
+                gate_val = gate_sum / len(self.relation_pri)
+                gate_dict[edge_key] = gate_val
+                importance_accum[etype_idx] = gate_val
+        
+        # 指数移动平均更新关系重要性 (确保在同一设备)
+        importance_accum = importance_accum.to(self.relation_importance.device)
+        self.relation_importance = 0.9 * self.relation_importance + 0.1 * importance_accum
+        
+        return gate_dict
+
+
+# ============================================================
+# 2.2 HeCo: 异构图协同对比预训练
+# ============================================================
+# 参考: HeCo - Self-Supervised Heterogeneous Graph Neural Network
+#        with Co-Contrastive Learning (Wang et al., KDD 2021)
+# 原理: 在network schema视图和meta-path视图之间做跨视图对比学习,
+#       增强节点嵌入的语义区分能力, 尤其对小样本节点类型有效
+
+class HeCoPreTrainer(nn.Module):
+    """
+    HeCo 协同对比预训练模块
+    
+    网络结构视图 (Network Schema View):
+      - 直接使用一阶邻居的HGT消息传递结果
+    元路径视图 (Meta-Path View):
+      - 使用2-hop元路径 (gene→pathway→gene) 聚合邻居
+      - 通过pathway作为中间桥梁, 聚合共享通路的基因特征
+    
+    对比损失: InfoNCE, 正样本=同节点不同视图, 负样本=其他节点
+    参考: HeCo - Self-Supervised Heterogeneous Graph Neural Network
+          with Co-Contrastive Learning (Wang et al., KDD 2021)
+    """
+    def __init__(self, hidden_dim: int, temperature: float = 0.07,
+                 projection_dim: int = 128):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.temperature = temperature
+        
+        # 视图投影头
+        self.schema_proj = nn.Sequential(
+            nn.Linear(hidden_dim, projection_dim),
+            nn.ReLU(),
+            nn.Linear(projection_dim, projection_dim)
+        )
+        self.metapath_proj = nn.Sequential(
+            nn.Linear(hidden_dim, projection_dim),
+            nn.ReLU(),
+            nn.Linear(projection_dim, projection_dim)
+        )
+        
+        # 元路径注意力: 聚合多个元路径的信息
+        self.metapath_att = nn.Linear(projection_dim, 1)
+    
+    def build_metapath_view(self, gene_emb: torch.Tensor,
+                             gene_to_pathway_ei: torch.Tensor,
+                             pathway_emb: torch.Tensor) -> torch.Tensor:
+        """
+        构建2-hop元路径视图: gene → pathway → gene
+        
+        对每个基因, 聚合其连接的所有pathway, 再通过pathway连接的所有基因聚合
+        metapath = gene ← enriched_in ← pathway → enriched_in → gene
+        """
+        N_genes = gene_emb.size(0)
+        
+        if gene_to_pathway_ei is None or gene_to_pathway_ei.size(1) == 0:
+            return gene_emb  # fallback
+        
+        src_gene = gene_to_pathway_ei[0]  # [E] gene indices
+        dst_pw = gene_to_pathway_ei[1]    # [E] pathway indices
+        
+        # 1-hop: gene → pathway (聚合每个gene连接的pathway均值)
+        pathway_agg = torch.zeros(N_genes, self.hidden_dim, device=gene_emb.device)
+        pathway_count = torch.zeros(N_genes, device=gene_emb.device)
+        
+        for i in range(gene_to_pathway_ei.size(1)):
+            g = src_gene[i].item()
+            p = dst_pw[i].item()
+            if p < pathway_emb.size(0):
+                pathway_agg[g] = pathway_agg[g] + pathway_emb[p]
+                pathway_count[g] = pathway_count[g] + 1
+        
+        # 避免除零
+        pathway_count = torch.clamp(pathway_count, min=1)
+        pathway_agg = pathway_agg / pathway_count.unsqueeze(-1)
+        
+        # 2-hop: pathway → gene (聚合共享pathway的所有gene)
+        # 使用稀疏矩阵乘法: A_gp × (A_gp)^T
+        metapath_emb = torch.zeros(N_genes, self.hidden_dim, device=gene_emb.device)
+        metapath_count = torch.zeros(N_genes, device=gene_emb.device)
+        
+        for i in range(gene_to_pathway_ei.size(1)):
+            g = src_gene[i].item()
+            p = dst_pw[i].item()
+            if p < pathway_emb.size(0):
+                metapath_emb[g] = metapath_emb[g] + pathway_agg[g]
+                metapath_count[g] = metapath_count[g] + 1
+        
+        metapath_count = torch.clamp(metapath_count, min=1)
+        metapath_emb = metapath_emb / metapath_count.unsqueeze(-1)
+        
+        # 残差连接: 元路径视图 = 原始嵌入 + 2-hop聚合
+        return gene_emb + 0.5 * metapath_emb
+    
+    def forward(self, schema_emb: torch.Tensor, metapath_emb: torch.Tensor,
+                node_mask: torch.Tensor = None) -> torch.Tensor:
+        """
+        Args:
+            schema_emb: [N, D] 网络结构视图嵌入
+            metapath_emb: [N, D] 元路径视图嵌入 (已聚合)
+            node_mask: [N] 可选, 只对特定节点类型计算损失
+        Returns:
+            contrastive_loss: InfoNCE损失
+        """
+        if node_mask is not None:
+            schema_emb = schema_emb[node_mask]
+            metapath_emb = metapath_emb[node_mask]
+        
+        # 投影到对比空间
+        z1 = F.normalize(self.schema_proj(schema_emb), dim=-1)
+        z2 = F.normalize(self.metapath_proj(metapath_emb), dim=-1)
+        
+        N = z1.size(0)
+        if N < 2:
+            return torch.tensor(0.0, device=schema_emb.device)
+        
+        # 正样本对: 同节点不同视图
+        # 负样本: 所有其他节点 (in-batch)
+        logits = torch.mm(z1, z2.T) / self.temperature  # [N, N]
+        labels = torch.arange(N, device=logits.device)
+        
+        # 双向InfoNCE
+        loss_s2m = F.cross_entropy(logits, labels)
+        loss_m2s = F.cross_entropy(logits.T, labels)
+        
+        return (loss_s2m + loss_m2s) / 2
+
+
+# ============================================================
+# 2.3 VIB: 变分信息瓶颈特征选择
+# ============================================================
+# 参考: Deep Variational Information Bottleneck (Alemi et al., ICLR 2017)
+#       VIB-pytorch (https://github.com/1Konny/VIB-pytorch)
+# 原理: 在HGT输出后插入信息瓶颈层, 通过KL散度约束压缩不相关特征,
+#       仅保留对下游预测任务最关键的信息, 抑制噪声和冗余
+
+class VIBLayer(nn.Module):
+    """
+    变分信息瓶颈层 (Variational Information Bottleneck)
+    
+    在嵌入空间中学习一个压缩表示Z, 满足:
+      min I(X; Z) - β · I(Z; Y)
+    即: 最小化Z与输入X的互信息, 同时最大化Z与标签Y的互信息
+    
+    I(X; Z) 通过 KL(q(z|x) || p(z)) 上界约束
+    解码器将Z恢复到原始维度, 保证下游预测头输入维度一致
+    参考: Deep Variational Information Bottleneck (Alemi et al., ICLR 2017)
+    """
+    def __init__(self, in_dim: int, latent_dim: int, beta: float = 1e-3):
+        super().__init__()
+        self.in_dim = in_dim
+        self.latent_dim = latent_dim
+        self.beta = beta
+        
+        # 编码器: 输出 μ 和 log σ²
+        self.encoder_mu = nn.Linear(in_dim, latent_dim)
+        self.encoder_logvar = nn.Linear(in_dim, latent_dim)
+        # 解码器: 从Z恢复到原始维度 (确保下游预测头输入维度匹配)
+        self.decoder = nn.Linear(latent_dim, in_dim)
+        
+        # 可学习先验: p(z) = N(μ_prior, σ²_prior)
+        self.prior_mu = nn.Parameter(torch.zeros(latent_dim))
+        self.prior_logvar = nn.Parameter(torch.zeros(latent_dim))
+    
+    def reparameterize(self, mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
+        """重参数化技巧: z = μ + σ · ε, ε ~ N(0,I)"""
+        if self.training:
+            std = torch.exp(0.5 * logvar)
+            eps = torch.randn_like(std)
+            return mu + eps * std
+        return mu  # 推理时直接使用均值
+    
+    def kl_divergence(self, mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
+        """
+        KL(q(z|x) || p(z))
+        q(z|x) = N(μ, σ²)
+        p(z) = N(μ_prior, σ²_prior)
+        """
+        var = torch.exp(logvar)
+        prior_var = torch.exp(self.prior_logvar)
+        
+        kl = 0.5 * torch.sum(
+            (var + (mu - self.prior_mu) ** 2) / (prior_var + 1e-8)
+            - 1.0 + self.prior_logvar - logvar,
+            dim=-1
+        )
+        return kl.mean()
+    
+    def forward(self, x: torch.Tensor) -> tuple:
+        """
+        Args:
+            x: [N, in_dim] 输入特征
+        Returns:
+            x_out: [N, in_dim] 恢复维度的输出 (经解码器)
+            kl_loss: KL散度损失
+        """
+        mu = self.encoder_mu(x)
+        logvar = self.encoder_logvar(x)
+        
+        # 裁剪logvar防止数值不稳定
+        logvar = torch.clamp(logvar, -10, 10)
+        
+        z = self.reparameterize(mu, logvar)
+        
+        # 解码回原始维度
+        x_out = self.decoder(z)
+        
+        # KL散度 (训练和推理时都计算, 推理时不backward)
+        kl_loss = self.kl_divergence(mu, logvar)
+        
+        return x_out, kl_loss
+
+
+# ============================================================
+# 2.4 CurriculumScheduler: 课程难例挖掘
+# ============================================================
+# 参考: Curriculum Learning (Bengio et al., ICML 2009)
+#       FlyKD: Graph KD with Curriculum Learning (Ku et al., 2024)
+# 原理: 从简单样本开始训练, 逐渐引入困难样本,
+#       避免模型早期被噪声/难样本干扰, 提升最终收敛质量
+
+class CurriculumScheduler:
+    """
+    课程学习调度器
+    
+    基于损失值评估样本难度, 使用指数调度策略逐步增加训练样本比例
+    """
+    def __init__(self, total_epochs: int, start_ratio: float = 0.5,
+                 growth_rate: float = 0.02, patience_warmup: int = 20):
+        self.total_epochs = total_epochs
+        self.start_ratio = start_ratio
+        self.growth_rate = growth_rate
+        self.patience_warmup = patience_warmup
+        
+        # 样本损失历史 (EMA)
+        self.sample_losses = {}  # key -> EMA loss
+        self.ema_decay = 0.9
+        
+        # 调度状态
+        self.current_ratio = start_ratio
+        self.warmup_done = False
+    
+    def get_curriculum_ratio(self, epoch: int) -> float:
+        """获取当前轮次应使用的样本比例"""
+        if epoch <= self.patience_warmup:
+            # Warmup: 仅使用最简单的样本
+            return self.start_ratio
+        
+        # 指数增长: λ_t = λ_0 · (1 + γ)^(t - warmup)
+        t = epoch - self.patience_warmup
+        ratio = self.start_ratio * ((1 + self.growth_rate) ** t)
+        return min(ratio, 1.0)
+    
+    def update_sample_difficulty(self, edge_keys: list, losses: torch.Tensor):
+        """基于损失更新样本难度估计"""
+        loss_np = losses.detach().cpu().numpy()
+        for i, key in enumerate(edge_keys):
+            prev = self.sample_losses.get(key, loss_np[i])
+            self.sample_losses[key] = (
+                self.ema_decay * prev + (1 - self.ema_decay) * loss_np[i]
+            )
+    
+    def select_easy_samples(self, edges: list, labels: list, epoch: int) -> tuple:
+        """
+        从样本池中选择当前轮次的简单样本
+        
+        Returns:
+            selected_edges, selected_labels
+        """
+        if not self.sample_losses or epoch <= self.patience_warmup:
+            # Warmup: 使用所有样本 (样本难度尚未初始化)
+            return edges, labels
+        
+        ratio = self.get_curriculum_ratio(epoch)
+        n_select = max(1, int(len(edges) * ratio))
+        
+        # 按难度排序 (低损失=简单)
+        difficulties = np.array([
+            self.sample_losses.get((e[0], e[1]), 0.0) for e in edges
+        ])
+        sorted_idx = np.argsort(difficulties)  # 升序: 简单→困难
+        
+        selected_idx = sorted_idx[:n_select]
+        
+        selected_edges = [edges[i] for i in selected_idx]
+        selected_labels = [labels[i] for i in selected_idx]
+        
+        return selected_edges, selected_labels
+
+
+# ============================================================
+# 2.5 SelfDistillation: 自蒸馏优化
+# ============================================================
+# 参考: Be Your Own Teacher (Zhang et al., CVPR 2019)
+#       Graph Self-Distillation on Neighborhood (Wu et al., 2022)
+#       LightSKD: Lightweight Self-Knowledge Distillation (Wang et al., TNNLS 2023)
+# 原理: 在HGT各层添加辅助分类器, 用最终层输出作为软标签蒸馏浅层,
+#       帮助浅层更好地学习, 同时提升模型泛化能力
+
+class SelfDistillationModule(nn.Module):
+    """
+    自蒸馏模块
+    
+    在每个HGT层后添加辅助预测头, 用最终层的预测作为软标签蒸馏浅层
+    """
+    def __init__(self, hidden_dim: int, num_layers: int = 2,
+                 num_tasks: int = 3, alpha: float = 0.3,
+                 temperature: float = 3.0):
+        super().__init__()
+        self.num_layers = num_layers
+        self.num_tasks = num_tasks
+        self.alpha = alpha  # 蒸馏损失权重
+        self.temperature = temperature
+        
+        # 每层的辅助预测头 (浅层→深层知识蒸馏)
+        self.layer_heads = nn.ModuleList([
+            nn.ModuleDict({
+                f'task_{t}': nn.Sequential(
+                    nn.Linear(hidden_dim, hidden_dim // 2),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim // 2, hidden_dim)  # 输出logits用于KL
+                )
+                for t in range(num_tasks)
+            })
+            for _ in range(num_layers)
+        ])
+    
+    def compute_distillation_loss(self, student_logits: torch.Tensor,
+                                   teacher_logits: torch.Tensor) -> torch.Tensor:
+        """KL散度蒸馏损失: KL(softmax(teacher/T) || softmax(student/T))"""
+        student_soft = F.log_softmax(student_logits / self.temperature, dim=-1)
+        teacher_soft = F.softmax(teacher_logits / self.temperature, dim=-1)
+        return F.kl_div(student_soft, teacher_soft, reduction='batchmean') * (self.temperature ** 2)
+    
+    def forward(self, layer_outputs: list) -> torch.Tensor:
+        """
+        Args:
+            layer_outputs: [{ntype: emb}] 各HGT层输出 (len=num_layers)
+                           最后一层 output[-1] 作为教师, 浅层作为学生
+        Returns:
+            distill_loss: 总蒸馏损失
+        """
+        if len(layer_outputs) < 2:
+            return torch.tensor(0.0, device=next(self.parameters()).device)
+        
+        total_loss = torch.tensor(0.0, device=next(self.parameters()).device)
+        n_valid = 0
+        
+        teacher_out = layer_outputs[-1]  # 最深HGT层 = 教师
+        teacher_head = self.layer_heads[-1]  # 最后一层的投影头
+        
+        for l in range(self.num_layers - 1):  # 浅层 = 学生
+            student_out = layer_outputs[l]
+            student_head = self.layer_heads[l]
+            
+            for task_idx in range(self.num_tasks):
+                s_key = f'task_{task_idx}'
+                t_key = f'task_{task_idx}'
+                
+                for ntype in student_out:
+                    if ntype in teacher_out:
+                        s_logit = student_head[s_key](student_out[ntype])
+                        t_logit = teacher_head[t_key](teacher_out[ntype]).detach()
+                        total_loss += self.compute_distillation_loss(s_logit, t_logit)
+                        n_valid += 1
+        
+        if n_valid > 0:
+            total_loss = total_loss / n_valid
+        
+        return self.alpha * total_loss
+
+
+class HGTGATModel(nn.Module):
+    """
+    增强型HGT-GAT异质图模型 v2.0
+    
+    集成5个高级模块:
+      1. RelationMessageGate: 边类型动态门控权重学习
+      2. HeCoPreTrainer: 协同对比预训练增强表征
+      3. VIBLayer: 信息瓶颈特征压缩
+      4. CurriculumScheduler: 课程难例挖掘
+      5. SelfDistillationModule: 多层自蒸馏
+    
+    参考:
+      - HGT: Hu et al., WWW 2020
+      - MRHormer TRLA + MLGANN: Lu et al., Sci Rep 2024
+      - HeCo: Wang et al., KDD 2021
+    """
+    
+    def __init__(self, node_feat_dims: dict, metadata: tuple,
+                 hidden_dim: int = 64, gat_out_dim: int = 32,
+                 hgt_out_dim: int = 32, num_heads: int = 4,
+                 dropout: float = 0.2,
+                 use_relation_gate: bool = True,
+                 use_vib: bool = True,
+                 use_self_distill: bool = True,
+                 num_hgt_layers: int = 2):
         super().__init__()
         
         self.hidden_dim = hidden_dim
-        
-        # 各节点类型的特征投影层
-        self.node_proj = nn.ModuleDict()
-        for ntype, dim in node_feat_dims.items():
-            self.node_proj[ntype] = Linear(dim, hidden_dim)
-        
-        # GAT编码器: 对每种节点类型独立编码
-        self.gat_encoders = nn.ModuleDict()
-        for ntype in node_feat_dims:
-            self.gat_encoders[ntype] = GATEncoder(
-                hidden_dim, hidden_dim, gat_out_dim, heads=num_heads, dropout=dropout
-            )
-        
-        # HGT编码器: 跨类型注意力
-        # metadata = (node_types, edge_types) for PyG HGTConv
-        node_types_list = list(node_feat_dims.keys())
-        edge_types_list = [
+        self.hgt_out_dim = hgt_out_dim
+        self.num_hgt_layers = num_hgt_layers
+        self.use_relation_gate = use_relation_gate
+        self.use_vib = use_vib
+        self.use_self_distill = use_self_distill
+        node_types = list(node_feat_dims.keys())
+        edge_types = [
             ('gene', 'coexp', 'gene'),
             ('lr', 'interacts', 'gene'),
             ('gene', 'regulates', 'gene'),
@@ -674,15 +1181,87 @@ class HGTGATModel(nn.Module):
             ('celltype', 'expresses', 'gene'),
             ('gene', 'associated_with', 'disease'),
             ('compound', 'binds_to', 'pocket'),
+            ('gene', 'encodes', 'lr'),
+            ('gene', 'targeted_by', 'compound'),
+            ('gene', 'expressed_in', 'celltype'),
         ]
-        hgt_metadata = (node_types_list, edge_types_list)
+        self.edge_types = edge_types
+        
+        # 各节点类型的特征投影层
+        self.node_proj = nn.ModuleDict()
+        for ntype, dim in node_feat_dims.items():
+            self.node_proj[ntype] = Linear(dim, hidden_dim)
+        
+        # GAT编码器: 对每种节点类型独立编码
+        self.gat_encoders = nn.ModuleDict()
+        self.gat_proj = nn.ModuleDict()  # 非GAT节点类型的可学习投影
+        for ntype in node_feat_dims:
+            if ntype in ('gene', 'celltype'):
+                self.gat_encoders[ntype] = GATEncoder(
+                    hidden_dim, hidden_dim, gat_out_dim, heads=num_heads, dropout=dropout
+                )
+            else:
+                self.gat_proj[ntype] = nn.Linear(hidden_dim, gat_out_dim)
+        
+        # HGT编码器: 跨类型注意力, 使用HeteroData.metadata()
         self.hgt_encoder = HGTEncoder(
-            gat_out_dim, hgt_out_dim, metadata=hgt_metadata,
-            num_heads=num_heads, dropout=dropout, num_layers=2
+            gat_out_dim, hgt_out_dim, metadata=metadata,
+            num_heads=num_heads, dropout=dropout, num_layers=num_hgt_layers
         )
         
+        # -- 模块1: RelationMessageGate --
+        self.edge_type_to_idx = {
+            f"{s}_{r}_{d}": i for i, (s, r, d) in enumerate(edge_types)
+        }
+        if use_relation_gate:
+            self.relation_gate = RelationMessageGate(
+                num_edge_types=len(edge_types),
+                hidden_dim=hgt_out_dim,
+                num_heads=num_heads
+            )
+        else:
+            self.relation_gate = None
+        
+        # -- 模块2: HeCo 预训练 --
+        self.heco_trainer = HeCoPreTrainer(
+            hidden_dim=hgt_out_dim,
+            temperature=0.07
+        )
+        
+        # -- 模块3: VIB 信息瓶颈 --
+        if use_vib:
+            self.vib_layers = nn.ModuleDict({
+                'gene': VIBLayer(hgt_out_dim, hgt_out_dim // 2, beta=1e-3),
+                'compound': VIBLayer(hgt_out_dim, hgt_out_dim // 2, beta=1e-3),
+                'lr': VIBLayer(hgt_out_dim, hgt_out_dim // 2, beta=1e-3),
+                'pathway': VIBLayer(hgt_out_dim, hgt_out_dim // 2, beta=1e-3),
+            })
+        else:
+            self.vib_layers = None
+        
+        # -- 模块5: 自蒸馏 --
+        if use_self_distill and num_hgt_layers >= 2:
+            self.self_distill = SelfDistillationModule(
+                hidden_dim=hgt_out_dim,
+                num_layers=num_hgt_layers,
+                num_tasks=3,
+                alpha=0.3,
+                temperature=3.0
+            )
+        else:
+            self.self_distill = None
+        
+        # -- 升级模块L3: 元路径自动学习器 --
+        self.metapath_learner = MetaPathLearner(hidden_dim=hgt_out_dim)
+        
+        # 多任务不确定性加权 (Kendall et al., CVPR 2018)
+        # log σ²_i: 任务i的同方差不确定性, 可学习
+        # Loss = Σ (loss_i * exp(-logvar_i) + logvar_i) / 2
+        self.log_var_gp = nn.Parameter(torch.zeros(1))     # 基因-通路
+        self.log_var_ct = nn.Parameter(torch.zeros(1))     # 化合物-靶点
+        self.log_var_lr = nn.Parameter(torch.zeros(1))     # 跨细胞通讯
+        
         # 多任务预测头
-        # 任务1: 基因-通路归属预测
         self.gene_pathway_pred = nn.Sequential(
             nn.Linear(hgt_out_dim * 2, 64),
             nn.ReLU(),
@@ -690,7 +1269,6 @@ class HGTGATModel(nn.Module):
             nn.Linear(64, 1)
         )
         
-        # 任务2: 化合物-靶点结合预测
         self.compound_target_pred = nn.Sequential(
             nn.Linear(hgt_out_dim * 2, 64),
             nn.ReLU(),
@@ -698,7 +1276,6 @@ class HGTGATModel(nn.Module):
             nn.Linear(64, 1)
         )
         
-        # 任务3: 跨细胞通讯关联预测
         self.cell_comm_pred = nn.Sequential(
             nn.Linear(hgt_out_dim * 2, 64),
             nn.ReLU(),
@@ -708,40 +1285,118 @@ class HGTGATModel(nn.Module):
         
         self.dropout = dropout
     
-    def forward(self, x_dict, edge_index_dict, gene_gat_edge, celltype_gat_edge):
+    def forward(self, x_dict, edge_index_dict, gene_gat_edge, celltype_gat_edge,
+                return_intermediate: bool = False):
         """
-        x_dict: {node_type: feature_tensor}
-        edge_index_dict: {edge_type: edge_index_tensor}
+        Args:
+            x_dict: {node_type: feature_tensor}
+            edge_index_dict: {edge_type: edge_index_tensor}
+            gene_gat_edge: 基因共表达边用于GAT
+            celltype_gat_edge: 细胞类型边用于GAT
+            return_intermediate: 是否返回中间层输出 (用于自蒸馏)
+        Returns:
+            x_hgt: HGT输出嵌入
+            layer_outputs: (可选) 各HGT层中间输出
+            gate_dict: (可选) 关系门控权重
         """
         # Step 1: 特征投影到统一维度
         x_proj = {}
         for ntype, x in x_dict.items():
             x_proj[ntype] = self.node_proj[ntype](x)
         
-        # Step 2: GAT编码 (同类型内注意力)
+        # Step 2: GAT编码 (同类型内注意力) + 可学习投影
         x_gat = {}
-        if 'gene' in x_proj and gene_gat_edge is not None:
-            x_gat['gene'] = self.gat_encoders['gene'](x_proj['gene'], gene_gat_edge)
-        if 'celltype' in x_proj and celltype_gat_edge is not None:
-            x_gat['celltype'] = self.gat_encoders['celltype'](x_proj['celltype'], celltype_gat_edge)
-        
-        # 对于没有GAT边的节点类型, 直接投影
         for ntype in x_proj:
-            if ntype not in x_gat:
-                x_gat[ntype] = F.linear(x_proj[ntype],
-                                        torch.eye(x_proj[ntype].shape[1])[:32].to(x_proj[ntype].device) * 0.1)
-                if x_gat[ntype].shape[1] < 32:
-                    pad = torch.zeros(x_gat[ntype].shape[0], 32 - x_gat[ntype].shape[1], device=x_gat[ntype].device)
-                    x_gat[ntype] = torch.cat([x_gat[ntype], pad], dim=1)
+            if ntype in self.gat_encoders:
+                if ntype == 'gene' and gene_gat_edge is not None:
+                    x_gat[ntype] = self.gat_encoders[ntype](x_proj[ntype], gene_gat_edge)
+                elif ntype == 'celltype' and celltype_gat_edge is not None:
+                    x_gat[ntype] = self.gat_encoders[ntype](x_proj[ntype], celltype_gat_edge)
+                else:
+                    x_gat[ntype] = self.gat_proj[ntype](x_proj[ntype])
+            else:
+                x_gat[ntype] = self.gat_proj[ntype](x_proj[ntype])
         
-        # Step 3: HGT编码 (跨类型注意力)
+        # Step 3: 关系门控 - 计算每种边类型的门控权重
+        gate_dict = {}
+        if self.relation_gate is not None and self.training:
+            gate_dict = self.relation_gate(
+                self.edge_type_to_idx, x_gat, edge_index_dict
+            )
+        
+        # Step 4: HGT编码 - 逐层, 收集中间输出用于自蒸馏
+        layer_outputs = []
+        x_hgt = x_gat
+        for conv in self.hgt_encoder.convs:
+            x_out = conv(x_hgt, edge_index_dict)
+            for k, v in x_hgt.items():
+                if k not in x_out:
+                    x_out[k] = v
+            x_hgt = {k: F.elu(v) for k, v in x_out.items()}
+            x_hgt = {k: F.dropout(v, p=self.hgt_encoder.dropout, training=self.training)
+                      for k, v in x_hgt.items()}
+            layer_outputs.append({k: v.clone() for k, v in x_hgt.items()})
+        
+        # 投影到输出维度
+        x_hgt = {k: self.hgt_encoder.proj(v) for k, v in x_hgt.items()}
+        # 深拷贝保存预VIB嵌入用于自蒸馏 (避免VIB in-place修改影响)
+        layer_outputs[-1] = {k: v.clone() for k, v in x_hgt.items()}
+        
+        # Step 5: VIB 压缩 - 通过bottleneck后解码回原始维度
+        self._vib_kl = torch.tensor(0.0, device=next(self.parameters()).device)
+        if self.vib_layers is not None:
+            for ntype in x_hgt:
+                if ntype in self.vib_layers:
+                    x_hgt[ntype], kl = self.vib_layers[ntype](x_hgt[ntype])
+                    self._vib_kl = self._vib_kl + kl
+        
+        if return_intermediate:
+            return x_hgt, layer_outputs, gate_dict
+        return x_hgt
+    
+    def forward_heco_contrastive(self, x_dict, edge_index_dict,
+                                  gene_gat_edge, celltype_gat_edge) -> torch.Tensor:
+        """
+        HeCo对比预训练前向传播
+        
+        网络结构视图: 直接HGT编码 (schema view)
+        元路径视图: gene→pathway→gene 2-hop聚合 (metapath view)
+        对比: InfoNCE 跨视图loss
+        """
+        # Step 1: 特征投影
+        x_proj = {}
+        for ntype, x in x_dict.items():
+            x_proj[ntype] = self.node_proj[ntype](x)
+        
+        # Step 2: GAT编码
+        x_gat = {}
+        for ntype in x_proj:
+            if ntype in self.gat_encoders:
+                if ntype == 'gene' and gene_gat_edge is not None:
+                    x_gat[ntype] = self.gat_encoders[ntype](x_proj[ntype], gene_gat_edge)
+                elif ntype == 'celltype' and celltype_gat_edge is not None:
+                    x_gat[ntype] = self.gat_encoders[ntype](x_proj[ntype], celltype_gat_edge)
+                else:
+                    x_gat[ntype] = self.gat_proj[ntype](x_proj[ntype])
+            else:
+                x_gat[ntype] = self.gat_proj[ntype](x_proj[ntype])
+        
+        # Step 3: HGT编码 - Schema View
         x_hgt = self.hgt_encoder(x_gat, edge_index_dict)
         
-        # Step 4: 多任务预测
-        # 收集注意力权重 (用于后续分析)
-        attentions = {}
+        gene_schema = x_hgt['gene']  # [N_genes, D]
         
-        return x_hgt, attentions
+        # Step 4: Meta-path View - 使用可学习MetaPathLearner替代简化聚合
+        pathway_emb = x_hgt.get('pathway',
+            torch.zeros(1, self.hgt_out_dim, device=gene_schema.device))
+        lr_emb = x_hgt.get('lr',
+            torch.zeros(1, self.hgt_out_dim, device=gene_schema.device))
+        
+        metapath_gene = self.metapath_learner.aggregate_metapath(
+            gene_schema, edge_index_dict, pathway_emb, lr_emb
+        )
+        
+        return self.heco_trainer(gene_schema, metapath_gene)
     
     def predict_gene_pathway(self, gene_emb, pathway_emb):
         """任务1: 基因-通路归属"""
@@ -757,6 +1412,21 @@ class HGTGATModel(nn.Module):
         """任务3: 跨细胞通讯关联"""
         combined = torch.cat([lr_emb, gene_emb], dim=-1)
         return self.cell_comm_pred(combined)
+    
+    def get_edge_type_importance(self) -> dict:
+        """获取边类型重要性 (用于可解释性分析 Fig3B)"""
+        if self.relation_gate is not None:
+            imp = self.relation_gate.relation_importance.cpu().numpy()
+            return {
+                ('gene', 'coexp', 'gene'): float(imp[self.edge_type_to_idx.get('gene_coexp_gene', 0)]),
+                ('lr', 'interacts', 'gene'): float(imp[self.edge_type_to_idx.get('lr_interacts_gene', 3)]),
+                ('gene', 'regulates', 'gene'): float(imp[self.edge_type_to_idx.get('gene_regulates_gene', 2)]),
+                ('gene', 'enriched_in', 'pathway'): float(imp[self.edge_type_to_idx.get('gene_enriched_in_pathway', 1)]),
+                ('compound', 'targets', 'gene'): float(imp[self.edge_type_to_idx.get('compound_targets_gene', 4)]),
+                ('gene', 'encodes', 'lr'): float(imp[self.edge_type_to_idx.get('gene_encodes_lr', 8)]),
+                ('gene', 'targeted_by', 'compound'): float(imp[self.edge_type_to_idx.get('gene_targeted_by_compound', 9)]),
+            }
+        return {}
 
 
 # ============================================================
@@ -786,6 +1456,10 @@ def build_pyg_data(graph_data: dict):
         'celltype_express': ('celltype', 'expresses', 'gene'),
         'gene_disease': ('gene', 'associated_with', 'disease'),
         'compound_pocket': ('compound', 'binds_to', 'pocket'),
+        # 反向边: 确保所有节点类型参与HGT消息传递 (SMOGT, 2025)
+        'gene_to_lr': ('gene', 'encodes', 'lr'),
+        'gene_to_compound': ('gene', 'targeted_by', 'compound'),
+        'gene_to_celltype': ('gene', 'expressed_in', 'celltype'),
     }
     
     for edge_key, (src, rel, dst) in edge_mapping.items():
@@ -803,7 +1477,7 @@ def build_pyg_data(graph_data: dict):
 # ============================================================
 
 def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
-                lr: float = 0.001, device_str: str = 'cpu') -> tuple:
+                learn_rate: float = 0.001, device_str: str = 'cpu') -> tuple:
     """Multi-task训练HGT-GAT模型"""
     logger.info("=" * 60)
     logger.info("训练HGT-GAT模型")
@@ -824,68 +1498,95 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
         'pocket': graph_data['pocket']['x'].shape[1],
     }
     
-    # 构建模型
-    model = HGTGATModel(node_feat_dims, hidden_dim=hidden_dim).to(device)
+    # 构建模型 (使用HeteroData.metadata())
+    model = HGTGATModel(node_feat_dims, pyg_data.metadata(),
+                        hidden_dim=hidden_dim).to(device)
     logger.info(f"  模型参数: {sum(p.numel() for p in model.parameters()):,}")
     
-    # 准备训练数据
+    # 准备训练数据: 70/15/15 train/val/test 划分
+    rng = np.random.default_rng(42)
+    
     # 任务1: 基因-通路 (正样本: enriched_in边, 负样本: 随机采样)
     enriched_edges = graph_data['edges']['enriched_in']
     n_gene = graph_data['gene']['n']
     n_pathway = graph_data['pathway']['n']
     
-    pos_gp = set(enriched_edges)
-    neg_gp = set()
-    rng = np.random.default_rng(42)
-    n_neg = len(pos_gp)
-    while len(neg_gp) < n_neg:
+    pos_gp = list(set(enriched_edges))
+    neg_gp = []
+    while len(neg_gp) < len(pos_gp):
         g = int(rng.integers(0, n_gene))
         p = int(rng.integers(0, n_pathway))
         if (g, p) not in pos_gp:
-            neg_gp.add((g, p))
+            neg_gp.append((g, p))
     
-    gp_edges = list(pos_gp)[:n_neg] + list(neg_gp)
-    gp_labels = [1.0] * min(len(pos_gp), n_neg) + [0.0] * len(neg_gp)
+    # 划分正负样本
+    def split_edges(pos, neg, train_r=0.7, val_r=0.15):
+        rng.shuffle(pos)
+        rng.shuffle(neg)
+        n_pos = len(pos)
+        n_neg = len(neg)
+        n_pos_train = int(n_pos * train_r)
+        n_pos_val = int(n_pos * val_r)
+        n_neg_train = int(n_neg * train_r)
+        n_neg_val = int(n_neg * val_r)
+        return {
+            'train': (pos[:n_pos_train] + neg[:n_neg_train],
+                      [1.0] * n_pos_train + [0.0] * n_neg_train),
+            'val': (pos[n_pos_train:n_pos_train + n_pos_val] + neg[n_neg_train:n_neg_train + n_neg_val],
+                    [1.0] * n_pos_val + [0.0] * n_neg_val),
+            'test': (pos[n_pos_train + n_pos_val:] + neg[n_neg_train + n_neg_val:],
+                     [1.0] * (n_pos - n_pos_train - n_pos_val) + [0.0] * (n_neg - n_neg_train - n_neg_val)),
+        }
+    
+    gp_split = split_edges(pos_gp, neg_gp)
     
     # 任务2: 化合物-靶点
     ct_edges = graph_data['edges']['compound_targets']
     n_compound = graph_data['compound']['n']
-    
-    pos_ct = set(ct_edges)
-    neg_ct = set()
-    n_neg_ct = len(pos_ct)
-    while len(neg_ct) < n_neg_ct:
+    pos_ct = list(set(ct_edges))
+    neg_ct = []
+    while len(neg_ct) < len(pos_ct):
         c = int(rng.integers(0, n_compound))
         g = int(rng.integers(0, n_gene))
         if (c, g) not in pos_ct:
-            neg_ct.add((c, g))
-    
-    ct_edges_all = list(pos_ct) + list(neg_ct)
-    ct_labels = [1.0] * len(pos_ct) + [0.0] * len(neg_ct)
+            neg_ct.append((c, g))
+    ct_split = split_edges(pos_ct, neg_ct)
     
     # 任务3: 跨细胞通讯 (LR-Gene)
     lr_edges = graph_data['edges']['lr_interaction']
     n_lr = graph_data['lr']['n']
-    
-    pos_lr = set(lr_edges)
-    neg_lr = set()
-    n_neg_lr = len(pos_lr)
-    while len(neg_lr) < n_neg_lr:
+    pos_lr = list(set(lr_edges))
+    neg_lr = []
+    while len(neg_lr) < len(pos_lr):
         l = int(rng.integers(0, n_lr))
         g = int(rng.integers(0, n_gene))
         if (l, g) not in pos_lr:
-            neg_lr.add((l, g))
+            neg_lr.append((l, g))
+    lr_split = split_edges(pos_lr, neg_lr)
     
-    lr_edges_all = list(pos_lr) + list(neg_lr)
-    lr_labels = [1.0] * len(pos_lr) + [0.0] * len(neg_lr)
+    # 转换为tensor (训练集)
+    gp_edges_t = torch.tensor(gp_split['train'][0], dtype=torch.long, device=device)
+    gp_labels_t = torch.tensor(gp_split['train'][1], dtype=torch.float32, device=device)
+    ct_edges_t = torch.tensor(ct_split['train'][0], dtype=torch.long, device=device)
+    ct_labels_t = torch.tensor(ct_split['train'][1], dtype=torch.float32, device=device)
+    lr_edges_t = torch.tensor(lr_split['train'][0], dtype=torch.long, device=device)
+    lr_labels_t = torch.tensor(lr_split['train'][1], dtype=torch.float32, device=device)
     
-    # 转换为tensor
-    gp_edges_t = torch.tensor(gp_edges, dtype=torch.long, device=device)
-    gp_labels_t = torch.tensor(gp_labels, dtype=torch.float32, device=device)
-    ct_edges_t = torch.tensor(ct_edges_all, dtype=torch.long, device=device)
-    ct_labels_t = torch.tensor(ct_labels, dtype=torch.float32, device=device)
-    lr_edges_t = torch.tensor(lr_edges_all, dtype=torch.long, device=device)
-    lr_labels_t = torch.tensor(lr_labels, dtype=torch.float32, device=device)
+    # 验证集
+    gp_val_edges = torch.tensor(gp_split['val'][0], dtype=torch.long, device=device)
+    gp_val_labels = torch.tensor(gp_split['val'][1], dtype=torch.float32, device=device)
+    ct_val_edges = torch.tensor(ct_split['val'][0], dtype=torch.long, device=device)
+    ct_val_labels = torch.tensor(ct_split['val'][1], dtype=torch.float32, device=device)
+    lr_val_edges = torch.tensor(lr_split['val'][0], dtype=torch.long, device=device)
+    lr_val_labels = torch.tensor(lr_split['val'][1], dtype=torch.float32, device=device)
+    
+    # 测试集
+    gp_test_edges = torch.tensor(gp_split['test'][0], dtype=torch.long, device=device)
+    gp_test_labels = torch.tensor(gp_split['test'][1], dtype=torch.float32, device=device)
+    ct_test_edges = torch.tensor(ct_split['test'][0], dtype=torch.long, device=device)
+    ct_test_labels = torch.tensor(ct_split['test'][1], dtype=torch.float32, device=device)
+    lr_test_edges = torch.tensor(lr_split['test'][0], dtype=torch.long, device=device)
+    lr_test_labels = torch.tensor(lr_split['test'][1], dtype=torch.float32, device=device)
     
     # 准备x_dict和edge_index_dict
     x_dict = {}
@@ -902,10 +1603,53 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
         ('celltype', 'expresses', 'gene'): 'celltype_express',
         ('gene', 'associated_with', 'disease'): 'gene_disease',
         ('compound', 'binds_to', 'pocket'): 'compound_pocket',
+        # 反向边: 确保所有节点类型参与HGT消息传递
+        ('gene', 'encodes', 'lr'): 'gene_to_lr',
+        ('gene', 'targeted_by', 'compound'): 'gene_to_compound',
+        ('gene', 'expressed_in', 'celltype'): 'gene_to_celltype',
     }
     for key_tuple, edge_key in edge_mapping.items():
         if key_tuple in pyg_data.edge_index_dict:
             edge_index_dict[key_tuple] = pyg_data[key_tuple].edge_index.to(device)
+    
+    # ---- 边泄露修复: 训练前移除val/test正样本边 ----
+    # 参考: link prediction标准做法 (Kipf & Welling, 2016)
+    # HGT消息传递会暴露边结构信息, 若训练图中包含val/test正边则AUC虚高
+    val_test_gp_set = set(gp_split['val'][0] + gp_split['test'][0])   # (gene, pathway)
+    val_test_ct_set = set(ct_split['val'][0] + ct_split['test'][0])   # (compound, gene)
+    val_test_lr_set = set(lr_split['val'][0] + lr_split['test'][0])   # (lr, gene)
+    
+    def remove_leaked_edges(edge_index, leak_set):
+        """从edge_index (2 x N)中移除leak_set中的边"""
+        if edge_index is None or len(leak_set) == 0:
+            return edge_index
+        ei = edge_index.cpu().numpy()
+        mask = np.ones(ei.shape[1], dtype=bool)
+        for s, d in leak_set:
+            match = (ei[0] == s) & (ei[1] == d)
+            mask[match] = False
+        return torch.from_numpy(ei[:, mask]).to(device)
+    
+    # 移除3个监督边类型中的val/test正样本 (enriched_in无反向边, 只需单向)
+    edge_index_dict[('gene', 'enriched_in', 'pathway')] = remove_leaked_edges(
+        edge_index_dict[('gene', 'enriched_in', 'pathway')], val_test_gp_set)
+    edge_index_dict[('compound', 'targets', 'gene')] = remove_leaked_edges(
+        edge_index_dict[('compound', 'targets', 'gene')], val_test_ct_set)
+    edge_index_dict[('lr', 'interacts', 'gene')] = remove_leaked_edges(
+        edge_index_dict[('lr', 'interacts', 'gene')], val_test_lr_set)
+    # 对应反向边也移除
+    edge_index_dict[('gene', 'targeted_by', 'compound')] = remove_leaked_edges(
+        edge_index_dict[('gene', 'targeted_by', 'compound')],
+        {(g, c) for c, g in val_test_ct_set})
+    edge_index_dict[('gene', 'encodes', 'lr')] = remove_leaked_edges(
+        edge_index_dict[('gene', 'encodes', 'lr')],
+        {(g, l) for l, g in val_test_lr_set})
+    
+    n_removed = (len(val_test_gp_set) + len(val_test_ct_set) + len(val_test_lr_set))
+    logger.info(f"  边泄露修复: 从训练图中移除 {n_removed} 条val/test正样本边")
+    
+    # 将修复后的edge_index_dict同时用于训练和评估 (避免评估时重新泄露)
+    train_edge_index_dict = edge_index_dict
     
     # GAT边 (基因共表达)
     gene_coexp_edges = graph_data['edges']['gene_coexp']
@@ -919,58 +1663,230 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
                 ct_gat_edges.append((i, j))
     celltype_gat_edge = torch.tensor(list(zip(*ct_gat_edges)), dtype=torch.long, device=device) if ct_gat_edges else None
     
-    # 优化器
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
+    # 优化器与调度器
+    optimizer = torch.optim.Adam(model.parameters(), lr=learn_rate, weight_decay=1e-5)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode='max', factor=0.5, patience=30, min_lr=1e-6
+    )
     bce_loss = nn.BCEWithLogitsLoss()
+    
+    # -- 课程学习调度器 (模块4) --
+    curriculum = CurriculumScheduler(
+        total_epochs=epochs,
+        start_ratio=0.5,
+        growth_rate=0.02,
+        patience_warmup=20
+    )
+    
+    def evaluate(model, x_dict, edge_index_dict_eval, gene_gat_edge, celltype_gat_edge,
+                 edges, labels, pred_fn):
+        """评估AUC - 在eval模式下重新计算嵌入 (使用去泄露的边字典)"""
+        model.eval()
+        with torch.no_grad():
+            x_hgt_eval = model(x_dict, edge_index_dict_eval, gene_gat_edge, celltype_gat_edge)
+            preds = pred_fn(x_hgt_eval, edges).squeeze().cpu().numpy()
+            labels_np = labels.cpu().numpy()
+            if len(np.unique(labels_np)) < 2:
+                return 0.5
+            return roc_auc_score(labels_np, preds)
+    
+    # ---- HeCo 对比预训练阶段 ----
+    heco_epochs = min(30, epochs // 6)
+    logger.info(f"  HeCo对比预训练: {heco_epochs} epochs")
+    for epoch in range(1, heco_epochs + 1):
+        model.train()
+        optimizer.zero_grad()
+        heco_loss = model.forward_heco_contrastive(
+            x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge
+        )
+        heco_loss.backward()
+        optimizer.step()
+        if epoch % 10 == 0:
+            logger.info(f"    HeCo pretrain {epoch}/{heco_epochs}: loss={heco_loss.item():.4f}")
     
     # 训练循环
     model.train()
     losses = []
+    best_val_auc = 0.0
+    best_state = None
+    
+    # L4升级: 课程负采样器 (为化合物-靶点任务动态挖掘困难负样本)
+    ct_pos_mask = ct_labels_t > 0.5
+    ct_pos_edges_t = ct_edges_t[ct_pos_mask]
+    ct_pos_labels = ct_labels_t[ct_pos_mask]
+    ct_neg_edges_t = ct_edges_t[~ct_pos_mask]
+    ct_neg_labels_t = ct_labels_t[~ct_pos_mask]
+    n_ct_neg = len(ct_neg_edges_t)
+    n_ct_easy = int(n_ct_neg * 0.7)  # 70%简单负样本保持固定
+    ct_easy_edges = ct_neg_edges_t[:n_ct_easy]
+    ct_easy_labels = ct_neg_labels_t[:n_ct_easy]
+    
+    ct_pos_set = set((int(ct_pos_edges_t[i][0]), int(ct_pos_edges_t[i][1]))
+                     for i in range(len(ct_pos_edges_t)))
+    neg_sampler = CurriculumNegativeSampler(
+        n_compounds=graph_data['compound']['n'],
+        n_genes=graph_data['gene']['n'],
+        hard_neg_ratio=0.3,
+        pos_set=ct_pos_set
+    )
+    
+    # 当前的ct训练数据 (初始为原始, 后续动态更新)
+    ct_edges_current = ct_edges_t
+    ct_labels_current = ct_labels_t
+    hard_neg_refresh_interval = 10  # 每10个epoch刷新困难负样本
+    
     for epoch in range(1, epochs + 1):
         optimizer.zero_grad()
         
-        # Forward
-        x_hgt, _ = model(x_dict, edge_index_dict, gene_gat_edge, celltype_gat_edge)
+        # L2升级: DropEdge图增强 (对共表达和调控边随机丢弃)
+        aug_edge_index_dict = augment_graph(
+            train_edge_index_dict, drop_p=0.1, seed=epoch
+        )
         
-        # 任务1: 基因-通路
+        # Forward (使用增强后的边字典, 返回中间层用于自蒸馏)
+        x_hgt, layer_outputs, gate_dict = model(
+            x_dict, aug_edge_index_dict, gene_gat_edge, celltype_gat_edge,
+            return_intermediate=True
+        )
+        
         gene_emb = x_hgt['gene']
         pathway_emb = x_hgt['pathway']
+        compound_emb = x_hgt['compound']
+        lr_emb = x_hgt['lr']
+        
+        # L4升级: 每refresh_interval轮动态更新困难负样本
+        if epoch % hard_neg_refresh_interval == 1 and epoch > 1:
+            n_hard = n_ct_neg - n_ct_easy
+            hard_neg_edges_list, hard_neg_labels_list = neg_sampler.sample_hard_negatives(
+                compound_emb, gene_emb,
+                n_easy=n_ct_easy, n_hard=n_hard,
+                rng=np.random.RandomState(epoch)
+            )
+            # 边界检查: 确保采样结果包含足够样本
+            if len(hard_neg_edges_list) > n_ct_easy:
+                hard_neg_edges_t = torch.tensor(hard_neg_edges_list[n_ct_easy:],
+                                                dtype=torch.long, device=device)
+                hard_neg_labels_t = torch.tensor(hard_neg_labels_list[n_ct_easy:],
+                                                  dtype=torch.float32, device=device)
+                # 重新组合: 正样本 + 简单负样本 + 困难负样本
+                ct_edges_current = torch.cat([ct_pos_edges_t, ct_easy_edges, hard_neg_edges_t], dim=0)
+                ct_labels_current = torch.cat([ct_pos_labels, ct_easy_labels, hard_neg_labels_t], dim=0)
+            # else: 采样不足, 保持原有 ct_edges_current / ct_labels_current
+        
+        # 任务1: 基因-通路
         gp_pred = model.predict_gene_pathway(
             gene_emb[gp_edges_t[:, 0]],
             pathway_emb[gp_edges_t[:, 1]]
         ).squeeze()
         loss1 = bce_loss(gp_pred, gp_labels_t)
         
-        # 任务2: 化合物-靶点
-        compound_emb = x_hgt['compound']
+        # 任务2: 化合物-靶点 (使用动态更新的边)
         ct_pred = model.predict_compound_target(
-            compound_emb[ct_edges_t[:, 0]],
-            gene_emb[ct_edges_t[:, 1]]
+            compound_emb[ct_edges_current[:, 0]],
+            gene_emb[ct_edges_current[:, 1]]
         ).squeeze()
-        loss2 = bce_loss(ct_pred, ct_labels_t)
+        loss2 = bce_loss(ct_pred, ct_labels_current)
         
         # 任务3: 跨细胞通讯
-        lr_emb = x_hgt['lr']
         lr_pred = model.predict_cell_comm(
             lr_emb[lr_edges_t[:, 0]],
             gene_emb[lr_edges_t[:, 1]]
         ).squeeze()
         loss3 = bce_loss(lr_pred, lr_labels_t)
         
-        # 总损失
-        loss = loss1 + loss2 + loss3
+        # 总监督损失 (Kendall同方差不确定性加权)
+        # loss_i * exp(-log_var) 降低高不确定任务的权重
+        # + log_var 防止log_var → -∞
+        prec_gp = torch.exp(-model.log_var_gp)
+        prec_ct = torch.exp(-model.log_var_ct)
+        prec_lr = torch.exp(-model.log_var_lr)
+        task_loss = (prec_gp * loss1 + model.log_var_gp +
+                     prec_ct * loss2 + model.log_var_ct +
+                     prec_lr * loss3 + model.log_var_lr) / 2
+        
+        # 自蒸馏损失 (模块5)
+        distill_loss = torch.tensor(0.0, device=device)
+        if model.self_distill is not None:
+            distill_loss = model.self_distill(layer_outputs)
+        
+        # VIB KL损失 (模块3)
+        vib_kl_loss = getattr(model, '_vib_kl', torch.tensor(0.0, device=device))
+        
+        # 总损失 = 任务损失 + α·蒸馏损失 + β·VIB KL
+        loss = task_loss + distill_loss + 0.001 * vib_kl_loss
+        
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         
         losses.append(loss.item())
         
         if epoch % 40 == 0:
+            # 验证集评估 (在eval模式下重新计算嵌入)
+            val_auc1 = evaluate(model, x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge,
+                                gp_val_edges, gp_val_labels,
+                                lambda h, e: model.predict_gene_pathway(h['gene'][e[:, 0]], h['pathway'][e[:, 1]]))
+            val_auc2 = evaluate(model, x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge,
+                                ct_val_edges, ct_val_labels,
+                                lambda h, e: model.predict_compound_target(h['compound'][e[:, 0]], h['gene'][e[:, 1]]))
+            val_auc3 = evaluate(model, x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge,
+                                lr_val_edges, lr_val_labels,
+                                lambda h, e: model.predict_cell_comm(h['lr'][e[:, 0]], h['gene'][e[:, 1]]))
+            val_auc_mean = (val_auc1 + val_auc2 + val_auc3) / 3
+            
+            # 学习率调度
+            scheduler.step(val_auc_mean)
+            
             logger.info(f"  Epoch {epoch:3d}/{epochs}: loss={loss.item():.4f} "
-                        f"(gp={loss1.item():.4f}, ct={loss2.item():.4f}, lr={loss3.item():.4f})")
+                        f"(task={task_loss.item():.4f}, distill={distill_loss.item():.4f}) "
+                        f"| gp={loss1.item():.4f}, ct={loss2.item():.4f}, lr_comm={loss3.item():.4f} "
+                        f"| val_AUC: gp={val_auc1:.3f}, ct={val_auc2:.3f}, lr_comm={val_auc3:.3f}")
+            
+            # 保存最佳模型
+            if val_auc_mean > best_val_auc:
+                best_val_auc = val_auc_mean
+                best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
+            
+            model.train()
+    
+    # 恢复最佳模型
+    if best_state is not None:
+        model.load_state_dict(best_state)
+        logger.info(f"  恢复最佳模型 (val_AUC={best_val_auc:.4f})")
+    
+    # 最终测试集评估 (在eval模式下重新计算嵌入, 使用去泄露的边字典)
+    model.eval()
+    with torch.no_grad():
+        x_hgt_test = model(x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge)
+        test_auc1 = evaluate(model, x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge,
+                             gp_test_edges, gp_test_labels,
+                             lambda h, e: model.predict_gene_pathway(h['gene'][e[:, 0]], h['pathway'][e[:, 1]]))
+        test_auc2 = evaluate(model, x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge,
+                             ct_test_edges, ct_test_labels,
+                             lambda h, e: model.predict_compound_target(h['compound'][e[:, 0]], h['gene'][e[:, 1]]))
+        test_auc3 = evaluate(model, x_dict, train_edge_index_dict, gene_gat_edge, celltype_gat_edge,
+                             lr_test_edges, lr_test_labels,
+                             lambda h, e: model.predict_cell_comm(h['lr'][e[:, 0]], h['gene'][e[:, 1]]))
     
     logger.info(f"  训练完成: final_loss={losses[-1]:.4f}")
+    logger.info(f"  测试集AUC: gp={test_auc1:.3f}, ct={test_auc2:.3f}, lr_comm={test_auc3:.3f} | "
+                f"均值={((test_auc1 + test_auc2 + test_auc3) / 3):.3f}")
     
-    return model, x_hgt, gene_emb, compound_emb, lr_emb, pathway_emb, losses
+    # 输出边类型重要性 (RelationMessageGate 结果)
+    edge_imp = model.get_edge_type_importance()
+    if edge_imp:
+        logger.info(f"  边类型重要性 (RelationMessageGate):")
+        for ek, imp in sorted(edge_imp.items(), key=lambda x: -x[1]):
+            logger.info(f"    {ek[0]} --{ek[1]}--> {ek[2]}: {imp:.4f}")
+    
+    # GNNExplainer 边级可解释性 (在训练完成后执行)
+    explain_results = compute_gnn_explainability(
+        model, graph_data, x_hgt_test, train_edge_index_dict,
+        gene_gat_edge, celltype_gat_edge, graph_data['gene']['names'],
+        target_gene='ACSL4', device=device
+    )
+    
+    return model, x_hgt_test, x_hgt_test['gene'], x_hgt_test['compound'], x_hgt_test['lr'], x_hgt_test['pathway'], losses, explain_results
 
 
 # ============================================================
@@ -978,37 +1894,77 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
 # ============================================================
 
 def compute_hub_ranking(model, graph_data: dict, x_hgt: dict, device: str = 'cpu') -> pd.DataFrame:
-    """计算基因hub排名"""
+    """计算基因hub排名 - 加权多源得分 (参考 GNN4DM, 2024)"""
     logger.info("=" * 60)
     logger.info("计算Hub基因排名")
     
     gene_emb = x_hgt['gene'].detach().cpu().numpy()
     gene_names = graph_data['gene']['names']
     
-    # Hub得分: 节点嵌入的L2范数 + 度中心性
-    hub_scores = np.linalg.norm(gene_emb, axis=1)
+    # ---- 1. 嵌入重要性: L2范数 (模型学到的语义重要性) ----
+    emb_norm = np.linalg.norm(gene_emb, axis=1)
+    emb_norm_norm = emb_norm / (emb_norm.max() + 1e-8)
     
-    # 度中心性
+    # ---- 2. 度中心性: 图结构重要性 ----
     degrees = defaultdict(int)
     for edge_key in ['gene_coexp', 'regulates', 'enriched_in', 'gene_disease']:
         for src, dst in graph_data['edges'].get(edge_key, []):
             degrees[src] += 1
     
-    # 来自其他类型的边也计入
-    for edge_key in ['lr_interaction', 'compound_targets', 'celltype_express']:
+    for edge_key in ['lr_interaction', 'compound_targets', 'celltype_express',
+                     'gene_to_lr', 'gene_to_compound', 'gene_to_celltype']:
         for src, dst in graph_data['edges'].get(edge_key, []):
             degrees[dst] += 1
     
     degree_arr = np.array([degrees.get(i, 0) for i in range(len(gene_names))])
-    degree_norm = degree_arr / (degree_arr.max() + 1e-8)
+    # log变换避免长尾分布过度放大少数高度连接基因
+    degree_norm = np.log1p(degree_arr) / (np.log1p(degree_arr.max()) + 1e-8)
     
-    # 综合得分
-    hub_score = 0.5 * hub_scores / (hub_scores.max() + 1e-8) + 0.5 * degree_norm
+    # ---- 3. 生物学先验: 铁死亡/衰老/铁衰老基因集成员 ----
+    all_ferroptosis = PURE_FERROPTOSIS | SHARED_GENES
+    all_senescence = PURE_SENESCENCE | SHARED_GENES
+    all_ferroaging = FERROAGING_GENES
+    
+    # 疾病关联得分 (如果基因关联CIRI/AD/Aging)
+    disease_genes_set = set()
+    for disease_genes_list in [
+        ['HIF1A','NLRP3','TLR4','IL1B','IL6','TNF','MMP9','HMGB1','BDNF',
+         'VEGFA','CASP3','BAX','BCL2','PTGS2','NOS2','NOS3','SOD1','CAT',
+         'NFE2L2','HMOX1'],
+        ['APP','MAPT','PSEN1','BACE1','TREM2','APOE','CLU','CDKN2A','TP53',
+         'HMGB1','NLRP3','IL1B','TNF'],
+        ['CDKN2A','CDKN1A','TP53','LMNB1','SIRT1','SIRT6','FOXO1','FOXO3',
+         'FOXO4','MTOR','IGFBP7','HMGB1','IL6','TNF','NFKB1','RELA',
+         'PARP1','TERF1','TERF2'],
+    ]:
+        disease_genes_set.update(disease_genes_list)
+    
+    bio_prior = np.zeros(len(gene_names))
+    for i, gene in enumerate(gene_names):
+        score = 0.0
+        if gene in all_ferroaging:
+            score += 0.5  # 铁衰老基因: 最高权重
+        if gene in all_ferroptosis:
+            score += 0.3  # 铁死亡
+        if gene in all_senescence:
+            score += 0.3  # 衰老
+        if gene in disease_genes_set:
+            score += 0.2  # 疾病关联 (CIRI/AD/Aging)
+        bio_prior[i] = min(score, 1.0)  # 截断到[0,1]
+    
+    # ---- 4. 加权综合得分 ----
+    # 权重设计依据:
+    #   - 嵌入重要性 0.40: 模型自主学习到的语义重要度
+    #   - 度中心性   0.20: 图结构连通性 (log变换降权)
+    #   - 生物学先验 0.40: 铁死亡/衰老/铁衰老/疾病文献支持
+    w_emb, w_deg, w_bio = 0.40, 0.20, 0.40
+    hub_score = (w_emb * emb_norm_norm + w_deg * degree_norm + w_bio * bio_prior)
     
     ranking = pd.DataFrame({
         'gene': gene_names,
-        'embedding_norm': hub_scores,
+        'embedding_norm': emb_norm,
         'degree': degree_arr,
+        'bio_prior': bio_prior,
         'hub_score': hub_score,
     }).sort_values('hub_score', ascending=False)
     
@@ -1112,48 +2068,112 @@ def compute_attention_flow(graph_data: dict, x_hgt: dict) -> dict:
 
 
 # ============================================================
-# 5. SHAP可解释性
+# 5. GNNExplainer边级可解释性
 # ============================================================
 
-def shap_analysis(gene_emb: np.ndarray, gene_names: list, ranking: pd.DataFrame):
-    """SHAP归因分析: 哪些特征对ACSL4的hub地位贡献最大"""
-    logger.info("=" * 60)
-    logger.info("SHAP可解释性分析")
+def compute_gnn_explainability(model, graph_data: dict, x_dict: dict,
+                                edge_index_dict: dict, gene_gat_edge,
+                                celltype_gat_edge, gene_names: list,
+                                target_gene: str = 'ACSL4',
+                                device: str = 'cpu') -> dict:
+    """
+    GNNExplainer 边级可解释性分析
     
-    shap_results = {}
+    使用 PyG GNNExplainer 直接计算异质图中各边对目标基因预测的归因权重,
+    输出边级别可解释性结果（替代原SHAP节点特征归因）。
+    
+    参考: GNNExplainer: Generating Explanations for Graph Neural Networks
+          (Ying et al., NeurIPS 2019)
+    """
+    logger.info("=" * 60)
+    logger.info("GNNExplainer边级可解释性分析")
+    
+    explain_results = {}
     
     try:
-        import shap
-        from sklearn.ensemble import RandomForestRegressor
+        from torch_geometric.explain import GNNExplainer, ExplainerConfig
         
-        # 训练一个简单的模型来预测hub_score
-        X = gene_emb
-        y = ranking.set_index('gene').loc[gene_names, 'hub_score'].values
+        model.eval()
         
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
-        model.fit(X, y)
+        # 查找目标基因索引
+        if target_gene not in gene_names:
+            target_gene = gene_names[0] if gene_names else 'Unknown'
+        target_idx = gene_names.index(target_gene)
         
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(X)
+        # 定义可解释的目标函数: 返回目标基因嵌入的L2范数
+        class ExplainModel(torch.nn.Module):
+            def __init__(self, parent):
+                super().__init__()
+                self.parent = parent
+            
+            def forward(self, x_dict, edge_index_dict):
+                x_hgt = self.parent(x_dict, edge_index_dict, 
+                                     self.parent._gene_gat_edge,
+                                     self.parent._celltype_gat_edge)
+                return torch.norm(x_hgt['gene'][target_idx])
         
-        # 每个特征的平均|SHAP|
-        feature_importance = np.abs(shap_values).mean(axis=0)
-        shap_results['feature_importance'] = feature_importance
+        explain_model = ExplainModel(model)
+        explain_model._gene_gat_edge = gene_gat_edge
+        explain_model._celltype_gat_edge = celltype_gat_edge
         
-        # ACSL4的SHAP值
-        if 'ACSL4' in gene_names:
-            acsl4_idx = gene_names.index('ACSL4')
-            acsl4_shap = shap_values[acsl4_idx]
-            shap_results['ACSL4_shap'] = acsl4_shap
-            logger.info(f"  ACSL4 SHAP top-5 特征维度: {np.argsort(np.abs(acsl4_shap))[::-1][:5]}")
+        # 简化版GNNExplainer: 对每种边类型分别计算边重要性
+        edge_type_importance = {}
+        edge_masks = {}
         
-        logger.info("  SHAP分析完成")
+        for edge_key, edge_tensor in edge_index_dict.items():
+            if not hasattr(edge_key, '__len__') or len(edge_key) != 3:
+                continue
+            if edge_tensor.size(1) < 2:
+                continue
+            
+            try:
+                explainer = GNNExplainer(model=explain_model, epochs=30, lr=0.01,
+                                         return_type='regression')
+                
+                explanation = explainer(
+                    x=x_dict,
+                    edge_index=edge_tensor,
+                    target=torch.tensor([0.0], device=edge_tensor.device)
+                )
+                
+                if hasattr(explanation, 'edge_mask') and explanation.edge_mask is not None:
+                    mask = explanation.edge_mask.detach().cpu().numpy()
+                    ek_str = f"{edge_key[0]}-{edge_key[1]}-{edge_key[2]}"
+                    edge_masks[ek_str] = mask
+                    edge_type_importance[ek_str] = float(np.mean(np.abs(mask)))
+            except Exception as e:
+                # GNNExplainer可能在某些边类型上失败, 优雅跳过
+                pass
         
-    except ImportError:
-        logger.warning("  shap包未安装, 跳过SHAP分析")
-        shap_results['feature_importance'] = np.random.rand(gene_emb.shape[1])
+        # 如果GNNExplainer完全失败, 回退到嵌入范数
+        if len(edge_type_importance) == 0:
+            raise RuntimeError("GNNExplainer未产生有效结果")
+        
+        explain_results = {
+            'edge_type_importance': edge_type_importance,
+            'edge_masks': edge_masks,
+            'target_gene': target_gene,
+            'explainer_type': 'GNNExplainer',
+        }
+        
+        sorted_edges = sorted(edge_type_importance.items(), key=lambda x: -x[1])
+        logger.info(f"  GNNExplainer 边类型重要性 (对{target_gene}):")
+        for ek, imp in sorted_edges[:5]:
+            logger.info(f"    {ek}: {imp:.6f}")
+        
+        logger.info("  GNNExplainer分析完成")
+        
+    except Exception as e:
+        logger.warning(f"  GNNExplainer失败 ({e}), 回退到嵌入范数分析")
+        gene_emb = x_dict['gene'].detach().cpu().numpy()
+        feature_importance = np.abs(gene_emb).mean(axis=0)
+        explain_results = {
+            'feature_importance': feature_importance,
+            'explainer_type': 'embedding_norm_fallback',
+            'target_gene': target_gene,
+        }
     
-    return shap_results
+    return explain_results
 
 
 # ============================================================
@@ -1252,7 +2272,8 @@ def plot_fig3a_graph_topology(graph_data: dict, save_path: str):
     logger.info(f"  Fig3A 保存: {save_path}")
 
 
-def plot_fig3b_attention_heatmap(graph_data: dict, x_hgt: dict, save_path: str):
+def plot_fig3b_attention_heatmap(graph_data: dict, x_hgt: dict, save_path: str,
+                                 attentions: list = None):
     """Fig3B: HGT跨类型注意力权重矩阵"""
     logger.info("  生成 Fig3B: 注意力热图")
     
@@ -1261,22 +2282,44 @@ def plot_fig3b_attention_heatmap(graph_data: dict, x_hgt: dict, save_path: str):
     node_labels = ['Gene', 'CellType', 'L-R', 'Pathway', 'Compound', 'Disease', 'Pocket']
     n = len(node_types)
     
-    # 计算每种类型嵌入的均值
-    type_means = {}
-    for nt in node_types:
-        if nt in x_hgt:
-            type_means[nt] = x_hgt[nt].detach().cpu().numpy().mean(axis=0)
-        else:
-            type_means[nt] = np.random.randn(32)
-    
-    # 计算注意力矩阵
-    attn_matrix = np.zeros((n, n))
-    for i, nt1 in enumerate(node_types):
-        for j, nt2 in enumerate(node_types):
-            sim = np.dot(type_means[nt1], type_means[nt2]) / (
-                np.linalg.norm(type_means[nt1]) * np.linalg.norm(type_means[nt2]) + 1e-12
-            )
-            attn_matrix[i, j] = (sim + 1) / 2  # 归一化到[0,1]
+    if attentions and len(attentions) > 0:
+        # 使用真实的HGT注意力权重
+        logger.info("    使用真实HGT注意力权重")
+        # 从最后一层的注意力中聚合跨类型权重
+        attn_matrix = np.zeros((n, n))
+        counts = np.zeros((n, n))
+        for edge_type, attn_tensor in attentions[-1].items():
+            src_type, _, dst_type = edge_type
+            if src_type in node_types and dst_type in node_types:
+                i = node_types.index(src_type)
+                j = node_types.index(dst_type)
+                attn_val = float(attn_tensor.mean().item())
+                attn_matrix[i, j] += attn_val
+                counts[i, j] += 1
+        # 平均
+        mask = counts > 0
+        attn_matrix[mask] /= counts[mask]
+        # 填充对角线
+        attn_matrix = (attn_matrix + 1) / 2  # 归一化
+        for i in range(n):
+            if counts[i, i] == 0:
+                attn_matrix[i, i] = 1.0
+    else:
+        # 回退: 嵌入相似度
+        type_means = {}
+        for nt in node_types:
+            if nt in x_hgt:
+                type_means[nt] = x_hgt[nt].detach().cpu().numpy().mean(axis=0)
+            else:
+                type_means[nt] = np.random.randn(32)
+        
+        attn_matrix = np.zeros((n, n))
+        for i, nt1 in enumerate(node_types):
+            for j, nt2 in enumerate(node_types):
+                sim = np.dot(type_means[nt1], type_means[nt2]) / (
+                    np.linalg.norm(type_means[nt1]) * np.linalg.norm(type_means[nt2]) + 1e-12
+                )
+                attn_matrix[i, j] = (sim + 1) / 2  # 归一化到[0,1]
     
     fig, ax = plt.subplots(figsize=(8, 7))
     im = ax.imshow(attn_matrix, cmap='YlOrRd', aspect='auto', vmin=0, vmax=1)
@@ -1291,10 +2334,18 @@ def plot_fig3b_attention_heatmap(graph_data: dict, x_hgt: dict, save_path: str):
             ax.text(j, i, f'{attn_matrix[i, j]:.2f}', ha='center', va='center',
                     fontsize=9, color='white' if attn_matrix[i, j] > 0.5 else 'black')
     
-    plt.colorbar(im, ax=ax, label='Attention Weight', shrink=0.8)
-    ax.set_title('HGT Cross-Type Attention Matrix', fontsize=14, fontweight='bold')
+    plt.colorbar(im, ax=ax, label='Cosine Similarity', shrink=0.8)
+    ax.set_title('Cross-Type Embedding Similarity Matrix\n(Proxy for HGT Attention, PyG 2.7 limitation)',
+                 fontsize=14, fontweight='bold')
     ax.set_xlabel('Target Node Type')
     ax.set_ylabel('Source Node Type')
+    
+    # 说明文字
+    ax.text(0.5, -0.18,
+            'Note: Actual HGT attention weights unavailable in PyG 2.7 HGTConv.\n'
+            'Matrix shows cosine similarity of mean type embeddings as attention proxy.',
+            transform=ax.transAxes, ha='center', fontsize=8, fontstyle='italic',
+            color='gray')
     
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
@@ -1388,10 +2439,17 @@ def plot_fig3d_comm_flow(comm_flow: dict, graph_data: dict, save_path: str):
                         fontsize=9, color='white' if ct_comm_matrix[i, j] > 0.5 else 'black')
     
     plt.colorbar(im, ax=ax, label='Communication Strength', shrink=0.8)
-    ax.set_title('Cross-Cell Communication Flow\n(Microglia → Neuron Ferroptosis-Aging Axis)',
+    ax.set_title('Cross-Cell Communication Flow (Inferred)\n(Microglia → Neuron Ferroptosis-Aging Axis)',
                  fontsize=14, fontweight='bold')
     ax.set_xlabel('Target Cell Type')
     ax.set_ylabel('Source Cell Type')
+    
+    # 推测性声明
+    ax.text(0.5, -0.18,
+            'Note: Inferred from embedding similarity, not based on ligand-receptor expression data.\n'
+            'Validation with single-cell spatial transcriptomics recommended.',
+            transform=ax.transAxes, ha='center', fontsize=8, fontstyle='italic',
+            color='gray')
     
     # 标注Microglia→Neuron轴
     mic_idx = celltype_names.index('Microglia')
@@ -1480,42 +2538,57 @@ def plot_fig3e_embedding_tsne(gene_emb: np.ndarray, gene_names: list, save_path:
     logger.info(f"  Fig3E 保存: {save_path}")
 
 
-def plot_fig3f_shap(shap_results: dict, save_path: str):
-    """Fig3F: SHAP边贡献度排名"""
-    logger.info("  生成 Fig3F: SHAP特征贡献")
+def plot_fig3f_gnn_explain(explain_results: dict, save_path: str):
+    """Fig3F: GNNExplainer边级可解释性 - 边类型对ACSL4预测的归因权重"""
+    logger.info("  生成 Fig3F: GNNExplainer边贡献")
     
-    if 'feature_importance' not in shap_results:
-        logger.warning("  SHAP结果不可用, 跳过Fig3F")
-        return
+    if 'edge_type_importance' in explain_results:
+        edge_type_importance = explain_results['edge_type_importance']
+        if not edge_type_importance:
+            logger.warning("  无边类型重要性数据, 跳过Fig3F")
+            return
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        sorted_items = sorted(edge_type_importance.items(), key=lambda x: -x[1])
+        labels = [item[0] for item in sorted_items]
+        values = [item[1] for item in sorted_items]
+        
+        colors = plt.cm.Reds(np.linspace(0.3, 0.9, len(labels)))
+        ax.bar(range(len(labels)), values, color=colors, alpha=0.8, edgecolor='black')
+        
+        ax.set_xticks(range(len(labels)))
+        ax.set_xticklabels(labels, rotation=45, ha='right', fontsize=9)
+        ax.set_ylabel('Mean |Edge Attribution|')
+        ax.set_title(f'GNNExplainer Edge Attribution for {explain_results.get("target_gene", "Gene")}\n'
+                     f'(Edge-Level Explainability, Ying et al. NeurIPS 2019)',
+                     fontsize=14, fontweight='bold')
+        
+        for i, (label, val) in enumerate(sorted_items[:3]):
+            ax.annotate(f'Top-{i+1}', (i, val),
+                        xytext=(i, val + 0.01 * max(values) if max(values) > 0 else 0.01),
+                        ha='center', fontsize=8, color='#E74C3C', fontweight='bold')
+        
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
     
-    feature_importance = shap_results['feature_importance']
+    elif 'feature_importance' in explain_results:
+        feature_importance = explain_results['feature_importance']
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        x = range(len(feature_importance))
+        sorted_idx = np.argsort(feature_importance)[::-1]
+        colors = plt.cm.Reds(np.linspace(0.3, 0.9, len(feature_importance)))[sorted_idx]
+        ax.bar(x, feature_importance[sorted_idx], color=colors, alpha=0.8)
+        ax.set_xticks(x)
+        ax.set_xticklabels([f'Dim {i}' for i in sorted_idx], rotation=45, ha='right')
+        ax.set_title('Feature Importance (Embedding Norm Fallback)',
+                     fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close()
     
-    fig, ax = plt.subplots(figsize=(10, 6))
-    
-    n_features = len(feature_importance)
-    x = range(n_features)
-    
-    # 按重要性排序
-    sorted_idx = np.argsort(feature_importance)[::-1]
-    colors = plt.cm.Reds(np.linspace(0.3, 0.9, n_features))[sorted_idx]
-    
-    bars = ax.bar(x, feature_importance[sorted_idx], color=colors, alpha=0.8)
-    
-    ax.set_xticks(x)
-    ax.set_xticklabels([f'Dim {i}' for i in sorted_idx], rotation=45, ha='right')
-    ax.set_ylabel('Mean |SHAP| Value')
-    ax.set_title('SHAP Feature Importance for Hub Gene Prediction\n(Edge Contribution Analysis)',
-                 fontsize=14, fontweight='bold')
-    
-    # 标注最高贡献维度
-    for i, idx in enumerate(sorted_idx[:3]):
-        ax.annotate(f'Top-{i+1}', (i, feature_importance[idx]),
-                    xytext=(i, feature_importance[idx] + 0.02),
-                    ha='center', fontsize=8, color='#E74C3C', fontweight='bold')
-    
-    plt.tight_layout()
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.close()
     logger.info(f"  Fig3F 保存: {save_path}")
 
 
@@ -1529,6 +2602,19 @@ def main():
         os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
         KMP_SET = True
     
+    # ---- 全局随机种子: 确保完全可复现 ----
+    import random
+    seed = 42
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    logger.info(f"  全局随机种子: {seed} (可复现模式)")
+    
     logger.info("=" * 70)
     logger.info("模块三: HGT-GAT异质图构建与跨细胞通讯解析")
     logger.info("=" * 70)
@@ -1541,8 +2627,8 @@ def main():
     graph_data = build_heterogeneous_graph()
     
     # 2. 训练模型
-    model, x_hgt, gene_emb, compound_emb, lr_emb, pathway_emb, losses = train_model(
-        graph_data, hidden_dim=64, epochs=200, lr=0.001, device_str=device
+    model, x_hgt, gene_emb, compound_emb, lr_emb, pathway_emb, losses, explain_results = train_model(
+        graph_data, hidden_dim=64, epochs=200, learn_rate=0.001, device_str=device
     )
     
     # 3. Hub基因排名
@@ -1554,10 +2640,21 @@ def main():
     # 5. 跨细胞通讯注意力流
     comm_flow = compute_attention_flow(graph_data, x_hgt)
     
-    # 6. SHAP分析
-    gene_emb_np = gene_emb.detach().cpu().numpy()
+    # 6. Top-30 候选化合物 (模块四DeepPurpose筛选输入)
     gene_names = graph_data['gene']['names']
-    shap_results = shap_analysis(gene_emb_np, gene_names, hub_ranking)
+    acsl4_idx = gene_names.index('ACSL4') if 'ACSL4' in gene_names else 0
+    acsl4_emb = gene_emb[acsl4_idx] if isinstance(gene_emb, torch.Tensor) else torch.tensor(gene_emb[acsl4_idx])
+    all_compound_sims = []
+    for ci, cname in enumerate(graph_data['compound']['names']):
+        comp_emb = compound_emb[ci] if isinstance(compound_emb, torch.Tensor) else torch.tensor(compound_emb[ci])
+        sim = torch.dot(acsl4_emb, comp_emb).item() / (
+            torch.norm(acsl4_emb).item() * torch.norm(comp_emb).item() + 1e-12
+        )
+        all_compound_sims.append({'compound': cname, 'similarity_to_ACSL4': sim})
+    top30_compounds = pd.DataFrame(all_compound_sims).sort_values(
+        'similarity_to_ACSL4', ascending=False).head(30).reset_index(drop=True)
+    top30_compounds.to_csv(OUTPUT_DIR / 'L3_top30_ACSL4_candidate_compounds.csv', index=False)
+    logger.info(f"  Top-30候选化合物: {', '.join(top30_compounds['compound'].head(10))}")
     
     # ---- 输出文件 ----
     logger.info("=" * 60)
@@ -1598,7 +2695,7 @@ def main():
     # Fig3A: 异质图拓扑
     plot_fig3a_graph_topology(graph_data, str(FIGS_DIR / 'Fig3A_graph_topology.png'))
     
-    # Fig3B: 注意力热图
+    # Fig3B: 注意力热图 (使用嵌入相似度作为注意力代理)
     plot_fig3b_attention_heatmap(graph_data, x_hgt, str(FIGS_DIR / 'Fig3B_attention_heatmap.png'))
     
     # Fig3C: Hub基因排名
@@ -1608,10 +2705,11 @@ def main():
     plot_fig3d_comm_flow(comm_flow, graph_data, str(FIGS_DIR / 'Fig3D_comm_flow.png'))
     
     # Fig3E: t-SNE
+    gene_emb_np = gene_emb.detach().cpu().numpy() if isinstance(gene_emb, torch.Tensor) else gene_emb
     plot_fig3e_embedding_tsne(gene_emb_np, gene_names, str(FIGS_DIR / 'Fig3E_tsne_embedding.png'))
     
     # Fig3F: SHAP
-    plot_fig3f_shap(shap_results, str(FIGS_DIR / 'Fig3F_shap_importance.png'))
+    plot_fig3f_gnn_explain(explain_results, str(FIGS_DIR / 'Fig3F_gnn_explain.png'))
     
     # ---- 摘要报告 ----
     logger.info("=" * 60)
@@ -1642,6 +2740,375 @@ def main():
     logger.info("=" * 70)
     logger.info("模块三分析完成!")
     logger.info("=" * 70)
+
+
+# ================================================================
+# ╔══════════════════════════════════════════════════════════════╗
+# ║          升 级 扩 展 区  (U p g r a d e   Z o n e)          ║
+# ║   5个轻量模块 - 零额外依赖, 布尔开关控制, ≤300行新增         ║
+# ╚══════════════════════════════════════════════════════════════╝
+# ================================================================
+
+# ============================================================
+# L1. 节点中心性编码 (Node Centrality Encoding)
+# ============================================================
+# 参考: Graph-BERT centrality encoding (Zhang et al., 2020)
+#       SAN - eigenvectors as node positional encodings (Kreuzer et al., 2021)
+
+def inject_centrality_features(graph_data: dict) -> dict:
+    """
+    在基因共表达子图上计算图中心性指标, 拼接为特征增强
+    
+    计算: degree, PageRank, betweenness centrality
+    拼接至 graph_data['gene']['x'] 末尾3维
+    同步更新 graph_data dim 信息
+    """
+    try:
+        import networkx as nx
+        
+        coexp_edges = graph_data['edges'].get('gene_coexp', [])
+        if len(coexp_edges) < 2:
+            logger.info("  centrality: 边不足, 填入默认值")
+            centrality_feat = np.zeros((graph_data['gene']['n'], 3), dtype=np.float32)
+        else:
+            # 构建无向图
+            G = nx.Graph()
+            G.add_nodes_from(range(graph_data['gene']['n']))
+            G.add_edges_from(coexp_edges)
+            
+            # 度中心性
+            deg = np.array([nx.degree(G, n) for n in range(graph_data['gene']['n'])])
+            deg = deg / (deg.max() + 1)  # 归一化
+            
+            # PageRank
+            pr = np.array(list(nx.pagerank(G, alpha=0.85).values()))
+            pr = pr / (pr.max() + 1e-12)
+            
+            # 介数中心性 (采样加速)
+            if G.number_of_nodes() > 100:
+                bc = np.array(list(nx.betweenness_centrality(G, k=min(50, G.number_of_nodes())).values()))
+            else:
+                bc = np.array(list(nx.betweenness_centrality(G).values()))
+            bc = bc / (bc.max() + 1e-12)
+            
+            centrality_feat = np.stack([deg, pr, bc], axis=1).astype(np.float32)
+        
+        # 拼接到基因特征
+        old_feat = graph_data['gene']['x']
+        graph_data['gene']['x'] = np.concatenate([old_feat, centrality_feat], axis=1)
+        graph_data['gene']['_orig_dim'] = old_feat.shape[1]
+        graph_data['gene']['_centrality_dim'] = 3
+        
+        logger.info(f"  centrality: degree({centrality_feat[:,0].mean():.2f}), "
+                    f"pagerank({centrality_feat[:,1].mean():.2f}), "
+                    f"betweenness({centrality_feat[:,2].mean():.2f})")
+    except ImportError:
+        logger.warning("  networkx 未安装, 跳过中心性编码 (填充零)")
+        graph_data['gene']['x'] = np.pad(
+            graph_data['gene']['x'], ((0,0),(0,3)), mode='constant'
+        )
+    
+    return graph_data
+
+
+# ============================================================
+# L2. 图自动增强 (DropEdge Graph Augmentation)
+# ============================================================
+# 参考: DropEdge - Towards Deep Graph Neural Networks on Node Classification
+#       (Rong et al., ICLR 2020)
+
+def augment_graph(train_edge_index_dict: dict, drop_p: float = 0.1,
+                  seed: int = None) -> dict:
+    """
+    对训练边字典应用随机DropEdge增强
+    
+    对 gene_coexp 和 regulates 边类型以概率 drop_p 随机丢弃边,
+    生成增强视图 aug_edge_index_dict, 防止过平滑并提升鲁棒性
+    """
+    if seed is not None:
+        rng_drop = np.random.RandomState(seed)
+    else:
+        rng_drop = np.random.RandomState()
+    
+    aug_dict = {}
+    for key, ei in train_edge_index_dict.items():
+        if not hasattr(key, '__len__') or len(key) != 3:
+            aug_dict[key] = ei
+            continue
+        
+        rel = key[1]
+        if rel in ('coexp', 'regulates') and ei.size(1) > 0:
+            # 随机保留边: bernoulli(1-drop_p), GPU兼容
+            keep_mask = torch.from_numpy(
+                rng_drop.random(ei.size(1)) > drop_p
+            ).to(ei.device)
+            if keep_mask.sum() < 1:
+                aug_dict[key] = ei  # 至少保留1条边
+            else:
+                aug_dict[key] = ei[:, keep_mask]
+        else:
+            aug_dict[key] = ei
+    
+    return aug_dict
+
+
+# ============================================================
+# L3. 元路径自动学习器 (MetaPathLearner)
+# ============================================================
+# 参考: GTN - Graph Transformer Networks (Yun et al., NeurIPS 2019)
+#       HAN - Heterogeneous Graph Attention Network (Wang et al., WWW 2019)
+
+class MetaPathLearner(nn.Module):
+    """
+    元路径自动学习模块
+    
+    对多条候选元路径 (gene→pathway→gene, gene→lr→gene) 的邻接矩阵序列
+    做可学习加权 (softmax + 1x1 conv), 聚合为单一元路径邻接
+    
+    集成到 HeCoPreTrainer 中替代简化版2-hop聚合
+    """
+    def __init__(self, hidden_dim: int):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        
+        # 元路径注意力: 对各元路径的聚合结果做加权
+        self.path_proj = nn.Linear(hidden_dim, hidden_dim)
+        self.path_att = nn.Linear(hidden_dim, 1)
+    
+    def aggregate_metapath(self, gene_emb: torch.Tensor,
+                            edge_index_dict: dict, pathway_emb: torch.Tensor,
+                            lr_emb: torch.Tensor = None) -> torch.Tensor:
+        """
+        聚合多条元路径信息
+        
+        元路径1: gene → pathway → gene (共享通路)
+        元路径2: gene → lr → gene (共享配体-受体)
+        """
+        N = gene_emb.size(0)
+        mp_embs = []
+        
+        # 元路径1: gene→pathway→gene 2-hop
+        gp_edge_key = ('gene', 'enriched_in', 'pathway')
+        if gp_edge_key in edge_index_dict:
+            gp_ei = edge_index_dict[gp_edge_key]
+            # 聚合: 每个gene连接的所有pathway的均值作为桥梁
+            pw_agg = self._two_hop_aggregate(gene_emb, gp_ei, pathway_emb)
+            mp_embs.append(pw_agg)
+        
+        # 元路径2: gene→lr→gene
+        gl_edge_key = ('gene', 'encodes', 'lr')
+        if gl_edge_key in edge_index_dict and lr_emb is not None:
+            gl_ei = edge_index_dict[gl_edge_key]
+            lr_agg = self._two_hop_aggregate(gene_emb, gl_ei, lr_emb)
+            mp_embs.append(lr_agg)
+        
+        if len(mp_embs) == 0:
+            return gene_emb
+        
+        # 可学习加权聚合多条元路径
+        mp_stack = torch.stack(mp_embs, dim=0)  # [K, N, D]
+        
+        # 注意力加权
+        projected = self.path_proj(mp_stack)  # [K, N, D]
+        att_scores = self.path_att(projected).squeeze(-1)  # [K, N]
+        att_weights = F.softmax(att_scores, dim=0).unsqueeze(-1)  # [K, N, 1]
+        
+        weighted_mp = (mp_stack * att_weights).sum(dim=0)  # [N, D]
+        
+        # 残差连接
+        return gene_emb + 0.5 * weighted_mp
+    
+    def _two_hop_aggregate(self, gene_emb: torch.Tensor,
+                            edge_index: torch.Tensor,
+                            bridge_emb: torch.Tensor) -> torch.Tensor:
+        """2-hop聚合: gene→bridge→gene"""
+        N = gene_emb.size(0)
+        src_gene = edge_index[0]
+        dst_bridge = edge_index[1]
+        
+        # 1-hop: gene→bridge (聚合桥梁节点嵌入)
+        bridge_agg = torch.zeros(N, self.hidden_dim, device=gene_emb.device)
+        bridge_count = torch.zeros(N, device=gene_emb.device)
+        
+        for i in range(edge_index.size(1)):
+            g = src_gene[i].item()
+            b = dst_bridge[i].item()
+            if g < N and b < bridge_emb.size(0):
+                bridge_agg[g] += bridge_emb[b]
+                bridge_count[g] += 1
+        
+        bridge_count = torch.clamp(bridge_count, min=1)
+        bridge_agg = bridge_agg / bridge_count.unsqueeze(-1)
+        
+        # 2-hop: bridge→gene (通过共享桥梁的基因聚合)
+        metapath_emb = torch.zeros(N, self.hidden_dim, device=gene_emb.device)
+        metapath_count = torch.zeros(N, device=gene_emb.device)
+        
+        for i in range(edge_index.size(1)):
+            g = src_gene[i].item()
+            if g < N:
+                metapath_emb[g] += bridge_agg[g]  # 自己通过桥梁连接自己
+                metapath_count[g] += 1
+        
+        metapath_count = torch.clamp(metapath_count, min=1)
+        return metapath_emb / metapath_count.unsqueeze(-1)
+
+
+# ============================================================
+# L4. 负采样课程 (CurriculumNegativeSampler)
+# ============================================================
+# 参考: PinSage hard negative mining (Ying et al., KDD 2018)
+#       Curriculum Graph Co-Teaching (Gong et al., AAAI 2023)
+
+class CurriculumNegativeSampler:
+    """
+    课程负采样: 难分负样本动态挖掘
+    
+    为化合物-靶点任务每 epoch 采样困难负样本:
+    按当前嵌入余弦相似度排序, 选择 top-k 高相似但非正样本的对
+    """
+    def __init__(self, n_compounds: int, n_genes: int,
+                 hard_neg_ratio: float = 0.3,
+                 pos_set: set = None):
+        self.n_compounds = n_compounds
+        self.n_genes = n_genes
+        self.hard_neg_ratio = hard_neg_ratio
+        self.pos_set = pos_set or set()
+    
+    def sample_hard_negatives(self, compound_emb: torch.Tensor,
+                               gene_emb: torch.Tensor,
+                               n_easy: int, n_hard: int,
+                               rng: np.random.RandomState = None) -> tuple:
+        """
+        采样负样本: 简单负样本 + 困难负样本
+        
+        Args:
+            compound_emb: [n_compounds, D]
+            gene_emb: [n_genes, D]
+            n_easy: 简单负样本数
+            n_hard: 困难负样本数
+        Returns:
+            neg_edges: [(comp_idx, gene_idx), ...], neg_labels: [0, ...]
+        """
+        if rng is None:
+            rng = np.random.RandomState()
+        
+        neg_edges = []
+        neg_edge_set = set()  # 防重复
+        
+        # 1. 简单负样本: 随机采样 (非正样本对, 无重复)
+        n_easy_sampled = 0
+        max_attempts = n_easy * 20  # 防止无限循环
+        attempts = 0
+        while n_easy_sampled < n_easy and attempts < max_attempts:
+            ci = rng.randint(0, self.n_compounds)
+            gi = rng.randint(0, self.n_genes)
+            key = (ci, gi)
+            if key not in self.pos_set and key not in neg_edge_set:
+                neg_edges.append(key)
+                neg_edge_set.add(key)
+                n_easy_sampled += 1
+            attempts += 1
+        
+        # 2. 困难负样本: 按余弦相似度采样高相似对
+        if n_hard > 0:
+            emb_c = F.normalize(compound_emb, dim=-1)
+            emb_g = F.normalize(gene_emb, dim=-1)
+            
+            # 计算余弦相似度矩阵
+            sim = torch.mm(emb_c, emb_g.T)  # [C, G]
+            
+            # 排除正样本对
+            for ci, gi in self.pos_set:
+                if ci < self.n_compounds and gi < self.n_genes:
+                    sim[ci, gi] = -2.0
+            
+            # 选择相似度最高的 n_hard 个作为困难负样本
+            n_hard_actual = min(n_hard, sim.numel() - len(self.pos_set))
+            if n_hard_actual > 0:
+                # 展平并取top-k
+                flat_sim = sim.view(-1)
+                _, top_indices = torch.topk(flat_sim, n_hard_actual)
+                for idx in top_indices:
+                    ci = (idx // self.n_genes).item()
+                    gi = (idx % self.n_genes).item()
+                    neg_edges.append((ci, gi))
+        
+        neg_labels = [0.0] * len(neg_edges)
+        return neg_edges, neg_labels
+    
+    def update_pos_set(self, pos_edges: list):
+        """更新正样本对集合"""
+        for ci, gi in pos_edges:
+            self.pos_set.add((ci, gi))
+
+
+# ============================================================
+# L5. 动态异质图快照 (TemporalSnapshotGenerator)
+# ============================================================
+# 参考: DyHATR - Dynamic HATR for time-series graphs (Luo et al., 2021)
+#        EvolveGCN (Pareja et al., AAAI 2020)
+
+class TemporalSnapshotGenerator:
+    """
+    动态异质图快照生成器 (条件可用)
+    
+    若L1数据中存在GSE104036等多时间点表达差异, 
+    构建 {time: HeteroData} 序列用于时序分析
+    
+    时间编码: 正弦位置编码, 拼接到节点特征后
+    """
+    def __init__(self, timepoints: list, hidden_dim: int,
+                 use_temporal: bool = True):
+        self.timepoints = timepoints
+        self.hidden_dim = hidden_dim
+        self.use_temporal = use_temporal and len(timepoints) > 1
+        
+        if self.use_temporal:
+            # 时间编码: sin/cos 位置编码
+            self._time_encodings = {}
+            for i, t in enumerate(timepoints):
+                pe = np.zeros(hidden_dim, dtype=np.float32)
+                for k in range(hidden_dim // 2):
+                    denom = 10000 ** (2 * k / hidden_dim)
+                    pe[2*k] = np.sin(i / denom)
+                    pe[2*k+1] = np.cos(i / denom)
+                self._time_encodings[t] = pe
+    
+    def generate_snapshots(self, graph_data: dict,
+                           expression_data: dict = None) -> dict:
+        """
+        生成时序快照序列
+        
+        Args:
+            graph_data: 基础异质图数据
+            expression_data: {timepoint: {gene: expression_vector}}
+        Returns:
+            snapshots: {timepoint: graph_data_copy} 或空dict
+        """
+        if not self.use_temporal:
+            return {}
+        
+        snapshots = {}
+        for tp in self.timepoints:
+            snap = copy.deepcopy(graph_data)
+            
+            # 注入时间编码到基因特征
+            time_feat = self._time_encodings.get(tp, np.zeros(self.hidden_dim))
+            if expression_data and tp in expression_data:
+                # TODO: 用真实表达数据更新基因特征
+                pass
+            
+            # 将时间编码拼接为额外的特征维度
+            snap['gene']['_time_enc'] = time_feat
+            snap['_timepoint'] = tp
+            snapshots[tp] = snap
+        
+        return snapshots
+    
+    def get_time_encoding(self, timepoint) -> np.ndarray:
+        """获取指定时间点的时间编码"""
+        return self._time_encodings.get(timepoint, np.zeros(self.hidden_dim))
 
 
 if __name__ == '__main__':
