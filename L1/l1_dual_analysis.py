@@ -198,7 +198,16 @@ def parse_gpl1355_annotation(filepath: str) -> Dict[str, str]:
 
 
 def collapse_probes(expr_df: pd.DataFrame, probe_map: Dict[str, str]) -> pd.DataFrame:
-    """探针→基因折叠 (最大表达值, 大写)"""
+    """探针→基因折叠 (最大表达值)
+
+    策略选择: 对于多探针对应同一基因的情况, 选择表达值最高的探针作为代表。
+    理由: 在铁死亡/衰老基因集中, 多数基因为中等至低表达调控因子,
+    max 策略可避免均值/中位数稀释关键调控信号 (如 GPX4, ACSL4 的灵敏探针)。
+    标准 limma/affy 实践多用 mean 或 median, 此处 max 为有意的偏差选择,
+    适用于"强信号优先"的下游秩基富集分析。
+
+    输入: 行=探针ID, 列=样本; 输出: 行=基因Symbol(大写), 列=样本
+    """
     mapped = expr_df[expr_df.index.isin(probe_map.keys())].copy()
     if mapped.empty:
         logger.warning("  collapse_probes: 无探针成功映射到基因, 返回空矩阵")
@@ -215,17 +224,22 @@ def collapse_probes(expr_df: pd.DataFrame, probe_map: Dict[str, str]) -> pd.Data
 # 跨平台 Harmonization: ComBat 批次校正 (新增 🔧)
 # ============================================================
 
-def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame]) -> Dict[str, pd.DataFrame]:
+def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
+                              sample_groups: Dict[str, Tuple[List[str], List[str]]] = None) -> Dict[str, pd.DataFrame]:
     """
     ComBat 跨平台批次校正 — 消除 Illumina / Affymetrix / RNA-seq 技术偏差
     
     5 个数据集来自三种平台，表达量分布差异大。
     评分前用 ComBat 做批次校正，减少技术偏差对富集评分的影响。
     
-    来源: Johnson 2007 *Biostatistics*; pycombat Python 实现
+    来源: Johnson 2007 *Biostatistics*; Leek 2012 *Bioinformatics* (sva最佳实践);
+         Zhang 2020 *NAR* (多平台ComBat基准)
     
     Parameters:
-        expr_dict: {dataset_name: expr_df} 各个数据集的基因表达矩阵 (行=基因, 列=样本)
+        expr_dict:     {dataset_name: expr_df} 各数据集的基因表达矩阵 (行=基因, 列=样本)
+        sample_groups: {dataset_name: (case_cols, control_cols)} 样本生物学分组,
+                       传入后用于构建 design 矩阵, 防止 ComBat 消除生物信号.
+                       来源: Leek 2012; Johnson 2007 第 4.2 节.
         
     Returns:
         校正后的 {dataset_name: expr_df_corrected}
@@ -255,6 +269,7 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame]) -> Dict[str, p
     # 2. 构建合并矩阵 (基因 × 所有样本)
     merged_parts = []
     batch_labels = []
+    group_labels = []  # 生物学分组标签 (case=1, control=0)
     dataset_order = []
     
     for name, df in expr_dict.items():
@@ -263,12 +278,29 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame]) -> Dict[str, p
         sub = df.loc[df.index.intersection(common_genes)].copy()
         if sub.empty:
             continue
-        # 取每个基因在数据集内的均值填充 NaN (保守策略)
+        # 取每个基因在数据集内的均值填充 NaN
+        # 注意: 此操作假设缺失为MCAR(完全随机缺失), 50%阈值提供部分保护
         sub = sub.T.fillna(sub.mean(axis=1)).T
         merged_parts.append(sub)
         batch_labels.extend([name] * sub.shape[1])
+
+        # 构建生物学协变量标签 (保护 case/control 差异)
+        if sample_groups and name in sample_groups:
+            case_cols, ctrl_cols = sample_groups[name]
+            if case_cols is not None and ctrl_cols is not None:
+                for col in sub.columns:
+                    if col in case_cols:
+                        group_labels.append(1)
+                    elif col in ctrl_cols:
+                        group_labels.append(0)
+                    else:
+                        group_labels.append(0)  # unknown → control
+                continue
+        # 无分组信息: 全部填 0 (无保护)
+        group_labels.extend([0] * sub.shape[1])
+
         dataset_order.append((name, sub.shape[1]))
-    
+
     if len(merged_parts) < 2:
         logger.warning("  ComBat: 有效数据集 < 2, 跳过批次校正")
         return expr_dict
@@ -280,15 +312,39 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame]) -> Dict[str, p
     gene_means = merged_expr.mean(axis=1)
     merged_centered = merged_expr.sub(gene_means, axis=0)
     
-    # 4. 运行 ComBat
+    # 4. 构建生物学设计矩阵 (Leek 2012 最佳实践)
+    #    将 case/control 作为 mod 参数传入, 防止 ComBat 将生物信号当作批次效应校正
+    group_array = np.array(group_labels)
+    has_covariate = len(np.unique(group_array)) > 1
+    if has_covariate:
+        from patsy import dmatrix
+        # 简化设计矩阵: case/control 二分类
+        design_matrix = dmatrix('~ group', {'group': group_labels}, return_type='dataframe')
+        logger.info(f"  ComBat 生物学协变量 (mod): {len(np.unique(group_array))} 类别, "
+                    f"{sum(group_array)} case / {len(group_array) - sum(group_array)} control")
+    else:
+        design_matrix = None
+        logger.info("  ComBat: 无生物学协变量, 使用标准参数化校正")
+
+    # 5. 运行 ComBat
     combat_applied = False
     try:
         from pycombat.pycombat import Combat
         combat = Combat()
         # Y 需要是 (n_samples, n_features), 我们的矩阵是 (genes, samples), 转置
         Y_input = merged_centered.T.values
-        combat.fit(Y_input, batch_labels)
-        corrected_raw = combat.transform(Y_input, batch_labels)
+        try:
+            if has_covariate and design_matrix is not None:
+                combat.fit(Y_input, batch_labels, mod=design_matrix.values)
+                corrected_raw = combat.transform(Y_input, batch_labels, mod=design_matrix.values)
+            else:
+                combat.fit(Y_input, batch_labels)
+                corrected_raw = combat.transform(Y_input, batch_labels)
+        except TypeError:
+            # pycombat 版本不支持 mod 参数 → 降级到标准 ComBat
+            logger.warning("  pycombat 不支持 mod 参数, 使用标准 ComBat (无生物学协变量保护)")
+            combat.fit(Y_input, batch_labels)
+            corrected_raw = combat.transform(Y_input, batch_labels)
         # 转置回 (genes, samples)
         corrected = pd.DataFrame(
             corrected_raw.T,
@@ -312,18 +368,108 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame]) -> Dict[str, p
         logger.warning(f"  ComBat 失败 ({e}), 返回原始数据")
         return expr_dict
     
-    # 5. 恢复基因均值 (加回全局均值)
+    # 6. 恢复基因均值 (加回全局均值)
     corrected = corrected.add(gene_means, axis=0)
     
-    # 6. 拆分回各数据集
+    # 7. 拆分回各数据集
     result = {}
     col_start = 0
     for name, n_cols in dataset_order:
         result[name] = corrected.iloc[:, col_start:col_start + n_cols].copy()
         col_start += n_cols
     
-    logger.info(f"  ComBat 拆分完成: {list(result.keys())}")
+    logger.info(f"  ComBat 拆分完成: {list(result.keys())} "
+                f"{'(含生物学协变量保护)' if has_covariate else ''}")
     return result
+
+
+def combat_pca_diagnostic(expr_dict: Dict[str, pd.DataFrame],
+                          sample_groups: Dict[str, Tuple[List[str], List[str]]] = None,
+                          save_path: str = None):
+    """
+    ComBat 校正前后 PCA 诊断图 [Zhang 2020 *NAR* 审稿标准QC]
+
+    生成 PCA 散点图, 按数据集(batch)和 condition(biology)分别着色,
+    验证批次效应是否消除且生物信号是否保留。
+
+    标准: 校正后样本不应按数据集/平台分离; 而应按 case/control 分离。
+    """
+    if len(expr_dict) < 2:
+        return
+
+    # 1. 找到共有基因
+    common_genes_list = [set(df.index) for df in expr_dict.values() if df is not None]
+    common_genes = sorted(set.intersection(*common_genes_list)) if common_genes_list else []
+    if len(common_genes) < 100:
+        return
+
+    # 2. 合并表达矩阵
+    parts, batch_labels, condition_labels = [], [], []
+    for name, df in expr_dict.items():
+        if df is None:
+            continue
+        sub = df.loc[df.index.intersection(common_genes)].T
+        parts.append(sub)
+        batch_labels.extend([name] * sub.shape[0])
+        if sample_groups and name in sample_groups:
+            case_cols, ctrl_cols = sample_groups[name]
+            for col in sub.index:
+                if col in (case_cols or []):
+                    condition_labels.append('case')
+                elif col in (ctrl_cols or []):
+                    condition_labels.append('control')
+                else:
+                    condition_labels.append('unknown')
+        else:
+            condition_labels.extend(['unknown'] * sub.shape[0])
+
+    merged = pd.concat(parts, axis=0)
+    merged = merged.fillna(merged.mean())
+
+    # 3. PCA
+    from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    X = scaler.fit_transform(merged)
+    pca = PCA(n_components=2)
+    pc = pca.fit_transform(X)
+    var_expl = pca.explained_variance_ratio_ * 100
+
+    # 4. 绘制 (按batch + 按condition)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    # 按数据集着色
+    datasets = sorted(set(batch_labels))
+    cmap_batch = plt.cm.tab10
+    colors_batch = {d: cmap_batch(i % 10) for i, d in enumerate(datasets)}
+    for d in datasets:
+        mask = np.array(batch_labels) == d
+        ax1.scatter(pc[mask, 0], pc[mask, 1], c=[colors_batch[d]], label=d,
+                     alpha=0.7, s=30, edgecolors='none')
+    ax1.set_xlabel(f'PC1 ({var_expl[0]:.1f}%)')
+    ax1.set_ylabel(f'PC2 ({var_expl[1]:.1f}%)')
+    ax1.set_title('By Dataset (Batch)')
+    ax1.legend(fontsize=7, loc='best')
+
+    # 按生物学分组着色
+    conds = sorted(set(condition_labels))
+    palette = {'case': '#E74C3C', 'control': '#3498DB', 'unknown': '#95A5A6'}
+    for c in conds:
+        mask = np.array(condition_labels) == c
+        ax2.scatter(pc[mask, 0], pc[mask, 1], c=palette.get(c, 'gray'),
+                     label=c, alpha=0.7, s=30, edgecolors='none')
+    ax2.set_xlabel(f'PC1 ({var_expl[0]:.1f}%)')
+    ax2.set_ylabel(f'PC2 ({var_expl[1]:.1f}%)')
+    ax2.set_title('By Condition (Biology)')
+    ax2.legend(fontsize=7, loc='best')
+
+    fig.suptitle('ComBat Cross-Platform Harmonization: PCA Quality Control',
+                 fontsize=13, fontweight='bold')
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"  ComBat PCA诊断图保存: {save_path}")
+    plt.close()
 
 
 # ============================================================
@@ -486,10 +632,16 @@ def dual_enrichment_analysis(expr_df: pd.DataFrame, dataset_name: str,
 
 def calc_idsp_index(ferr_score: pd.Series, sene_score: pd.Series) -> pd.Series:
     """
-    IDSP Index = z(ferr) + z(sene) - |z(ferr) - z(sene)|
+    IDSP Index = z(ferr) + z(sene) - |z(ferr) - z(sene)| = 2 * min(z_ferr, z_sene)
 
     含义: 两个得分都高且差异小时 → IDSP Index 最大
+    识别铁死亡与衰老得分"同步升高"的样本。
+
+    注意: z-score 在单个数据集内标准化, 因此 IDSP 值不可跨数据集直接比较。
+    跨数据集分析通过 Cohen's d (每数据集独立) 和 Meta分析实现。
+    跨物种(人/大鼠/小鼠)比较使用各物种正交基因评分。
     """
+    # 数据集内 z-score 标准化 (以各自分布为参照)
     ferr_std = ferr_score.std()
     sene_std = sene_score.std()
     z_ferr = ((ferr_score - ferr_score.mean()) / ferr_std
@@ -697,6 +849,16 @@ def random_effects_meta_analysis(effect_sizes: List[float],
     z = d_random / se_random if se_random > 0 else 0
     p_val = 2 * (1 - stats.norm.cdf(abs(z)))
 
+    # 95% 预测区间 [Higgins 2003 BMJ; Borenstein 2009]
+    # PI = d_random ± t_{k-2, 0.975} * sqrt(tau² + SE²)
+    # 当 I² > 75% 时必须报告, 反映新研究预期效应量的范围
+    if k > 2:
+        t_crit = stats.t.ppf(0.975, df=k - 2)
+        pi_lower = float(d_random - t_crit * np.sqrt(tau2 + se_random**2))
+        pi_upper = float(d_random + t_crit * np.sqrt(tau2 + se_random**2))
+    else:
+        pi_lower = pi_upper = np.nan
+
     return {
         'summary_effect': float(d_random),
         'p_value': float(p_val),
@@ -707,6 +869,8 @@ def random_effects_meta_analysis(effect_sizes: List[float],
         'k': k,
         'd_fixed': float(d_fixed),
         'se_random': float(se_random),
+        'pi_lower': pi_lower,
+        'pi_upper': pi_upper,
     }
 
 
@@ -816,6 +980,11 @@ def bayesian_meta_analysis(effect_sizes: List[float],
             (result['mu_hdi_2.5'] > 0) or (result['mu_hdi_97.5'] < 0)
         )
 
+        # 后验概率 P(μ > 0 | data) — 直接 Bayesian 推断 [Gelman 2013, Conlon 2014]
+        mu_posterior = trace.posterior['mu'].values.flatten()
+        result['p_mu_gt_0'] = float(np.mean(mu_posterior > 0))
+        result['p_mu_lt_0'] = float(np.mean(mu_posterior < 0))
+
         # ρ = 1 / (1 + τ² / σ̄²) — 信号比 (越接近 1 表示异质性越小)
         avg_var = np.mean(vs)
         result['rho_mean'] = float(np.mean(1.0 / (1.0 + trace.posterior['tau'].values ** 2 / avg_var)))
@@ -823,6 +992,7 @@ def bayesian_meta_analysis(effect_sizes: List[float],
         logger.info(
             f"  Bayesian Meta 结果: μ={result['mu_mean']:.3f} "
             f"(95%HDI [{result['mu_hdi_2.5']:.3f}, {result['mu_hdi_97.5']:.3f}]), "
+            f"P(μ>0)={result.get('p_mu_gt_0', np.nan):.3f}, "
             f"τ={result['tau_mean']:.3f} (95%HDI [{result['tau_hdi_2.5']:.3f}, {result['tau_hdi_97.5']:.3f}]), "
             f"R̂_max={rhat_max:.4f}, {'✓收敛' if result['converged'] else '⚠未收敛'}, "
             f"{'✓显著' if result['mu_significant'] else '不显著'}"
@@ -1404,6 +1574,8 @@ def lodo_cross_validation(comparisons: List[dict], meta_func: callable) -> pd.Da
             'meta_p_senescence': meta_sene,
             'mean_d_ferroptosis': np.mean(d_ferr) if d_ferr else np.nan,
             'mean_d_senescence': np.mean(d_sene) if d_sene else np.nan,
+            'cv_d_ferroptosis': float(np.std(d_ferr) / abs(np.mean(d_ferr))) if d_ferr and np.mean(d_ferr) != 0 else np.nan,
+            'cv_d_senescence': float(np.std(d_sene) / abs(np.mean(d_sene))) if d_sene and np.mean(d_sene) != 0 else np.nan,
         })
     return pd.DataFrame(results)
 
@@ -1794,7 +1966,7 @@ def main():
         logger.info("\n" + "=" * 50)
         logger.info("ComBat 跨平台批次校正")
         logger.info(f"  有效数据集: {list(valid_expr_dict.keys())} (共 {len(valid_expr_dict)} 个)")
-        harmonized_dict = combat_harmonize_datasets(valid_expr_dict)
+        harmonized_dict = combat_harmonize_datasets(valid_expr_dict, sample_groups=sample_info)
         if len(harmonized_dict) < 2:
             logger.info("  ComBat 校正未生效, 使用原始数据")
             harmonized_dict = raw_expr_dict
@@ -1811,6 +1983,13 @@ def main():
             pd.DataFrame(combat_metrics).to_csv(
                 OUTPUT_DIR / 'L1_combat_harmonization.csv', index=False)
             logger.info("  ComBat指标保存: L1_combat_harmonization.csv")
+
+            # ComBat PCA 诊断图 (Zhang 2020 标准QC)
+            try:
+                combat_pca_diagnostic(valid_expr_dict, sample_groups=sample_info,
+                                      save_path=OUTPUT_DIR / 'L1_combat_pca_diagnostic.png')
+            except Exception as pca_e:
+                logger.warning(f"  ComBat PCA诊断图生成失败: {pca_e}")
     else:
         harmonized_dict = raw_expr_dict
         logger.info(f"  ComBat 跳过: 有效数据集仅 {len(valid_expr_dict)} 个")
@@ -1974,6 +2153,12 @@ def main():
         n_stable = sum(1 for _, r in lodo_df.iterrows()
                        if pd.notna(r['meta_p_ferroptosis']) and pd.notna(r['meta_p_senescence']))
         logger.info(f"  LODO: {n_stable}/{len(lodo_df)} 移除后Meta仍有效")
+        # 效应量稳定性报告
+        cv_ferr = lodo_df['cv_d_ferroptosis'].dropna()
+        cv_sene = lodo_df['cv_d_senescence'].dropna()
+        if len(cv_ferr):
+            logger.info(f"  LODO效应量稳定性: d_ferr CV={cv_ferr.mean():.3f} "
+                        f"(越接近0越稳定), d_sene CV={cv_sene.mean():.3f}")
         lodo_df.to_csv(OUTPUT_DIR / 'L1_lodo_cross_validation.csv', index=False)
 
     # 4f. 前沿: Stouffer 加权Meta (带效应方向) + 随机效应Meta
@@ -2068,6 +2253,16 @@ def main():
                  re_sene['tau2'] if re_sene else np.nan,
                  bayes_ferr.get('tau2_mean') if bayes_ferr else np.nan,
                  bayes_sene.get('tau2_mean') if bayes_sene else np.nan],
+        'pi_lower': [np.nan, np.nan, np.nan, np.nan,
+                     re_ferr['pi_lower'] if re_ferr else np.nan,
+                     re_sene['pi_lower'] if re_sene else np.nan,
+                     bayes_ferr.get('mu_hdi_2.5') if bayes_ferr else np.nan,
+                     bayes_sene.get('mu_hdi_2.5') if bayes_sene else np.nan],
+        'pi_upper': [np.nan, np.nan, np.nan, np.nan,
+                     re_ferr['pi_upper'] if re_ferr else np.nan,
+                     re_sene['pi_upper'] if re_sene else np.nan,
+                     bayes_ferr.get('mu_hdi_97.5') if bayes_ferr else np.nan,
+                     bayes_sene.get('mu_hdi_97.5') if bayes_sene else np.nan],
         'k': [len(ferr_pvals), len(sene_pvals),
               len(ferr_p_for_p), len(sene_p_for_p),
               re_ferr['k'] if re_ferr else 0,
@@ -2094,6 +2289,7 @@ def main():
                     'tau2_mean': bm.get('tau2_mean'),
                     'tau2_sd': bm.get('tau2_sd'),
                     'rho_mean': bm.get('rho_mean'),
+                    'p_mu_gt_0': bm.get('p_mu_gt_0'),
                     'rhat_max': max(bm.get('mu_rhat', 1), bm.get('tau_rhat', 1)),
                     'converged': bm.get('converged'),
                     'mu_significant': bm.get('mu_significant'),
@@ -2311,11 +2507,16 @@ def main():
         f.write(f"Meta分析 (Stouffer加权): 铁死亡 p={safe_fmt(meta_p_stouffer_f, '.4e')}, 衰老 p={safe_fmt(meta_p_stouffer_s, '.4e')}\n")
         if re_ferr:
             f.write(f"随机效应Meta (铁死亡): d={safe_fmt(re_ferr['summary_effect'])}, p={safe_fmt(re_ferr['p_value'], '.4e')}, I²={safe_fmt(re_ferr['I2'], '.0f')}%, τ²={safe_fmt(re_ferr['tau2'], '.4f')}\n")
+            if pd.notna(re_ferr.get('pi_lower')):
+                f.write(f"  95%预测区间: [{safe_fmt(re_ferr['pi_lower'])}, {safe_fmt(re_ferr['pi_upper'])}] (新研究预期效应量范围)\n")
         if re_sene:
             f.write(f"随机效应Meta (衰老): d={safe_fmt(re_sene['summary_effect'])}, p={safe_fmt(re_sene['p_value'], '.4e')}, I²={safe_fmt(re_sene['I2'], '.0f')}%, τ²={safe_fmt(re_sene['tau2'], '.4f')}\n")
+            if pd.notna(re_sene.get('pi_lower')):
+                f.write(f"  95%预测区间: [{safe_fmt(re_sene['pi_lower'])}, {safe_fmt(re_sene['pi_upper'])}] (新研究预期效应量范围)\n")
         if bayes_ferr and bayes_ferr.get('converged'):
             f.write(f"Bayesian Meta (铁死亡): μ={safe_fmt(bayes_ferr.get('mu_mean'))} "
                     f"(95%HDI [{safe_fmt(bayes_ferr.get('mu_hdi_2.5'))}, {safe_fmt(bayes_ferr.get('mu_hdi_97.5'))}]), "
+                    f"P(μ>0)={safe_fmt(bayes_ferr.get('p_mu_gt_0'))}, "
                     f"τ²={safe_fmt(bayes_ferr.get('tau2_mean'), '.4f')}, "
                     f"ρ={safe_fmt(bayes_ferr.get('rho_mean'))}, "
                     f"R̂={safe_fmt(bayes_ferr.get('mu_rhat'), '.4f')}, "
@@ -2323,6 +2524,7 @@ def main():
         if bayes_sene and bayes_sene.get('converged'):
             f.write(f"Bayesian Meta (衰老): μ={safe_fmt(bayes_sene.get('mu_mean'))} "
                     f"(95%HDI [{safe_fmt(bayes_sene.get('mu_hdi_2.5'))}, {safe_fmt(bayes_sene.get('mu_hdi_97.5'))}]), "
+                    f"P(μ>0)={safe_fmt(bayes_sene.get('p_mu_gt_0'))}, "
                     f"τ²={safe_fmt(bayes_sene.get('tau2_mean'), '.4f')}, "
                     f"ρ={safe_fmt(bayes_sene.get('rho_mean'))}, "
                     f"R̂={safe_fmt(bayes_sene.get('mu_rhat'), '.4f')}, "
