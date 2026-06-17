@@ -752,9 +752,10 @@ class GATEncoder(nn.Module):
     def __init__(self, in_dim: int, hidden_dim: int, out_dim: int,
                  heads: int = 4, dropout: float = 0.2):
         super().__init__()
-        self.conv1 = GATv2Conv(in_dim, hidden_dim, heads=heads, dropout=dropout)
+        self.conv1 = GATv2Conv(in_dim, hidden_dim, heads=heads, dropout=dropout,
+                                 share_weights=True)  # 同类型节点共享投影
         self.conv2 = GATv2Conv(hidden_dim * heads, out_dim, heads=1, concat=False,
-                                dropout=dropout)
+                                 dropout=dropout, share_weights=True)
         self.dropout = dropout
     
     def forward(self, x, edge_index):
@@ -1652,14 +1653,41 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
     logger.info(f"  核心基因训练掩码: {n_core_gene}/{n_gene} 个基因参与监督")
     
     pos_gp = list(set(enriched_edges))
+    # L5升级: 构建val/test正样本集用于排除负采样污染
+    # 参考: HeaRT (Li et al., NeurIPS 2023) — 负采样必须排除所有已知正样本
+    n_gp_total = len(pos_gp)
+    n_gp_train = int(n_gp_total * 0.7)
+    n_gp_val = int(n_gp_total * 0.15)
+    rng.shuffle(pos_gp)
+    gp_train_pos_set = set(pos_gp[:n_gp_train])
+    gp_val_pos_set = set(pos_gp[n_gp_train:n_gp_train + n_gp_val])
+    gp_test_pos_set = set(pos_gp[n_gp_train + n_gp_val:])
+    gp_all_pos_set = set(enriched_edges)  # 所有已知正样本 (含训练/验证/测试)
     neg_gp = []
     while len(neg_gp) < len(pos_gp):
         g = int(rng.choice(core_gene_indices))
         p = int(rng.integers(0, n_pathway))
-        if (g, p) not in pos_gp:
+        if (g, p) not in gp_all_pos_set:  # 排除所有已知正样本 (含val/test)
             neg_gp.append((g, p))
     
-    # 划分正负样本
+    # 划分正负样本 (基因-通路已预划分, 直接用)
+    gp_train_pos = list(gp_train_pos_set)
+    gp_val_pos = list(gp_val_pos_set)
+    gp_test_pos = list(gp_test_pos_set)
+    rng.shuffle(neg_gp)
+    n_neg = len(neg_gp)
+    n_neg_train = int(n_neg * 0.7)
+    n_neg_val = int(n_neg * 0.15)
+    gp_split = {
+        'train': (gp_train_pos + neg_gp[:n_neg_train],
+                  [1.0] * len(gp_train_pos) + [0.0] * n_neg_train),
+        'val': (gp_val_pos + neg_gp[n_neg_train:n_neg_train + n_neg_val],
+                [1.0] * len(gp_val_pos) + [0.0] * n_neg_val),
+        'test': (gp_test_pos + neg_gp[n_neg_train + n_neg_val:],
+                 [1.0] * len(gp_test_pos) + [0.0] * (n_neg - n_neg_train - n_neg_val)),
+    }
+    
+    # 任务2: 化合物-靶点 (使用通用划分函数)
     def split_edges(pos, neg, train_r=0.7, val_r=0.15):
         rng.shuffle(pos)
         rng.shuffle(neg)
@@ -1678,29 +1706,28 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
                      [1.0] * (n_pos - n_pos_train - n_pos_val) + [0.0] * (n_neg - n_neg_train - n_neg_val)),
         }
     
-    gp_split = split_edges(pos_gp, neg_gp)
-    
-    # 任务2: 化合物-靶点
     ct_edges = graph_data['edges']['compound_targets']
     n_compound = graph_data['compound']['n']
-    pos_ct = list(set(ct_edges))
+    ct_all_pos = set(ct_edges)
+    pos_ct = list(ct_all_pos)
     neg_ct = []
     while len(neg_ct) < len(pos_ct):
         c = int(rng.integers(0, n_compound))
         g = int(rng.choice(core_gene_indices))
-        if (c, g) not in pos_ct:
+        if (c, g) not in ct_all_pos:  # 排除所有已知正样本
             neg_ct.append((c, g))
     ct_split = split_edges(pos_ct, neg_ct)
     
     # 任务3: 跨细胞通讯 (LR-Gene)
     lr_edges = graph_data['edges']['lr_interaction']
     n_lr = graph_data['lr']['n']
-    pos_lr = list(set(lr_edges))
+    lr_all_pos = set(lr_edges)  # 防止跨划分负采样污染
+    pos_lr = list(lr_all_pos)
     neg_lr = []
     while len(neg_lr) < len(pos_lr):
         l = int(rng.integers(0, n_lr))
         g = int(rng.choice(core_gene_indices))
-        if (l, g) not in pos_lr:
+        if (l, g) not in lr_all_pos:  # 排除所有已知正样本
             neg_lr.append((l, g))
     lr_split = split_edges(pos_lr, neg_lr)
     
