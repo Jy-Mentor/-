@@ -1221,7 +1221,15 @@ def analyze_signature_genes(expr_df: pd.DataFrame, case_cols: List[str],
         ctrl_vals = raw_ctrl[~np.isnan(raw_ctrl)]
         if len(case_vals) < 2 or len(ctrl_vals) < 2:
             continue
-        log2fc = np.mean(case_vals) - np.mean(ctrl_vals)
+        mean_c, mean_t = np.mean(case_vals), np.mean(ctrl_vals)
+        # 检测数据尺度: log2变换后值域通常在0-20; 线性尺度(微阵列强度)可达数千
+        # 线性数据计算真log2FC; 已log变换数据直接做差
+        if np.max(case_vals) < 50 and np.max(ctrl_vals) < 50:
+            log2fc = mean_c - mean_t  # 已在log空间
+        else:
+            # 线性尺度, 处理可能的负值(背景扣除伪影)
+            eps = max(1.0, max(abs(mean_c), abs(mean_t)) * 1e-4)
+            log2fc = np.log2((max(mean_c, eps) + eps) / (max(mean_t, eps) + eps))
         _, pval = stats.ttest_ind(case_vals, ctrl_vals, equal_var=False)
         results.append({
             'dataset': dataset_name,

@@ -25,6 +25,7 @@ import pandas as pd
 from scipy import stats, sparse
 import scanpy as sc
 import anndata
+import decoupler as dc  # AUCell 互补评分 (批次不敏感)
 
 warnings.filterwarnings('ignore')
 os.environ['PYTHONWARNINGS'] = 'ignore'
@@ -49,44 +50,38 @@ sc.settings.verbosity = 0
 sc.settings.set_figure_params(dpi=100, facecolor='white')
 
 # ============================================================
-# 基因集
+# V2 精修基因集导入 (L1/IDSP 联合精修版)
 # ============================================================
-FERROPTOSIS_GENES = [
-    "ACSL4","GPX4","SLC7A11","TFRC","HMOX1","PTGS2","FTH1","FTL",
-    "SLC3A2","FSP1","CHAC1","GCLC","GCLM","HSPB1","SAT1","ALOX15",
-    "LPCAT3","NCOA4","STEAP3","SLC40A1","SLC39A14","CISD1","CISD2",
-    "NOX4","DPP4","CDO1","MAP1LC3A","ATG5","ATG7","SQSTM1"
-]
+sys.path.insert(0, str(IRON_DIR))
+from L1.idsp_gene_sets import (
+    FERROPTOSIS_ALL, SENESCENCE_ALL, SHARED_GENES,
+    PURE_FERROPTOSIS, PURE_SENESCENCE,
+)
 
-SENESCENCE_GENES = [
-    "CDKN1A","CDKN2A","CDKN2B","LMNB1","IL6","IL1B","CXCL8",
-    "CCL2","CCL8","MMP3","MMP9","MMP12","TIMP1","SERPINE1",
-    "IGFBP3","IGFBP7","GADD45A","GDF15","TNF","TGFB1",
-    "VEGFA","CXCL1","CXCL2","CXCL10","ICAM1","VCAM1",
-    "CSF1","CSF2","MIF","HMGB1","B2M","H2AFX"
-]
+# ============================================================
+# 基因集 (V2: 从 idsp_gene_sets.py 导入)
+# ============================================================
+# FERROPTOSIS_ALL  = PURE_FERROPTOSIS(79) | SHARED_GENES(14) = 93
+# SENESCENCE_ALL   = PURE_SENESCENCE(99)   | SHARED_GENES(14) = 113
+# SHARED_GENES     = 14 (铁死亡∩衰老桥接)
 
-FRIDMAN_GENES = [
-    "CDKN1A","CDKN2A","GLB1","LMNB1","TP53","RB1","HMGA2",
-    "TERF2","TERT","SIRT1","FOXO3","NFKB1","RELA",
-    "MAPK14","MAPK8","AKT1","MTOR","ULK1","ATG5","BECN1"
-]
-
-CELLAGE_GENES = [
-    "CDKN1A","CDKN2A","LMNB1","GLB1","IL6","IL1B","TNF",
-    "MMP3","SERPINE1","IGFBP3","GDF15","VEGFA","CXCL8"
-]
-
-CONSENSUS_SENESCENCE = list(set(SENESCENCE_GENES + FRIDMAN_GENES))
+# 可用变量:
+#   FERROPTOSIS_ALL, SENESCENCE_ALL, SHARED_GENES,
+#   PURE_FERROPTOSIS, PURE_SENESCENCE
 
 CELL_MARKERS = {
-    'Neuron':        ['RBFOX3','MAP2','SYP','TUBB3','SNAP25','NEUN'],
-    'Microglia':     ['CX3CR1','AIF1','TMEM119','CSF1R','P2RY12'],
-    'Astrocyte':     ['GFAP','AQP4','ALDH1L1','SLC1A3','S100B'],
+    # 广泛神经元 (泛神经元标志)
+    'Neuron':         ['RBFOX3','MAP2','SYP','TUBB3','SNAP25','NEUN'],
+    # 兴奋性 Glu 神经元
+    'Glutamatergic':  ['SLC17A7','SLC17A6','CAMK2A','SATB2','CUX2'],
+    # 抑制性 GABA 神经元
+    'GABAergic':      ['GAD1','GAD2','SLC32A1','PVALB','SST','VIP'],
+    'Microglia':      ['CX3CR1','AIF1','TMEM119','CSF1R','P2RY12'],
+    'Astrocyte':      ['GFAP','AQP4','ALDH1L1','SLC1A3','S100B'],
     'Oligodendrocyte': ['MBP','PLP1','MOG','OLIG2','CNP'],
-    'Endothelial':   ['CLDN5','PECAM1','CDH5','FLT1','TEK'],
-    'OPC':           ['PDGFRA','CSPG4','OLIG1','SOX10'],
-    'Pericyte':      ['PDGFRB','RGS5','VTN','ANPEP'],
+    'Endothelial':    ['CLDN5','PECAM1','CDH5','FLT1','TEK'],
+    'OPC':            ['PDGFRA','CSPG4','OLIG1','SOX10'],
+    'Pericyte':       ['PDGFRB','RGS5','VTN','ANPEP'],
 }
 
 MICROGLIA_ACTIVATION = [
@@ -279,21 +274,51 @@ def compute_iron_aging_scores(adata: anndata.AnnData) -> anndata.AnnData:
             return len(valid), adata_obj.obs[score_name].values.copy()
         return 0, None
 
-    # --- 铁死亡评分 ---
-    n_ferr, scores_ferr = score_genes_safe(adata, FERROPTOSIS_GENES, 'ferroptosis_score')
+    # === AUCell 互补评分 (批次不敏感, rank-based) ===
+    def compute_aucell_scores(adata_obj, gene_dict: dict):
+        """使用 decoupler aucell 计算排名依赖的通路活性 (结果存入 obsm + obs)"""
+        try:
+            net = []
+            for gs_name, gs_genes in gene_dict.items():
+                valid = match_genes_loose(gs_genes, adata_obj.var_names)
+                for g in valid:
+                    net.append({'source': gs_name, 'target': g})
+            net_df = pd.DataFrame(net)
+            if len(net_df) < 5:
+                logger.warning("  AUCell: 基因太少, 跳过")
+                return
+            dc.mt.aucell(adata_obj, net_df, raw=False)
+            # 从 obsm 提取到 obs (score_aucell 为 DataFrame)
+            if 'score_aucell' in adata_obj.obsm:
+                score_df = adata_obj.obsm['score_aucell']
+                for i, gs_name in enumerate(gene_dict.keys()):
+                    if i < score_df.shape[1]:
+                        col_name = f'aucell_{gs_name}'
+                        adata_obj.obs[col_name] = score_df.iloc[:, i].values
+            logger.info(f"  AUCell 评分: {list(gene_dict.keys())}")
+        except Exception as e:
+            logger.warning(f"  AUCell 跳过 ({e})")
+
+    # --- 铁死亡评分 (V2: FERROPTOSIS_ALL = 93 基因) ---
+    n_ferr, scores_ferr = score_genes_safe(adata, list(FERROPTOSIS_ALL), 'ferroptosis_score')
     if n_ferr:
-        logger.info(f"  铁死亡评分: {n_ferr}/{len(FERROPTOSIS_GENES)} 基因")
+        logger.info(f"  铁死亡评分: {n_ferr}/{len(FERROPTOSIS_ALL)} 基因 (V2精修)")
 
-    # --- 衰老评分 ---
-    n_sene, scores_sene = score_genes_safe(adata, SENESCENCE_GENES, 'senescence_score')
+    # --- 衰老评分 (V2: SENESCENCE_ALL = 113 基因) ---
+    n_sene, scores_sene = score_genes_safe(adata, list(SENESCENCE_ALL), 'senescence_score')
     if n_sene:
-        logger.info(f"  衰老评分: {n_sene}/{len(SENESCENCE_GENES)} 基因")
+        logger.info(f"  衰老评分: {n_sene}/{len(SENESCENCE_ALL)} 基因 (V2精修)")
 
-    # --- 共识衰老: 分别打分, 保留各组列 ---
+    # --- 桥接共享评分 (V2 新增: SHARED_GENES = 14) ---
+    n_shared, scores_shared = score_genes_safe(adata, list(SHARED_GENES), 'shared_score')
+    if n_shared:
+        logger.info(f"  桥接评分(shared): {n_shared}/{len(SHARED_GENES)} 基因")
+
+    # --- 共识衰老: 纯铁死亡/纯衰老/共享 分别打分供质控 ---
     consensus_cfg = {
-        'sene_senmayo':  SENESCENCE_GENES,
-        'sene_cellage':  CELLAGE_GENES,
-        'sene_fridman':  FRIDMAN_GENES,
+        'sene_pure':     list(PURE_SENESCENCE),
+        'ferr_pure':     list(PURE_FERROPTOSIS),
+        'sene_shared':   list(SHARED_GENES),
     }
     sub_scores = {}
     for key, gene_list in consensus_cfg.items():
@@ -313,6 +338,14 @@ def compute_iron_aging_scores(adata: anndata.AnnData) -> anndata.AnnData:
         zf = stats.zscore(adata.obs['ferroptosis_score'].values, nan_policy='omit')
         zs = stats.zscore(adata.obs['senescence_score'].values, nan_policy='omit')
         adata.obs['isp_index'] = 2 * np.minimum(zf, zs)
+
+    # === AUCell 互补评分 (与 score_genes 并排, 提供批次稳健性验证) ===
+    compute_aucell_scores(adata, {
+        'ferroptosis': list(FERROPTOSIS_ALL),
+        'senescence':  list(SENESCENCE_ALL),
+        'shared':      list(SHARED_GENES),
+        'isp':         list(FERROPTOSIS_ALL | SENESCENCE_ALL),
+    })
 
     # ============ 铁死亡代谢通路评分 ============
     logger.info("  代谢通路评分...")
@@ -454,14 +487,14 @@ def background_significance(adata: anndata.AnnData, n_permutations: int = 500):
     all_genes = list(adata.var_names)
     cell_types = sorted(adata.obs['cell_type'].unique())
     score_sets = {
-        'ferroptosis':  match_genes_loose(FERROPTOSIS_GENES, adata.var_names),
-        'senescence':   match_genes_loose(SENESCENCE_GENES, adata.var_names),
-        'consensus':    match_genes_loose(CONSENSUS_SENESCENCE, adata.var_names),
+        'ferroptosis':  match_genes_loose(list(FERROPTOSIS_ALL), adata.var_names),
+        'senescence':   match_genes_loose(list(SENESCENCE_ALL), adata.var_names),
+        'shared':       match_genes_loose(list(SHARED_GENES), adata.var_names),
     }
     score_columns = {
         'ferroptosis':  'ferroptosis_score',
         'senescence':   'senescence_score',
-        'consensus':    'consensus_senescence',
+        'shared':       'shared_score',
     }
 
     perm_results = []
@@ -586,17 +619,24 @@ def run_liana_lr_analysis(adata_full: anndata.AnnData, adata_hvg: anndata.AnnDat
             on=['source','target','ligand_complex','receptor_complex'],
             suffixes=('_mcao','_sham')
         )
+        # aggregate_rank 是 Bonferroni 校正后的共识 p 值, 选任一组显著即可
+        if 'aggregate_rank_mcao' in merged.columns and 'aggregate_rank_sham' in merged.columns:
+            merged = merged[
+                (merged['aggregate_rank_mcao'] < 0.05) |
+                (merged['aggregate_rank_sham'] < 0.05)
+            ].copy()
+            logger.info(f"  aggregate_rank<0.05 过滤后: {len(merged)} LR 对")
         merged['magnitude_rank_diff'] = merged['magnitude_rank_mcao'] - merged['magnitude_rank_sham']
         merged = merged.sort_values('magnitude_rank_diff')
-        logger.info(f"  LR 差异对: {len(merged)}")
+        logger.info(f"  LR 差异对: {len(merged)} (含 aggregate_rank 过滤)")
 
         # 保存完整结果
         merged.to_csv(MODULE2_OUT / "LIANA_all_LR_pairs.csv", index=False)
 
-        # 提取铁衰老相关 LR (全大写集合, 兼容 LIANA 命名)
+        # 提取铁衰老相关 LR (V2: FERROPTOSIS_ALL + SENESCENCE_ALL + SHARED_GENES)
         iron_aging_upper = set(
             g.upper() for g in match_genes_loose(
-                FERROPTOSIS_GENES + SENESCENCE_GENES, adata_full.var_names
+                list(FERROPTOSIS_ALL) + list(SENESCENCE_ALL), adata_full.var_names
             )
         )
         def is_iron_aging(row):
@@ -812,14 +852,15 @@ def save_results(adata: anndata.AnnData, adata_full: anndata.AnnData = None):
 
     # --- 细胞元数据 ---
     obs_cols = ['sample','condition','leiden','cell_type']
-    score_cols = ['ferroptosis_score','senescence_score','consensus_senescence','isp_index',
-                  'sene_senmayo','sene_cellage','sene_fridman',
-                  'glutathione_metabolism','fatty_acid_elongation','iron_metabolism']
+    score_cols = ['ferroptosis_score','senescence_score','shared_score','consensus_senescence','isp_index',
+              'sene_pure','ferr_pure','sene_shared',
+              'glutathione_metabolism','fatty_acid_elongation','iron_metabolism']
+    aucell_cols = ['aucell_ferroptosis','aucell_senescence','aucell_shared','aucell_isp']
     time_cols = ['sctour_ptime'] if 'sctour_ptime' in adata.obs else \
                 ['dpt_pseudotime'] if 'dpt_pseudotime' in adata.obs else []
     isp_cols = ['isp_group'] if 'isp_group' in adata.obs else []
 
-    cols_to_save = obs_cols + [c for c in score_cols + time_cols + isp_cols if c in adata.obs]
+    cols_to_save = obs_cols + [c for c in score_cols + aucell_cols + time_cols + isp_cols if c in adata.obs]
     cell_meta = adata.obs[cols_to_save].copy()
 
     if 'X_umap' in adata.obsm:
@@ -860,7 +901,7 @@ def save_results(adata: anndata.AnnData, adata_full: anndata.AnnData = None):
     ct_cond.to_csv(R_PLOT_DIR / "cell_type_condition_counts.csv")
 
     # --- 共识评分每亚组 ---
-    consensus_detail_cols = ['sene_senmayo','sene_cellage','sene_fridman']
+    consensus_detail_cols = ['sene_pure','ferr_pure','sene_shared']
     if all(c in adata.obs for c in consensus_detail_cols):
         consensus_detail = adata.obs.groupby('cell_type')[consensus_detail_cols].mean().round(4)
         consensus_detail.to_csv(R_PLOT_DIR / "consensus_senescence_detail.csv")
@@ -887,8 +928,9 @@ def main():
     adata = cluster_and_annotate(adata_full)
     
     # Transfer scores & cell_type between both
-    for col in ['ferroptosis_score','senescence_score','consensus_senescence',
-                'isp_index','sene_senmayo','sene_cellage','sene_fridman',
+    for col in ['ferroptosis_score','senescence_score','shared_score','consensus_senescence',
+                'isp_index','sene_pure','ferr_pure','sene_shared',
+                'aucell_ferroptosis','aucell_senescence','aucell_shared','aucell_isp',
                 'cell_type','glutathione_metabolism','fatty_acid_elongation','iron_metabolism']:
         if col in adata.obs and col not in adata_full.obs:
             adata_full.obs[col] = adata.obs[col]

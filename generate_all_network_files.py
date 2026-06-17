@@ -53,14 +53,14 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # 核心基因集
 GENE_LIST_PATH = BASE_DIR / "铁衰老基因.txt"
 with open(GENE_LIST_PATH, "r", encoding="utf-8") as f:
-    CORE_GENES = sorted(set(line.strip() for line in f if line.strip()))
+    CORE_GENES = sorted(set(line.strip().upper() for line in f if line.strip()))
 CORE_GENE_SET = set(CORE_GENES)
 log.info(f"核心基因集: {len(CORE_GENES)} 个基因")
 
 # 参考数据路径
 STRING_DATA_DIR = Path(r"C:\Users\Jy-Mentor-7\Desktop\9606蛋白质")
 STRING_PPI_SYMBOL = STRING_DATA_DIR / "9606_human_ppi_symbol.txt"
-STRING_INFO_FILE = STRING_DATA_DIR / "9606.protein.info.v12.0.txt" / "9606.protein.info.v12.0.txt"
+STRING_INFO_FILE = STRING_DATA_DIR / "9606.protein.info.v12.0.txt"
 STRING_ALIASES_FILE = STRING_DATA_DIR / "人靶点" / "9606.protein.aliases.v12.0.txt"
 STRING_LINKS_FILE = STRING_DATA_DIR / "人靶点" / "9606.protein.links.v12.0.txt"
 
@@ -573,7 +573,7 @@ def generate_compound_targets():
         ],
         "Fer-1": [
             # Ferrostatin-1 targets (ferroptosis inhibitor, radical-trapping antioxidant)
-            "GPX4", "ACSL4", "LPCAT3", "SLC7A11", "TFRC", "FTH1", "FTL",
+            "GPX4", "ACSL4", "ACSL3", "GSS", "LPCAT3", "SLC7A11", "TFRC", "FTH1", "FTL",
             "NFE2L2", "KEAP1", "HMOX1", "NQO1", "GCLC", "GCLM", "GSR",
             "SOD1", "SOD2", "CAT", "GPX1", "TXN", "TXNRD1",
             "ALOX5", "ALOX12", "ALOX15", "PTGS2",

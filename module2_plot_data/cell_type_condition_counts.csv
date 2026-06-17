@@ -1,6 +1,7 @@
 cell_type,MCAO,Sham
-Astrocyte,6820,2828
-Endothelial,13371,15042
-Microglia,7306,7111
+Astrocyte,2296,1256
+Endothelial,13064,14915
+GABAergic,6659,1701
+Microglia,5478,7109
 Oligodendrocyte,1041,542
 Pericyte,2572,1693
