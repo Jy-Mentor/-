@@ -753,9 +753,9 @@ class GATEncoder(nn.Module):
                  heads: int = 4, dropout: float = 0.2):
         super().__init__()
         self.conv1 = GATv2Conv(in_dim, hidden_dim, heads=heads, dropout=dropout,
-                                 share_weights=True)  # 同类型节点共享投影
+                                 share_weights=False)  # 独立投影保留表达能力
         self.conv2 = GATv2Conv(hidden_dim * heads, out_dim, heads=1, concat=False,
-                                 dropout=dropout, share_weights=True)
+                                 dropout=dropout, share_weights=False)
         self.dropout = dropout
     
     def forward(self, x, edge_index):
@@ -1955,7 +1955,7 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
         n_genes=graph_data['gene']['n'],
         core_gene_indices=core_gene_indices,
         hard_neg_ratio=0.3,
-        pos_set=ct_pos_set
+        pos_set=ct_all_pos  # 排除所有已知正样本 (含val/test)
     )
     
     # 当前的ct训练数据 (初始为原始, 后续动态更新)
@@ -2146,7 +2146,7 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
         target_gene='ACSL4', device=device
     )
     
-    return model, x_hgt_test, x_hgt_test['gene'], x_hgt_test['compound'], x_hgt_test['lr'], x_hgt_test['pathway'], losses, explain_results
+    return model, ema_model, x_hgt_test, x_hgt_test['gene'], x_hgt_test['compound'], x_hgt_test['lr'], x_hgt_test['pathway'], losses, explain_results
 
 
 # ============================================================
@@ -2489,7 +2489,6 @@ def compute_gnn_explainability(model, graph_data: dict, x_dict: dict,
         edge_perturb_importance = {}
         edge_perturb_raw = {}
         try:
-            from importlib import reload  # noqa: F811
             with torch.no_grad():
                 x_hgt_base = model(x_dict, edge_index_dict, gene_gat_edge,
                                     celltype_gat_edge)
@@ -3044,18 +3043,18 @@ def main():
     graph_data = build_heterogeneous_graph()
     
     # 2. 训练模型
-    model, x_hgt, gene_emb, compound_emb, lr_emb, pathway_emb, losses, explain_results = train_model(
+    model, ema_model, x_hgt, gene_emb, compound_emb, lr_emb, pathway_emb, losses, explain_results = train_model(
         graph_data, hidden_dim=64, epochs=200, learn_rate=0.001, device_str=device
     )
     
     # 3. Hub基因排名
-    hub_ranking = compute_hub_ranking(model, graph_data, x_hgt, device)
+    hub_ranking = compute_hub_ranking(ema_model, graph_data, x_hgt, device)
     
-    # 4. 化合物-靶点排名
-    compound_ranking = compute_compound_target_ranking(model, graph_data, x_hgt)
+    # 4. 化合物-靶点排名 (使用EMA模型统一嵌入与预测头)
+    compound_ranking = compute_compound_target_ranking(ema_model, graph_data, x_hgt)
     
-    # 5. 跨细胞通讯注意力流
-    comm_flow = compute_attention_flow(model, graph_data, x_hgt)
+    # 5. 跨细胞通讯注意力流 (使用EMA模型统一嵌入与预测头)
+    comm_flow = compute_attention_flow(ema_model, graph_data, x_hgt)
     
     # 6. Top-30 候选化合物 (模块四DeepPurpose筛选输入)
     gene_names = graph_data['gene']['names']
