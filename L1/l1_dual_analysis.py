@@ -2525,6 +2525,7 @@ def main():
     all_scores = []
     all_comparisons = []
     all_gene_dfs = []
+    all_full_de_dfs = []  # 全基因组差异分析 → 模块三节点特征
     all_gpx4 = []
     all_meta = []    # (ds_name, scores, case_cols, control_cols) for advanced analysis
     temporal_df = pd.DataFrame()
@@ -2600,10 +2601,15 @@ def main():
             gpx4_res = gpx4_validation(expr_gene, scores_df, case_cols, control_cols, ds_name)
             all_gpx4.append(gpx4_res)
 
-            # 单基因分析
+            # 单基因分析 (核心基因集)
             all_genes = PURE_FERROPTOSIS | PURE_SENESCENCE | SHARED_GENES
             gene_df = analyze_signature_genes(expr_gene, case_cols, control_cols, all_genes, ds_name)
             all_gene_dfs.append(gene_df)
+
+            # 全基因组差异分析 (供模块三初始节点特征 + 共表达边计算)
+            all_expr_genes = set(expr_gene.index)
+            full_de_df = analyze_signature_genes(expr_gene, case_cols, control_cols, all_expr_genes, ds_name)
+            all_full_de_dfs.append(full_de_df)
 
             # 记录元数据 (用于高级分析)
             all_meta.append((ds_name, scores_df.copy(), case_cols.copy(), control_cols.copy()))
@@ -2632,6 +2638,11 @@ def main():
         all_genes = PURE_FERROPTOSIS | PURE_SENESCENCE | SHARED_GENES
         gene_104036 = analyze_signature_genes(expr_104036, all_ipsi, sham_cols, all_genes, 'GSE104036')
         all_gene_dfs.append(gene_104036)
+
+        # 全基因组差异分析 (GSE104036)
+        all_expr_104036 = set(expr_104036.index)
+        full_de_104036 = analyze_signature_genes(expr_104036, all_ipsi, sham_cols, all_expr_104036, 'GSE104036')
+        all_full_de_dfs.append(full_de_104036)
 
         # 时间动态
         temporal_df = temporal_dual_analysis(expr_104036, tp_dict, sham_cols, 'GSE104036')
@@ -3073,11 +3084,19 @@ def main():
     gpx4_df.to_csv(OUTPUT_DIR / 'L1_gpx4_validation.csv', index=False)
     logger.info(f"  gpx4: {OUTPUT_DIR / 'L1_gpx4_validation.csv'}")
 
-    # 4e. 单基因分析
+    # 4e. 单基因分析 (核心基因集)
     if all_gene_dfs:
         combined_genes = pd.concat(all_gene_dfs, ignore_index=True)
         combined_genes.to_csv(OUTPUT_DIR / 'L1_gene_level_analysis.csv', index=False)
         logger.info(f"  genes: {OUTPUT_DIR / 'L1_gene_level_analysis.csv'}")
+        logger.info(f"    核心基因集: {combined_genes['gene'].nunique()} 基因 × {combined_genes['dataset'].nunique()} 数据集")
+
+    # 4e2. 全基因组差异分析 (模块三节点特征)
+    if all_full_de_dfs:
+        combined_full_de = pd.concat(all_full_de_dfs, ignore_index=True)
+        combined_full_de.to_csv(OUTPUT_DIR / 'L1_genome_wide_de.csv', index=False)
+        logger.info(f"  genome-wide DE: {OUTPUT_DIR / 'L1_genome_wide_de.csv'}")
+        logger.info(f"    全基因组: {combined_full_de['gene'].nunique()} 基因 × {combined_full_de['dataset'].nunique()} 数据集")
 
     # ============================================================
     # 5. 可视化

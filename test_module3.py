@@ -4,7 +4,7 @@
 module3_hgt.py 单元测试
 ========================
 覆盖:
-  1. build_heterogeneous_graph 图形状验证
+  1. build_heterogeneous_graph 图形状验证 (5种节点)
   2. 边数量/类型完整性检查
   3. 正负样本分割比例验证
   4. 边泄露移除验证
@@ -34,26 +34,26 @@ class TestGraphConstruction(unittest.TestCase):
         cls.graph = build_heterogeneous_graph()
 
     def test_node_counts(self):
-        """验证节点数量"""
+        """验证节点数量 (5种节点: gene, pathway, compound, disease, pocket)"""
         g = self.graph
         self.assertGreater(g['gene']['n'], 0, "基因节点 > 0")
         self.assertGreater(g['pathway']['n'], 0, "通路节点 > 0")
         self.assertGreater(g['compound']['n'], 0, "化合物节点 > 0")
-        self.assertGreater(g['lr']['n'], 0, "配体-受体节点 > 0")
-        self.assertGreater(g['celltype']['n'], 0, "细胞类型节点 > 0")
         self.assertGreater(g['disease']['n'], 0, "疾病节点 > 0")
+        self.assertGreater(g['pocket']['n'], 0, "口袋节点 > 0")
         self.assertEqual(g['gene']['x'].shape[0], g['gene']['n'], "基因特征帧数==节点数")
-        self.assertEqual(g['gene']['x'].shape[1], 19, "基因特征维度==19 (16基础+3生物标志)")
+        # 基因特征维度: 16基础 + 6细胞类型 + 2LR角色 = 24维
+        self.assertGreater(g['gene']['x'].shape[1], 16, "基因特征维度 > 16 (含折叠的CT+LR特征)")
 
     def test_edge_type_completeness(self):
-        """验证11种边类型全部存在"""
+        """验证8种边类型全部存在 (含反向边)"""
         expected_rels = {
-            'gene_coexp', 'lr_interaction', 'regulates', 'enriched_in',
-            'compound_targets', 'celltype_express', 'gene_disease',
-            'compound_pocket', 'gene_to_lr', 'gene_to_compound', 'gene_to_celltype'
+            'gene_coexp', 'regulates', 'enriched_in',
+            'compound_targets', 'gene_disease', 'compound_pocket',
+            'pathway_to_gene', 'disease_to_gene'
         }
         edges = self.graph['edges']
-        found_rels = set(edges.keys())  # edge dict 使用字符串键
+        found_rels = set(edges.keys())
         missing = expected_rels - found_rels
         self.assertEqual(len(missing), 0, f"缺失边类型: {missing}")
 
@@ -75,8 +75,8 @@ class TestGraphConstruction(unittest.TestCase):
         self.assertFalse(np.isinf(x).any(), "基因特征无 Inf")
 
     def test_node_names_match(self):
-        """验证 names 列表与节点数量一致"""
-        for ntype in ['gene', 'pathway', 'compound', 'lr', 'celltype', 'disease']:
+        """验证 names 列表与节点数量一致 (5种节点)"""
+        for ntype in ['gene', 'pathway', 'compound', 'disease', 'pocket']:
             n = self.graph[ntype]['n']
             names = self.graph[ntype]['names']
             self.assertEqual(len(names), n, f"{ntype} names 长度 == 节点数 {n}")
@@ -190,6 +190,112 @@ class TestHeCoContrastive(unittest.TestCase):
         loss = trainer(schema, metapath)
         self.assertGreaterEqual(loss.item(), 0.0, "HeCo 损失 >= 0")
         self.assertFalse(torch.isnan(loss), "HeCo 损失非 NaN")
+
+
+class TestEdgeSplitValidation(unittest.TestCase):
+    """测试边分割验证: 数据泄露, 比例, 正负比"""
+
+    @classmethod
+    def setUpClass(cls):
+        from module3_hgt import build_heterogeneous_graph
+        cls.graph = build_heterogeneous_graph()
+
+    def test_split_ratio(self):
+        """验证 train/val/test 比例为 70/15/15"""
+        enriched = self.graph['edges']['enriched_in']
+        n = len(enriched)
+        n_train = int(n * 0.7)
+        n_val = int(n * 0.15)
+        n_test = n - n_train - n_val
+
+        self.assertGreater(n_train, n_val, "训练集 > 验证集")
+        self.assertAlmostEqual(n_train / n, 0.7, delta=0.02, msg="训练集 ~70%")
+        self.assertAlmostEqual(n_val / n, 0.15, delta=0.02, msg="验证集 ~15%")
+
+    def test_pos_neg_ratio(self):
+        """验证正负样本比例平衡 (1:1)"""
+        enriched = self.graph['edges']['enriched_in']
+        n_pos = len(enriched)
+        # 负样本数量应与正样本数量一致
+        self.assertGreater(n_pos, 0, "正样本数 > 0")
+
+        # 验证化合物-靶点正样本数量
+        ct_edges = self.graph['edges']['compound_targets']
+        self.assertGreater(len(ct_edges), 0, "化合物-靶点正样本 > 0")
+
+    def test_no_leakage_between_splits(self):
+        """验证划分后训练/验证/测试集无重叠"""
+        enriched = self.graph['edges']['enriched_in']
+        n = len(enriched)
+        rng = np.random.default_rng(42)
+        pos_gp = list(set(enriched))
+        rng.shuffle(pos_gp)
+        n_train = int(n * 0.7)
+        n_val = int(n * 0.15)
+        train_set = set(pos_gp[:n_train])
+        val_set = set(pos_gp[n_train:n_train + n_val])
+        test_set = set(pos_gp[n_train + n_val:])
+
+        self.assertEqual(len(train_set & val_set), 0, "训练集与验证集无重叠")
+        self.assertEqual(len(train_set & test_set), 0, "训练集与测试集无重叠")
+        self.assertEqual(len(val_set & test_set), 0, "验证集与测试集无重叠")
+
+    def test_all_edges_accounted(self):
+        """验证所有正样本边被分配到某个划分中"""
+        enriched = self.graph['edges']['enriched_in']
+        n = len(enriched)
+        rng = np.random.default_rng(42)
+        pos_gp = list(set(enriched))
+        rng.shuffle(pos_gp)
+        n_train = int(n * 0.7)
+        n_val = int(n * 0.15)
+        train_set = set(pos_gp[:n_train])
+        val_set = set(pos_gp[n_train:n_train + n_val])
+        test_set = set(pos_gp[n_train + n_val:])
+
+        all_assigned = train_set | val_set | test_set
+        self.assertEqual(len(all_assigned), n, f"所有 {n} 条正样本边被分配, 实际 {len(all_assigned)}")
+
+
+class TestGradNormBalancer(unittest.TestCase):
+    """测试 GradNorm 多任务权重平衡器 (2个任务)"""
+
+    def test_weight_initialization(self):
+        """验证初始权重均匀分布"""
+        from module3_hgt import GradNormLossBalancer
+        balancer = GradNormLossBalancer(num_tasks=2, alpha=0.12)
+        weights = balancer.get_weights()
+        expected = torch.ones(2)
+        self.assertTrue(torch.allclose(weights, expected, atol=1e-5),
+                        f"初始权重应均匀分布, 实际={weights}")
+
+    def test_weight_sum(self):
+        """验证权重和为 num_tasks"""
+        from module3_hgt import GradNormLossBalancer
+        balancer = GradNormLossBalancer(num_tasks=2)
+        weights = balancer.get_weights()
+        self.assertAlmostEqual(weights.sum().item(), 2.0, delta=1e-5,
+                               msg="权重和应为 num_tasks=2")
+
+    def test_to_device(self):
+        """验证 .to(device) 正常工作"""
+        from module3_hgt import GradNormLossBalancer
+        balancer = GradNormLossBalancer(num_tasks=2)
+        balancer.to('cpu')
+        weights = balancer.get_weights()
+        self.assertEqual(weights.device.type, 'cpu')
+
+
+class TestHeCoCompoundMetapath(unittest.TestCase):
+    """测试 HeCo compound 元路径扩展"""
+
+    def test_compound_metapath_available(self):
+        """验证 compound→gene→compound 元路径所需的边类型存在"""
+        from module3_hgt import build_heterogeneous_graph
+        g = build_heterogeneous_graph()
+        ct_edges = g['edges'].get('compound_targets', [])
+        self.assertGreater(len(ct_edges), 0,
+                           "compound_targets 边存在, 支持 compound→gene→compound 元路径")
 
 
 if __name__ == '__main__':

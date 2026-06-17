@@ -1,0 +1,113 @@
+# ============================================================
+# 铁衰老分析项目 - 全局配置文件
+# ============================================================
+# 集中管理所有路径, 超参数, 模型配置
+
+# ---- 路径配置 ----
+paths:
+  base_dir: "."
+  data_dir: "L3"
+  output_dir: "L3_results"
+  network_dir: "network_files"
+  l1_results_dir: "L1/l1_results"
+
+  # 输入文件
+  input_files:
+    celltype_express_edges: "L3/celltype_express_edges.csv"
+    celltype_marker_genes: "L3/celltype_marker_genes.csv"
+    compound_target_edges: "L3/compound_target_edges.csv"
+    disease_gene_associations: "L3/disease_gene_associations.csv"
+    gene_coexp_edges: "L3/gene_coexp_edges.csv"
+    gene_pathway_enrichment: "L3/gene_pathway_enrichment.csv"
+    l1_gene_level_analysis: "L3/L1_gene_level_analysis.csv"
+    ligand_receptor_pairs: "L3/ligand_receptor_pairs.csv"
+    string_ppi_edges: "L3/string_ppi_edges.csv"
+    trrust_tf_target: "L3/trrust_tf_target.csv"
+
+  # 网络文件 (celltype_marker_genes.csv, ligand_receptor_pairs.csv)
+  network_files:
+    celltype_marker_genes: "network_files/celltype_marker_genes.csv"
+    ligand_receptor_pairs: "network_files/ligand_receptor_pairs.csv"
+
+# ---- 模型架构配置 ----
+model:
+  hidden_dim: 64
+  gat_out_dim: 16
+  hgt_out_dim: 16
+  num_heads: 2
+  dropout: 0.3
+  gat_residual_weight: 0.3
+  num_hgt_layers: 2
+  use_vib: true
+  use_self_distill: true
+
+# ---- 训练配置 ----
+training:
+  epochs: 200
+  learn_rate: 0.001
+  weight_decay: 1e-5
+  seed: 42
+  eval_every: 40
+  early_stop_patience: 5
+
+  # 学习率调度
+  warmup_epochs: 10
+  warmup_start_factor: 0.01
+
+  # EMA
+  ema_decay: 0.999
+
+  # VIB
+  vib_beta_max: 0.001
+  vib_warmup_epochs: 50
+
+  # DropEdge
+  dropedge_p: 0.1
+
+  # 课程学习
+  curriculum:
+    start_ratio: 0.5
+    growth_rate: 0.02
+    patience_warmup: 20
+    ema_decay: 0.9
+
+  # 负采样
+  neg_sampling:
+    hard_neg_ratio: 0.3
+    hard_neg_refresh_interval: 10
+    easy_neg_ratio: 0.7
+
+  # 数据划分
+  split:
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+
+# ---- HeCo 预训练配置 ----
+heco:
+  temperature: 0.07
+  projection_dim: 128
+  view_mask_prob: 0.3
+  pretrain_epochs_ratio: 0.167  # epochs // 6
+
+# ---- GradNorm 配置 ----
+gradnorm:
+  alpha: 0.12
+  lr_weight: 0.025
+
+# ---- 自蒸馏配置 ----
+self_distill:
+  alpha: 0.05
+  temperature: 3.0
+
+# ---- VIB 配置 ----
+vib:
+  beta: 0.001
+  latent_dim_ratio: 0.5  # latent_dim = in_dim // 2
+
+# ---- 可解释性配置 ----
+explainability:
+  target_gene: "ACSL4"
+  ig_steps: 50
+  n_perturb: 30
+  top_k_explain: 30
