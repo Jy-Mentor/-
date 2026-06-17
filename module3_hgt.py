@@ -24,7 +24,7 @@
 =====================================================================
 """
 
-import os, sys, warnings, logging, copy
+import os, warnings, logging, copy
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Set
 from collections import defaultdict
@@ -32,13 +32,10 @@ from collections import defaultdict
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 import pandas as pd
-from scipy import stats
 from sklearn.manifold import TSNE
-from sklearn.metrics import roc_auc_score, average_precision_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
 
 warnings.filterwarnings('default')
 # 在调试时可改为 'default' 查看所有警告
@@ -737,7 +734,6 @@ def build_heterogeneous_graph() -> dict:
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch_geometric.nn as gnn
 from torch_geometric.nn import GATv2Conv, HGTConv, Linear
 
 class GATEncoder(nn.Module):
@@ -1842,8 +1838,12 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
     for (g1_idx_gat, g2_idx_gat) in ppi_edges_gat:
         g1_name = graph_data['gene']['names'][g1_idx_gat]
         g2_name = graph_data['gene']['names'][g2_idx_gat]
-        ppi_gene_set.setdefault(g1_name, set()).add(g2_name)
-        ppi_gene_set.setdefault(g2_name, set()).add(g1_name)
+        if g1_name not in ppi_gene_set:
+            ppi_gene_set[g1_name] = set()
+        ppi_gene_set[g1_name].add(g2_name)
+        if g2_name not in ppi_gene_set:
+            ppi_gene_set[g2_name] = set()
+        ppi_gene_set[g2_name].add(g1_name)
 
     for i in range(n_celltypes_gat):
         for j in range(i + 1, n_celltypes_gat):
