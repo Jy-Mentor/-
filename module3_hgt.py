@@ -572,20 +572,14 @@ def build_heterogeneous_graph() -> dict:
     logger.info(f"  compound_targets 边: {len(compound_target_edges)}")
     
     # --- 边类型6: celltype_express (CellType → Gene) ---
-    # 模拟各细胞类型中高表达的基因
+    # 6种脑细胞类型标记基因 (与 module2_sc.py CELL_MARKERS 对齐)
     celltype_genes = {
-        'Neuron': ['MAP2', 'SYN1', 'DLG4', 'RBFOX3', 'SNAP25', 'GRIN1', 'GRIA1',
-                   'GABRA1', 'SLC17A7', 'BDNF', 'NTRK2', 'CREB1', 'ATF4', 'FOS'],
-        'Microglia': ['AIF1', 'ITGAM', 'CX3CR1', 'TREM2', 'P2RY12', 'TLR4',
-                       'NLRP3', 'IL1B', 'IL6', 'TNF', 'CCL2', 'CD68', 'SPP1'],
-        'Astrocyte': ['GFAP', 'S100B', 'AQP4', 'ALDH1L1', 'SLC1A2', 'SLC1A3',
-                       'GJA1', 'VIM', 'SOX9', 'NFIA', 'STAT3', 'HMOX1'],
-        'Oligodendrocyte': ['MBP', 'PLP1', 'MOG', 'MAG', 'OLIG2', 'SOX10',
-                             'CNP', 'CLDN11', 'MOBP', 'MYRF'],
-        'Endothelial': ['PECAM1', 'CLDN5', 'CDH5', 'VWF', 'TEK', 'FLT1',
-                         'KDR', 'ICAM1', 'VCAM1', 'SELE', 'ABCG2', 'SLC2A1'],
-        'Pericyte': ['PDGFRB', 'CSPG4', 'ANPEP', 'RGS5', 'DES', 'ACTA2',
-                      'CD146', 'ABCC9', 'KCNJ8', 'COX4I2'],
+        'Endothelial': ['CLDN5', 'PECAM1', 'CDH5', 'FLT1', 'TEK'],
+        'Microglia': ['CX3CR1', 'AIF1', 'TMEM119', 'CSF1R', 'P2RY12'],
+        'GABAergic': ['GAD1', 'GAD2', 'SLC32A1', 'PVALB', 'SST', 'VIP'],
+        'Pericyte': ['PDGFRB', 'RGS5', 'VTN', 'ANPEP'],
+        'Astrocyte': ['GFAP', 'AQP4', 'ALDH1L1', 'SLC1A3', 'S100B'],
+        'Oligodendrocyte': ['MBP', 'PLP1', 'MOG', 'OLIG2', 'CNP'],
     }
     celltype_express_edges = []
     for ct, genes in celltype_genes.items():
@@ -677,7 +671,8 @@ def build_heterogeneous_graph() -> dict:
     
     # L1升级: 注入节点中心性编码 (degree, PageRank, betweenness)
     graph_data = inject_centrality_features(graph_data)
-    gene_feat_dim += 3  # gene特征维度从16扩展到19
+    # 注意: gene特征维度在 inject_centrality_features 中从16扩展到19
+    # gene_feat_dim 局部变量已不再使用, 实际维度由 graph_data['gene']['x'].shape[1] 决定
     
     return graph_data
 
@@ -810,11 +805,12 @@ class HeCoPreTrainer(nn.Module):
           with Co-Contrastive Learning (Wang et al., KDD 2021)
     """
     def __init__(self, hidden_dim: int, temperature: float = 0.07,
-                 projection_dim: int = 128):
+                 projection_dim: int = 128, view_mask_prob: float = 0.3):
         super().__init__()
         self.hidden_dim = hidden_dim
         self.temperature = temperature
-        
+        self.view_mask_prob = view_mask_prob  # HeCo 视图掩码概率
+
         # 视图投影头
         self.schema_proj = nn.Sequential(
             nn.Linear(hidden_dim, projection_dim),
@@ -872,6 +868,18 @@ class HeCoPreTrainer(nn.Module):
         # 残差连接: 元路径视图 = 原始嵌入 + 2-hop聚合
         return gene_emb + 0.5 * metapath_emb
     
+    def apply_view_mask(self, z1: torch.Tensor, z2: torch.Tensor) -> tuple:
+        """
+        HeCo 视图掩码机制: 随机屏蔽部分节点的投影输出, 制造更难对比任务
+        参考: HeCo (Wang et al., KDD 2021) Section 4.3 View Mask Mechanism
+        """
+        if self.training and self.view_mask_prob > 0:
+            mask1 = torch.rand(z1.size(0), device=z1.device) > self.view_mask_prob
+            mask2 = torch.rand(z2.size(0), device=z2.device) > self.view_mask_prob
+            z1 = z1 * mask1.unsqueeze(-1).float()
+            z2 = z2 * mask2.unsqueeze(-1).float()
+        return z1, z2
+
     def forward(self, schema_emb: torch.Tensor, metapath_emb: torch.Tensor,
                 node_mask: torch.Tensor = None) -> torch.Tensor:
         """
@@ -889,7 +897,10 @@ class HeCoPreTrainer(nn.Module):
         # 投影到对比空间
         z1 = F.normalize(self.schema_proj(schema_emb), dim=-1)
         z2 = F.normalize(self.metapath_proj(metapath_emb), dim=-1)
-        
+
+        # HeCo 视图掩码: 随机屏蔽部分节点, 增加对比难度 (KDD 2021)
+        z1, z2 = self.apply_view_mask(z1, z2)
+
         N = z1.size(0)
         if N < 2:
             return torch.tensor(0.0, device=schema_emb.device)
@@ -1691,7 +1702,8 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
     
     # 细胞类型GAT边 (模拟)
     ct_gat_edges = []
-    for i in range(n_celltypes := graph_data['celltype']['n']):
+    n_celltypes = graph_data['celltype']['n']
+    for i in range(n_celltypes):
         for j in range(n_celltypes):
             if i != j:
                 ct_gat_edges.append((i, j))
@@ -2090,51 +2102,65 @@ def compute_compound_target_ranking(model, graph_data: dict, x_hgt: dict) -> pd.
     return ranking
 
 
-def compute_attention_flow(graph_data: dict, x_hgt: dict) -> dict:
-    """计算跨细胞通讯注意力流"""
+def compute_attention_flow(model, graph_data: dict, x_hgt: dict) -> dict:
+    """计算跨细胞通讯注意力流 (使用模型预测头)"""
     logger.info("=" * 60)
-    logger.info("计算跨细胞通讯注意力流")
-    
-    # 基于嵌入相似度推断通讯流
-    lr_emb = x_hgt['lr'].detach().cpu().numpy()
-    gene_emb = x_hgt['gene'].detach().cpu().numpy()
-    celltype_emb = x_hgt['celltype'].detach().cpu().numpy()
-    
+    logger.info("计算跨细胞通讯注意力流 (使用模型预测头)")
+
+    device = next(model.parameters()).device
+    lr_emb = x_hgt['lr']  # [L, D]
+    gene_emb = x_hgt['gene']  # [G, D]
     lr_names = graph_data['lr']['names']
     gene_names = graph_data['gene']['names']
     celltype_names = graph_data['celltype']['names']
-    
-    # 构建通讯矩阵: 细胞类型 → 配体基因 → 受体基因 → 细胞类型
-    # 简化: 计算每个细胞类型中LR对的高表达模式
-    
-    # 细胞类型特征 → 基因嵌入的相似度
-    ct_gene_sim = {}
-    for ci, ct in enumerate(celltype_names):
-        sims = []
-        for gi, g in enumerate(gene_names):
-            sim = np.dot(celltype_emb[ci], gene_emb[gi]) / (
-                np.linalg.norm(celltype_emb[ci]) * np.linalg.norm(gene_emb[gi]) + 1e-12
-            )
-            sims.append(sim)
-        ct_gene_sim[ct] = np.array(sims)
-    
-    # 配体-受体对 → 细胞类型通讯
+
+    # 构建细胞类型→基因表达矩阵
+    ct_gene_expr = {ct: set() for ct in celltype_names}
+    for src_ct, dst_g in graph_data['edges'].get('celltype_express', []):
+        ct_name = celltype_names[src_ct]
+        gene_name = gene_names[dst_g]
+        ct_gene_expr[ct_name].add(gene_name)
+    # 反向边也考虑
+    for src_g, dst_ct in graph_data['edges'].get('gene_to_celltype', []):
+        ct_name = celltype_names[dst_ct]
+        gene_name = gene_names[src_g]
+        ct_gene_expr[ct_name].add(gene_name)
+
     comm_flow = {}
-    for lr_name in lr_names:
-        lig, rec = lr_name.split('-')
-        lig_idx = gene_names.index(lig) if lig in gene_names else -1
-        rec_idx = gene_names.index(rec) if rec in gene_names else -1
-        
-        if lig_idx >= 0 and rec_idx >= 0:
-            # 计算每个细胞类型对这条LR的通讯强度
+    model.eval()
+    with torch.no_grad():
+        # 对每条LR, 计算其与配体/受体基因的binding probability
+        for lr_idx, lr_name in enumerate(lr_names):
+            parts = lr_name.split('-')
+            if len(parts) < 2:
+                continue
+            lig_name, rec_name = parts[0], parts[1]
+            lig_idx = gene_names.index(lig_name) if lig_name in gene_names else -1
+            rec_idx = gene_names.index(rec_name) if rec_name in gene_names else -1
+            if lig_idx < 0 or rec_idx < 0:
+                continue
+
+            # 使用模型预测LR→ligand和LR→receptor的通讯概率
+            lr_expand = lr_emb[lr_idx].unsqueeze(0)  # [1, D]
+            lig_emb = gene_emb[lig_idx].unsqueeze(0)  # [1, D]
+            rec_emb = gene_emb[rec_idx].unsqueeze(0)  # [1, D]
+
+            logit_lig = model.predict_cell_comm(lr_expand, lig_emb).squeeze()
+            logit_rec = model.predict_cell_comm(lr_expand, rec_emb).squeeze()
+            prob_lig = torch.sigmoid(logit_lig).item()
+            prob_rec = torch.sigmoid(logit_rec).item()
+
+            # 计算细胞类型通讯流: 源细胞表达配体 → 目标细胞表达受体
             for ct_src in celltype_names:
-                src_sim = ct_gene_sim[ct_src][lig_idx]
+                has_lig = lig_name in ct_gene_expr.get(ct_src, set())
+                src_factor = prob_lig if has_lig else prob_lig * 0.3  # 不表达仍有低概率
                 for ct_dst in celltype_names:
-                    dst_sim = ct_gene_sim[ct_dst][rec_idx]
-                    flow = (src_sim + 1) * (dst_sim + 1) / 4  # 归一化到[0,1]
+                    has_rec = rec_name in ct_gene_expr.get(ct_dst, set())
+                    dst_factor = prob_rec if has_rec else prob_rec * 0.3
+                    flow = (src_factor + dst_factor) / 2
                     key = (ct_src, ct_dst, lr_name)
-                    comm_flow[key] = flow
-    
+                    comm_flow[key] = float(flow)
+
     return comm_flow
 
 
@@ -2182,26 +2208,31 @@ def compute_gnn_explainability(model, graph_data: dict, x_dict: dict,
         for edge_key in edge_index_dict:
             if not isinstance(edge_key, tuple) or len(edge_key) != 3:
                 continue
-            
+
             ei = edge_index_dict[edge_key]
             if ei.size(1) < 2:
                 continue
-            
+
             ek_str = f"{edge_key[0]}-{edge_key[1]}-{edge_key[2]}"
-            
+
             try:
-                # 创建移除该边类型的边字典
+                # 创建移除该边类型的边字典 (保留其他边不变)
                 perturbed_dict = dict(edge_index_dict)
-                perturbed_dict[edge_key] = torch.zeros((2, 0), dtype=torch.long, device=device)
-                
+                # 移除当前边类型: 用仅含1条自环边替代空边, 避免 HGTConv shape 错误
+                # 选择第一条边的目标节点作为自环节点
+                first_dst = ei[1, 0].item()
+                perturbed_dict[edge_key] = torch.tensor(
+                    [[first_dst], [first_dst]], dtype=torch.long, device=device
+                )
+
                 with torch.no_grad():
                     x_hgt_pert = model(x_dict, perturbed_dict, gene_gat_edge, celltype_gat_edge)
                     pert_norm = torch.norm(x_hgt_pert['gene'][target_idx]).item()
-                
+
                 # 重要性 = 移除后嵌入变化
                 delta = abs(base_norm - pert_norm)
                 edge_type_importance[ek_str] = float(delta)
-                
+
                 # 归一化边重要性掩码 (全边等权, 扰动法给出类型级重要性)
                 edge_masks[ek_str] = np.ones(ei.size(1)) * delta
                 
@@ -2377,7 +2408,10 @@ def plot_fig3b_attention_heatmap(graph_data: dict, x_hgt: dict, save_path: str,
             if nt in x_hgt:
                 type_means[nt] = x_hgt[nt].detach().cpu().numpy().mean(axis=0)
             else:
-                type_means[nt] = np.random.randn(32)
+                # 使用 x_hgt 中第一个有效节点的维度
+                first_key = next(k for k in x_hgt if x_hgt[k] is not None)
+                emb_dim = x_hgt[first_key].shape[-1]
+                type_means[nt] = np.random.randn(emb_dim)
         
         attn_matrix = np.zeros((n, n))
         for i, nt1 in enumerate(node_types):
@@ -2704,7 +2738,7 @@ def main():
     compound_ranking = compute_compound_target_ranking(model, graph_data, x_hgt)
     
     # 5. 跨细胞通讯注意力流
-    comm_flow = compute_attention_flow(graph_data, x_hgt)
+    comm_flow = compute_attention_flow(model, graph_data, x_hgt)
     
     # 6. Top-30 候选化合物 (模块四DeepPurpose筛选输入)
     gene_names = graph_data['gene']['names']
