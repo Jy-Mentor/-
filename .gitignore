@@ -7,3 +7,4 @@ __pycache__/
 *.lnk
 files_to_delete.txt
 to_delete.json
+module3_interface/raw_counts_for_cytotrace.mtx

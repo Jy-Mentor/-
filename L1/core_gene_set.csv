@@ -1,0 +1,254 @@
+﻿gene,category,in_ferroptosis,in_senescence,in_shared,in_iron_aging_list,n_sig_datasets_L1,mean_abs_log2FC,rra_padj,evidence_tier
+CXCL10,桥接基因 | 纯衰老 | 铁衰老候选,False,True,True,True,4,84.099,0.3973,Tier1_核心
+HMGB1,纯衰老 | 铁衰老候选,False,True,False,True,4,215.833,0.4898,Tier1_核心
+IFNG,桥接基因 | 纯衰老 | 铁衰老候选,False,True,True,True,4,55.971,0.5955,Tier1_核心
+IRF1,桥接基因 | 铁衰老候选,False,False,True,True,4,1982.381,0.3469,Tier1_核心
+PTGS2,纯铁死亡 | 铁衰老候选,True,False,False,True,4,814.784,0.3225,Tier1_核心
+SOD1,桥接基因 | 铁衰老候选,False,False,True,True,4,1357.313,0.324,Tier1_核心
+ATF3,纯铁死亡 | 铁衰老候选,True,False,False,True,3,22.147,0.533,Tier1_核心
+ATG3,纯铁死亡 | 铁衰老候选,True,False,False,True,3,90.813,0.5934,Tier1_核心
+BAP1,纯铁死亡 | 铁衰老候选,True,False,False,True,3,54.681,0.4315,Tier1_核心
+CD74,桥接基因 | 铁衰老候选,False,False,True,True,3,2263.279,0.3469,Tier1_核心
+CDO1,纯铁死亡 | 铁衰老候选,True,False,False,True,3,14.956,0.4088,Tier1_核心
+DPP4,纯铁死亡 | 铁衰老候选,True,False,False,True,3,78.73,0.3973,Tier1_核心
+E2F1,纯衰老 | 铁衰老候选,False,True,False,True,3,19.713,0.3973,Tier1_核心
+HIF1A,桥接基因 | 铁衰老候选,False,False,True,True,3,591.76,0.4088,Tier1_核心
+HMOX1,纯铁死亡 | 铁衰老候选,True,False,False,True,3,149.65,0.418,Tier1_核心
+IGFBP7,纯衰老 | 铁衰老候选,False,True,False,True,3,34.517,0.6593,Tier1_核心
+IL1B,桥接基因 | 纯衰老 | 铁衰老候选,False,True,True,True,3,450.835,0.3973,Tier1_核心
+KEAP1,桥接基因 | 铁衰老候选,False,False,True,True,3,73.35,0.3469,Tier1_核心
+MAPK1,纯衰老 | 铁衰老候选,False,True,False,True,3,530.048,0.3225,Tier1_核心
+MAPK14,纯衰老 | 铁衰老候选,False,True,False,True,3,87.414,0.473,Tier1_核心
+S100A8,桥接基因 | 铁衰老候选,False,False,True,True,3,2843.834,0.3876,Tier1_核心
+SAT1,纯铁死亡 | 铁衰老候选,True,False,False,True,3,2932.484,0.3225,Tier1_核心
+TFRC,纯铁死亡 | 铁衰老候选,True,False,False,True,3,297.748,0.4315,Tier1_核心
+TLR4,桥接基因 | 铁衰老候选,False,False,True,True,3,334.371,0.3469,Tier1_核心
+ZEB1,纯铁死亡 | 铁衰老候选,True,False,False,True,3,12.749,0.4088,Tier1_核心
+IL6,纯衰老 | 铁衰老候选,False,True,False,True,2,6.595,0.4499,Tier2_双验证
+ABCC1,纯铁死亡 | 铁衰老候选,True,False,False,True,0,0.159,,Tier2_双验证
+ACSL3,纯铁死亡 | 铁衰老候选,True,False,False,True,0,,,Tier2_双验证
+CRYAB,纯铁死亡 | 铁衰老候选,True,False,False,True,0,,,Tier2_双验证
+CXCL8,纯衰老 | 铁衰老候选,False,True,False,True,0,,,Tier2_双验证
+E2F3,纯衰老 | 铁衰老候选,False,True,False,True,0,0.363,,Tier2_双验证
+FABP5,纯铁死亡 | 铁衰老候选,True,False,False,True,0,,,Tier2_双验证
+FBXL5,纯铁死亡 | 铁衰老候选,True,False,False,True,0,,,Tier2_双验证
+GSS,纯铁死亡 | 铁衰老候选,True,False,False,True,0,,,Tier2_双验证
+HERC2,纯铁死亡 | 铁衰老候选,True,False,False,True,0,,,Tier2_双验证
+NLRP3,桥接基因 | 铁衰老候选,False,False,True,True,0,0.81,,Tier2_双验证
+SLC39A8,纯铁死亡 | 铁衰老候选,True,False,False,True,0,,,Tier2_双验证
+STAT1,纯衰老 | 铁衰老候选,False,True,False,True,0,,,Tier2_双验证
+CCL2,纯衰老,False,True,False,False,4,29.099,0.489,Tier3_L1支持
+CDK4,纯衰老,False,True,False,False,4,132.023,0.4315,Tier3_L1支持
+CHEK1,纯衰老,False,True,False,False,4,16.792,0.6181,Tier3_L1支持
+DDIT3,纯铁死亡,True,False,False,False,4,136.99,0.3469,Tier3_L1支持
+EIF2A,纯铁死亡,True,False,False,False,4,246.451,0.4541,Tier3_L1支持
+HMGA1,纯衰老,False,True,False,False,4,154.675,0.424,Tier3_L1支持
+HSPB1,纯铁死亡,True,False,False,False,4,816.209,0.3469,Tier3_L1支持
+JAK2,纯衰老,False,True,False,False,4,171.159,0.3469,Tier3_L1支持
+MAX,纯衰老,False,True,False,False,4,180.148,0.5534,Tier3_L1支持
+MMP13,纯衰老,False,True,False,False,4,10.886,0.5888,Tier3_L1支持
+MNT,纯衰老,False,True,False,False,4,171.448,0.3225,Tier3_L1支持
+NFKB1,纯铁死亡,True,False,False,False,4,1039.405,0.3469,Tier3_L1支持
+PRKAA1,纯铁死亡,True,False,False,False,4,287.804,0.4088,Tier3_L1支持
+PRNP,纯铁死亡,True,False,False,False,4,970.837,0.3973,Tier3_L1支持
+PTEN,纯衰老,False,True,False,False,4,681.784,0.4088,Tier3_L1支持
+RPS6KB1,纯衰老,False,True,False,False,4,136.205,0.5802,Tier3_L1支持
+SERPINE1,纯衰老,False,True,False,False,4,15.239,0.6021,Tier3_L1支持
+SLC40A1,纯铁死亡,True,False,False,False,4,638.557,0.4088,Tier3_L1支持
+STEAP3,纯铁死亡,True,False,False,False,4,27.059,0.3973,Tier3_L1支持
+TERF2,纯衰老,False,True,False,False,4,75.206,0.5668,Tier3_L1支持
+TFAM,纯铁死亡,True,False,False,False,4,197.222,0.3973,Tier3_L1支持
+XRCC1,纯衰老,False,True,False,False,4,54.554,0.3469,Tier3_L1支持
+XRCC5,纯衰老,False,True,False,False,4,135.398,0.4088,Tier3_L1支持
+ABCC2,纯铁死亡,True,False,False,False,3,16.624,0.6398,Tier3_L1支持
+ACSL4,纯铁死亡,True,False,False,False,3,533.638,0.4088,Tier3_L1支持
+AKT1,纯衰老,False,True,False,False,3,730.961,0.3973,Tier3_L1支持
+ALOX12,纯铁死亡,True,False,False,False,3,57.596,0.418,Tier3_L1支持
+ALOX5,纯铁死亡,True,False,False,False,3,4249.234,0.3469,Tier3_L1支持
+ATF2,纯衰老,False,True,False,False,3,23.656,0.4715,Tier3_L1支持
+ATF4,纯铁死亡,True,False,False,False,3,1166.475,0.3469,Tier3_L1支持
+ATG5,纯铁死亡,True,False,False,False,3,55.082,0.6274,Tier3_L1支持
+ATG7,纯铁死亡,True,False,False,False,3,254.047,0.4315,Tier3_L1支持
+ATR,纯衰老,False,True,False,False,3,71.909,0.5188,Tier3_L1支持
+BECN1,纯铁死亡,True,False,False,False,3,105.055,0.3469,Tier3_L1支持
+BLM,纯衰老,False,True,False,False,3,22.477,0.4315,Tier3_L1支持
+BNIP3,纯铁死亡,True,False,False,False,3,165.465,0.5188,Tier3_L1支持
+BNIP3L,纯铁死亡,True,False,False,False,3,540.743,0.4088,Tier3_L1支持
+BRCA1,纯衰老,False,True,False,False,3,21.753,0.4088,Tier3_L1支持
+BRCA2,纯衰老,False,True,False,False,3,5.694,0.3973,Tier3_L1支持
+CBS,纯铁死亡,True,False,False,False,3,164.385,0.4088,Tier3_L1支持
+CCNA2,纯衰老,False,True,False,False,3,20.832,0.4983,Tier3_L1支持
+CCNB1,纯衰老,False,True,False,False,3,10.31,0.5621,Tier3_L1支持
+CCND1,纯衰老,False,True,False,False,3,12.777,0.4088,Tier3_L1支持
+CCNE1,纯衰老,False,True,False,False,3,7.366,0.4088,Tier3_L1支持
+CD38,纯衰老,False,True,False,False,3,31.735,0.4411,Tier3_L1支持
+CDK2,纯衰老,False,True,False,False,3,48.487,0.4088,Tier3_L1支持
+CDKN1A,桥接基因 | 纯衰老,False,True,True,False,3,473.234,0.3225,Tier3_L1支持
+CDKN1B,纯衰老,False,True,False,False,3,703.714,0.4071,Tier3_L1支持
+CDKN2A,纯衰老,False,True,False,False,3,12.782,0.3973,Tier3_L1支持
+CDKN2B,纯衰老,False,True,False,False,3,53.646,0.6021,Tier3_L1支持
+CHAC1,纯铁死亡,True,False,False,False,3,12.497,0.4315,Tier3_L1支持
+CHEK2,纯衰老,False,True,False,False,3,19.575,0.4331,Tier3_L1支持
+COL1A1,纯衰老,False,True,False,False,3,7.572,0.4088,Tier3_L1支持
+CREB1,纯衰老,False,True,False,False,3,1357.663,0.3973,Tier3_L1支持
+CREBBP,纯衰老,False,True,False,False,3,502.896,0.4088,Tier3_L1支持
+CSE1L,纯铁死亡,True,False,False,False,3,68.358,0.6676,Tier3_L1支持
+E2F2,纯衰老,False,True,False,False,3,1812.084,0.3469,Tier3_L1支持
+EP300,纯衰老,False,True,False,False,3,120.279,0.4315,Tier3_L1支持
+FANCD2,纯铁死亡,True,False,False,False,3,56.591,0.6274,Tier3_L1支持
+FN1,纯衰老,False,True,False,False,3,7.297,0.4088,Tier3_L1支持
+FOXO1,纯铁死亡,True,False,False,False,3,243.156,0.3973,Tier3_L1支持
+FOXO3,纯铁死亡,True,False,False,False,3,1771.403,0.3973,Tier3_L1支持
+FOXO4,纯衰老,False,True,False,False,3,578.737,0.3206,Tier3_L1支持
+GABARAP,纯铁死亡,True,False,False,False,3,195.057,0.4088,Tier3_L1支持
+GABARAPL1,纯铁死亡,True,False,False,False,3,535.024,0.4088,Tier3_L1支持
+GADD45A,纯衰老,False,True,False,False,3,180.539,0.3973,Tier3_L1支持
+GADD45B,纯衰老,False,True,False,False,3,66.544,0.3973,Tier3_L1支持
+GCLC,纯铁死亡,True,False,False,False,3,36.414,0.4761,Tier3_L1支持
+GCLM,纯铁死亡,True,False,False,False,3,158.748,0.5235,Tier3_L1支持
+GOT1,纯铁死亡,True,False,False,False,3,61.888,0.3469,Tier3_L1支持
+GPX4,纯铁死亡,True,False,False,False,3,1949.93,0.3973,Tier3_L1支持
+HDAC1,纯衰老,False,True,False,False,3,719.363,0.3469,Tier3_L1支持
+HDAC2,纯衰老,False,True,False,False,3,272.865,0.4088,Tier3_L1支持
+HDAC3,纯衰老,False,True,False,False,3,80.686,0.3469,Tier3_L1支持
+HSP90AA1,纯铁死亡,True,False,False,False,3,1661.276,0.3225,Tier3_L1支持
+HSPA5,纯铁死亡,True,False,False,False,3,48.174,0.4088,Tier3_L1支持
+HSPD1,纯铁死亡,True,False,False,False,3,133.491,0.3469,Tier3_L1支持
+ICAM1,纯衰老,False,True,False,False,3,18.829,0.5188,Tier3_L1支持
+IGFBP3,纯衰老,False,True,False,False,3,26.694,0.4761,Tier3_L1支持
+IGFBP5,纯衰老,False,True,False,False,3,8.45,0.3469,Tier3_L1支持
+IL10,纯衰老,False,True,False,False,3,3931.395,0.3469,Tier3_L1支持
+IL18,纯衰老,False,True,False,False,3,6154.731,0.3206,Tier3_L1支持
+IL1A,纯衰老,False,True,False,False,3,4.926,0.5188,Tier3_L1支持
+JUN,纯衰老,False,True,False,False,3,37.595,0.4282,Tier3_L1支持
+LIG3,纯衰老,False,True,False,False,3,32.501,0.4499,Tier3_L1支持
+LIG4,纯衰老,False,True,False,False,3,81.836,0.6676,Tier3_L1支持
+LMNB1,纯衰老,False,True,False,False,3,231.657,0.4088,Tier3_L1支持
+LPIN1,纯铁死亡,True,False,False,False,3,267.448,0.3225,Tier3_L1支持
+LPIN2,纯铁死亡,True,False,False,False,3,86.965,0.533,Tier3_L1支持
+MAP1LC3A,纯铁死亡,True,False,False,False,3,596.77,0.4088,Tier3_L1支持
+MAPK3,纯衰老,False,True,False,False,3,483.179,0.4088,Tier3_L1支持
+MDM4,纯衰老,False,True,False,False,3,95.076,0.4664,Tier3_L1支持
+MMP2,纯衰老,False,True,False,False,3,27.366,0.4327,Tier3_L1支持
+MMP3,纯衰老,False,True,False,False,3,12.824,0.4203,Tier3_L1支持
+MMP9,纯铁死亡,True,False,False,False,3,3407.415,0.3469,Tier3_L1支持
+MTOR,纯衰老,False,True,False,False,3,73.246,0.644,Tier3_L1支持
+MYC,纯衰老,False,True,False,False,3,260.72,0.4088,Tier3_L1支持
+NBN,纯衰老,False,True,False,False,3,39.455,0.4657,Tier3_L1支持
+NCOA4,纯铁死亡,True,False,False,False,3,3427.537,0.3469,Tier3_L1支持
+NFE2L2,纯铁死亡,True,False,False,False,3,334.439,0.3973,Tier3_L1支持
+PARP1,纯衰老,False,True,False,False,3,355.925,0.3225,Tier3_L1支持
+PCNA,纯衰老,False,True,False,False,3,273.651,0.4088,Tier3_L1支持
+PLIN2,纯铁死亡,True,False,False,False,3,206.048,0.4088,Tier3_L1支持
+PRKDC,纯衰老,False,True,False,False,3,453.379,0.4088,Tier3_L1支持
+RAD50,纯衰老,False,True,False,False,3,7.942,0.3876,Tier3_L1支持
+RB1,桥接基因,False,False,True,False,3,36.042,0.4282,Tier3_L1支持
+RELA,纯铁死亡,True,False,False,False,3,49.959,0.6001,Tier3_L1支持
+RGS4,纯铁死亡,True,False,False,False,3,6.517,0.4088,Tier3_L1支持
+SELE,纯衰老,False,True,False,False,3,14.935,0.4327,Tier3_L1支持
+SESN2,纯铁死亡,True,False,False,False,3,13.869,0.4715,Tier3_L1支持
+SIRT6,纯衰老,False,True,False,False,3,7.129,0.3469,Tier3_L1支持
+SLC3A2,纯铁死亡,True,False,False,False,3,34.348,0.5188,Tier3_L1支持
+SLC7A11,纯铁死亡,True,False,False,False,3,9.923,0.4292,Tier3_L1支持
+SQSTM1,纯铁死亡,True,False,False,False,3,712.075,0.3469,Tier3_L1支持
+STAT3,纯衰老,False,True,False,False,3,478.295,0.3973,Tier3_L1支持
+TERF1,纯衰老,False,True,False,False,3,47.921,0.5755,Tier3_L1支持
+TERT,纯衰老,False,True,False,False,3,12.242,0.4088,Tier3_L1支持
+TGFB1,纯衰老,False,True,False,False,3,12.31,0.5955,Tier3_L1支持
+TIMP1,纯衰老,False,True,False,False,3,2473.867,0.3469,Tier3_L1支持
+TIMP2,纯衰老,False,True,False,False,3,533.062,0.3206,Tier3_L1支持
+TNF,纯衰老,False,True,False,False,3,83.476,0.3876,Tier3_L1支持
+TNFRSF1A,纯衰老,False,True,False,False,3,1073.526,0.3469,Tier3_L1支持
+TP53,桥接基因,False,False,True,False,3,45.838,0.418,Tier3_L1支持
+TRIB3,纯铁死亡,True,False,False,False,3,28.294,0.6676,Tier3_L1支持
+TSC1,纯衰老,False,True,False,False,3,139.775,0.3225,Tier3_L1支持
+TSC2,纯衰老,False,True,False,False,3,2.994,0.3973,Tier3_L1支持
+VDAC2,纯铁死亡,True,False,False,False,3,47.97,0.6274,Tier3_L1支持
+VDAC3,纯铁死亡,True,False,False,False,3,579.132,0.3225,Tier3_L1支持
+XRCC6,纯衰老,False,True,False,False,3,417.111,0.3225,Tier3_L1支持
+ADIPOQ,纯铁死亡,True,False,False,False,2,15.105,0.4088,Tier3_L1支持
+BRD4,纯衰老,False,True,False,False,2,3.452,0.4292,Tier3_L1支持
+COL3A1,纯衰老,False,True,False,False,2,6.692,0.5188,Tier3_L1支持
+HMGA2,纯衰老,False,True,False,False,2,11.859,0.3973,Tier3_L1支持
+MDM2,纯衰老,False,True,False,False,2,2.423,0.4761,Tier3_L1支持
+MMP10,纯衰老,False,True,False,False,2,6.681,0.3469,Tier3_L1支持
+MMP12,纯衰老,False,True,False,False,2,6.44,0.4292,Tier3_L1支持
+PPARGC1A,纯铁死亡,True,False,False,False,2,4.096,0.4088,Tier3_L1支持
+PRKAA2,纯铁死亡,True,False,False,False,2,3.219,0.4088,Tier3_L1支持
+SNAI1,纯铁死亡,True,False,False,False,2,2.669,0.4088,Tier3_L1支持
+COL1A2,纯衰老,False,True,False,False,1,6.033,0.3973,Tier4_单证据
+MAPK8,纯衰老,False,True,False,False,1,3.065,0.4088,Tier4_单证据
+VEGFA,纯衰老,False,True,False,False,1,4.957,0.5955,Tier4_单证据
+ACVR1B,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+ALOX15,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+ATM,纯衰老,False,True,False,False,0,0.139,,Tier4_单证据
+BCL6,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+BRD7,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+CAVIN1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+CDK6,纯衰老,False,True,False,False,0,1.019,,Tier4_单证据
+CTSB,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+DUOX1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+DYRK1A,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+EBF3,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+EDN1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+EGR1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+EIF2AK3,纯铁死亡,True,False,False,False,0,0.003,,Tier4_单证据
+EPHA2,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+EPHA4,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+ERN1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+FBXO31,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+FOS,纯衰老,False,True,False,False,0,0.525,,Tier4_单证据
+FOSL1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+FTH1,纯铁死亡,True,False,False,False,0,0.098,,Tier4_单证据
+FTL,纯铁死亡,True,False,False,False,0,,,Tier4_单证据
+GMFB,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+H2AX,纯衰老,False,True,False,False,0,,,Tier4_单证据
+HBP1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+HERPUD1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+IRF7,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+IRF9,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+KDM6B,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+KLF6,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+LACTB,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+LCN2,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+LGMN,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+LIFR,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+LOX,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+LPCAT3,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+MAP1LC3B,纯铁死亡,True,False,False,False,0,0.069,,Tier4_单证据
+MAP3K14,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+MCU,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+MMP1,纯衰老,False,True,False,False,0,,,Tier4_单证据
+MPO,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+MRE11,纯衰老,False,True,False,False,0,,,Tier4_单证据
+NOX4,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+NR1D1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+NR2F2,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+NUAK2,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+PADI4,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+PDE4B,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+PNPLA2,纯铁死亡,True,False,False,False,0,0.081,,Tier4_单证据
+PPP2R2B,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+PRKD1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+PTBP1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+RAD51,纯衰老,False,True,False,False,0,0.027,,Tier4_单证据
+RBM3,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+RUNX3,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SETD7,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SIRT1,纯铁死亡,True,False,False,False,0,0.38,,Tier4_单证据
+SLC1A5,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SMARCB1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SMURF2,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SNCA,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SOCS1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SOCS2,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+SP1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+TBX2,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+TNFAIP1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+TNFAIP3,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+TXNIP,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+VCAM1,纯衰老,False,True,False,False,0,0.298,,Tier4_单证据
+WNT5A,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+WRN,纯衰老,False,True,False,False,0,0.075,,Tier4_单证据
+WWTR1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据
+YAP1,铁衰老候选 | 铁衰老独有,False,False,False,True,0,,,Tier4_单证据

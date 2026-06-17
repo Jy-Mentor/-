@@ -755,11 +755,16 @@ def export_cytotrace_data(adata_full: anndata.AnnData):
     if not sparse.issparse(raw):
         raw = sparse.csr_matrix(raw)
 
-    # 保存为 .mtx（稀疏, 约200MB而非9GB）
+    # 保存为 .mtx (稀疏, ~1GB而非9GB dense; mmwrite 需相对路径)
     from scipy.io import mmwrite
-    out_mtx = MODULE3_IFACE / "raw_counts_for_cytotrace.mtx"
-    mmwrite(str(out_mtx), raw)
-    logger.info(f"  Raw counts MTX: {out_mtx}")
+    import os as _os
+    _cwd = _os.getcwd()
+    try:
+        _os.chdir(str(MODULE3_IFACE))
+        mmwrite("raw_counts_for_cytotrace.mtx", raw)
+    finally:
+        _os.chdir(_cwd)
+    logger.info(f"  Raw counts MTX: {MODULE3_IFACE / 'raw_counts_for_cytotrace.mtx'}")
 
     # 保存基因名和细胞名
     pd.Series(adata_full.raw.var_names).to_csv(

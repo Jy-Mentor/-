@@ -1,0 +1,16 @@
+cell_type,score_type,observed,expected,p_value,significant
+Astrocyte,ferroptosis,1.6329,0.0508,0.005988,+
+Endothelial,ferroptosis,0.8446,-0.0066,0.003992,+
+Microglia,ferroptosis,1.4062,0.0136,0.003992,+
+Oligodendrocyte,ferroptosis,5.2032,0.0152,0.003992,+
+Pericyte,ferroptosis,1.022,-0.001,0.005988,+
+Astrocyte,senescence,0.7555,0.0373,0.017964,+
+Endothelial,senescence,0.7404,0.0009,0.011976,+
+Microglia,senescence,0.9295,-0.0039,0.015968,+
+Oligodendrocyte,senescence,0.2781,0.0038,0.06986,
+Pericyte,senescence,0.8013,0.0003,0.007984,+
+Astrocyte,consensus,0.1131,0.0093,0.103792,
+Endothelial,consensus,0.0541,0.0059,0.147705,
+Microglia,consensus,0.0518,0.0042,0.155689,
+Oligodendrocyte,consensus,-0.0083,0.0468,0.381238,
+Pericyte,consensus,0.0151,0.0199,0.283433,
