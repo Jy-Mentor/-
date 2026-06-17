@@ -490,13 +490,16 @@ def build_heterogeneous_graph() -> dict:
     gene_coexp_edges = []
     # 来源1: 真实 STRING PPI (小鼠, score>=400)
     string_ppi_file = BASE_DIR / "L3" / "string_ppi_edges.csv"
+    string_ppi_edges = []  # 独立存储, 供细胞类型GAT边构建
     if string_ppi_file.exists():
         string_ppi = pd.read_csv(string_ppi_file)
         for _, row in string_ppi.iterrows():
             a, b = row['protein_A'], row['protein_B']
             if a in gene_to_idx and b in gene_to_idx and a != b:
-                gene_coexp_edges.append((gene_to_idx[a], gene_to_idx[b]))
-        logger.info(f"  真实 STRING PPI 边: {len(gene_coexp_edges)}")
+                ia, ib = gene_to_idx[a], gene_to_idx[b]
+                gene_coexp_edges.append((ia, ib))
+                string_ppi_edges.append((ia, ib))
+        logger.info(f"  真实 STRING PPI 边: {len(string_ppi_edges)}")
     # 来源2: L1 log2FC 共表达相关性 (补充表达协调信息)
     coexp_edges = set()
     if l1_gene_file.exists():
@@ -709,6 +712,8 @@ def build_heterogeneous_graph() -> dict:
             'gene_to_lr': gene_to_lr_edges,
             'gene_to_compound': gene_to_compound_edges,
             'gene_to_celltype': gene_to_celltype_edges,
+            # 纯 STRING PPI 边 (供细胞类型GAT边构建)
+            'string_ppi': string_ppi_edges,
         },
     }
     
@@ -2042,7 +2047,7 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
                 gp_pred, gp_labels_c, reduction='none'
             )
             curriculum.update_sample_difficulty(
-                gp_edges_c.cpu().tolist(), gp_loss_per_sample
+                [tuple(x) for x in gp_edges_c.cpu().tolist()], gp_loss_per_sample
             )
         
         if epoch % 40 == 0:
