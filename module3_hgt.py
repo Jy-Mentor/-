@@ -574,12 +574,14 @@ def build_heterogeneous_graph() -> dict:
     # --- 边类型6: celltype_express (CellType → Gene) ---
     # 6种脑细胞类型标记基因 (与 module2_sc.py CELL_MARKERS 对齐)
     celltype_genes = {
-        'Endothelial': ['CLDN5', 'PECAM1', 'CDH5', 'FLT1', 'TEK'],
-        'Microglia': ['CX3CR1', 'AIF1', 'TMEM119', 'CSF1R', 'P2RY12'],
-        'GABAergic': ['GAD1', 'GAD2', 'SLC32A1', 'PVALB', 'SST', 'VIP'],
-        'Pericyte': ['PDGFRB', 'RGS5', 'VTN', 'ANPEP'],
-        'Astrocyte': ['GFAP', 'AQP4', 'ALDH1L1', 'SLC1A3', 'S100B'],
-        'Oligodendrocyte': ['MBP', 'PLP1', 'MOG', 'OLIG2', 'CNP'],
+        'Neuron': ['MAP2', 'SYN1', 'DLG4', 'RBFOX3', 'SNAP25', 'GRIN1', 'GRIA1',
+                   'GABRA1', 'SLC17A7', 'BDNF', 'NTRK2', 'CREB1', 'ATF4', 'FOS'],
+        'Microglia': ['CX3CR1', 'AIF1', 'TMEM119', 'CSF1R', 'P2RY12', 'TLR4',
+                      'NLRP3', 'IL1B', 'IL6', 'TNF', 'CCL2', 'CD68', 'SPP1'],
+        'Astrocyte': ['GFAP', 'AQP4', 'ALDH1L1', 'SLC1A3', 'S100B', 'SOX9', 'NFIA', 'STAT3', 'HMOX1'],
+        'Oligodendrocyte': ['MBP', 'PLP1', 'MOG', 'MAG', 'OLIG2', 'SOX10', 'CNP', 'CLDN11', 'MOBP', 'MYRF'],
+        'Endothelial': ['CLDN5', 'PECAM1', 'CDH5', 'FLT1', 'TEK', 'VWF', 'ABCG2', 'SLC2A1'],
+        'Pericyte': ['PDGFRB', 'RGS5', 'VTN', 'ANPEP', 'DES', 'ACTA2'],
     }
     celltype_express_edges = []
     for ct, genes in celltype_genes.items():
@@ -811,6 +813,9 @@ class HeCoPreTrainer(nn.Module):
         self.temperature = temperature
         self.view_mask_prob = view_mask_prob  # HeCo 视图掩码概率
 
+        logger.info(f"  [HeCoPreTrainer] temperature={temperature}, "
+                    f"projection_dim={projection_dim}, view_mask_prob={view_mask_prob}")
+
         # 视图投影头
         self.schema_proj = nn.Sequential(
             nn.Linear(hidden_dim, projection_dim),
@@ -825,48 +830,6 @@ class HeCoPreTrainer(nn.Module):
         
         # 元路径注意力: 聚合多个元路径的信息
         self.metapath_att = nn.Linear(projection_dim, 1)
-    
-    def build_metapath_view(self, gene_emb: torch.Tensor,
-                             gene_to_pathway_ei: torch.Tensor,
-                             pathway_emb: torch.Tensor) -> torch.Tensor:
-        """
-        构建2-hop元路径视图: gene → pathway → gene (HeCo KDD 2021)
-        
-        正确实现: 对每个 pathway 桥节点, 找到所有连接它的基因,
-        让共享同一 pathway 的基因互相聚合。
-        
-        metapath = gene ← enriched_in ← pathway → enriched_in → gene
-        """
-        N_genes = gene_emb.size(0)
-        device = gene_emb.device
-        
-        if gene_to_pathway_ei is None or gene_to_pathway_ei.size(1) == 0:
-            return gene_emb  # fallback
-        
-        src_gene = gene_to_pathway_ei[0]  # [E] gene indices
-        dst_pw = gene_to_pathway_ei[1]    # [E] pathway indices
-        
-        if dst_pw.max() >= pathway_emb.size(0):
-            return gene_emb
-        
-        # 1-hop: gene → pathway (聚合每个pathway连接的所有基因嵌入)
-        gene_to_pw = torch.zeros(pathway_emb.size(0), self.hidden_dim, device=device)
-        gene_to_pw = gene_to_pw.index_add(0, dst_pw, gene_emb[src_gene])
-        pw_degree = torch.zeros(pathway_emb.size(0), device=device)
-        pw_degree = pw_degree.index_add(0, dst_pw, torch.ones_like(dst_pw, dtype=torch.float32))
-        pw_degree = torch.clamp(pw_degree, min=1)
-        gene_to_pw = gene_to_pw / pw_degree.unsqueeze(-1)  # [n_pw, D]
-        
-        # 2-hop: pathway → gene (将pathway聚合结果散射回基因)
-        metapath_emb = torch.zeros(N_genes, self.hidden_dim, device=device)
-        metapath_emb = metapath_emb.index_add(0, src_gene, gene_to_pw[dst_pw])
-        gene_degree = torch.zeros(N_genes, device=device)
-        gene_degree = gene_degree.index_add(0, src_gene, torch.ones_like(src_gene, dtype=torch.float32))
-        gene_degree = torch.clamp(gene_degree, min=1)
-        metapath_emb = metapath_emb / gene_degree.unsqueeze(-1)
-        
-        # 残差连接: 元路径视图 = 原始嵌入 + 2-hop聚合
-        return gene_emb + 0.5 * metapath_emb
     
     def apply_view_mask(self, z1: torch.Tensor, z2: torch.Tensor) -> tuple:
         """
@@ -999,7 +962,7 @@ class VIBLayer(nn.Module):
         # KL散度 (训练和推理时都计算, 推理时不backward)
         kl_loss = self.kl_divergence(mu, logvar)
         
-        return x_out, kl_loss
+        return x_out, self.beta * kl_loss
 
 
 # ============================================================
@@ -1030,6 +993,10 @@ class CurriculumScheduler:
         # 调度状态
         self.current_ratio = start_ratio
         self.warmup_done = False
+
+        logger.info(f"  [CurriculumScheduler] start_ratio={start_ratio}, "
+                    f"growth_rate={growth_rate}, patience_warmup={patience_warmup}, "
+                    f"total_epochs={total_epochs}")
     
     def get_curriculum_ratio(self, epoch: int) -> float:
         """获取当前轮次应使用的样本比例"""
@@ -1055,27 +1022,55 @@ class CurriculumScheduler:
         """
         从样本池中选择当前轮次的简单样本
         
+        保持正负样本比例, 防止课程学习破坏类别平衡。
+        分别对正负样本按难度排序后等比例选取。
+        
         Returns:
             selected_edges, selected_labels
         """
         if not self.sample_losses or epoch <= self.patience_warmup:
             # Warmup: 使用所有样本 (样本难度尚未初始化)
             return edges, labels
-        
+
         ratio = self.get_curriculum_ratio(epoch)
         n_select = max(1, int(len(edges) * ratio))
-        
+
         # 按难度排序 (低损失=简单)
         difficulties = np.array([
             self.sample_losses.get((e[0], e[1]), 0.0) for e in edges
         ])
-        sorted_idx = np.argsort(difficulties)  # 升序: 简单→困难
-        
-        selected_idx = sorted_idx[:n_select]
-        
+        labels_arr = np.array(labels, dtype=np.float32)
+
+        # 分离正负样本, 分别按难度排序后等比例选取, 保持原始比例
+        pos_mask = labels_arr > 0.5
+        neg_mask = ~pos_mask
+        n_pos = int(pos_mask.sum())
+        n_neg = int(neg_mask.sum())
+
+        if n_pos > 0 and n_neg > 0:
+            # 等比例分配名额
+            n_pos_select = max(1, int(n_select * n_pos / len(edges)))
+            n_neg_select = max(1, int(n_select * n_neg / len(edges)))
+            # 防止超出实际数量
+            n_pos_select = min(n_pos_select, n_pos)
+            n_neg_select = min(n_neg_select, n_neg)
+
+            # 正样本按难度升序 (简单→困难)
+            pos_sorted = np.argsort(difficulties[pos_mask])
+            pos_idx = np.where(pos_mask)[0][pos_sorted[:n_pos_select]]
+            # 负样本按难度升序
+            neg_sorted = np.argsort(difficulties[neg_mask])
+            neg_idx = np.where(neg_mask)[0][neg_sorted[:n_neg_select]]
+
+            selected_idx = np.concatenate([pos_idx, neg_idx])
+        else:
+            # 仅有单一类别时, 直接取最简单样本
+            sorted_idx = np.argsort(difficulties)
+            selected_idx = sorted_idx[:n_select]
+
         selected_edges = [edges[i] for i in selected_idx]
         selected_labels = [labels[i] for i in selected_idx]
-        
+
         return selected_edges, selected_labels
 
 
@@ -1090,12 +1085,14 @@ class CurriculumScheduler:
 
 class SelfDistillationModule(nn.Module):
     """
-    自蒸馏模块
+    自蒸馏模块 (任务预测概率蒸馏)
     
-    在每个HGT层后添加辅助预测头, 用最终层的预测作为软标签蒸馏浅层
+    在每个HGT层后添加辅助预测头, 用最终层的任务预测概率作为软标签蒸馏浅层。
+    蒸馏对象为各层的任务预测logit (标量), 而非嵌入logits (向量),
+    使学生直接学习教师的决策边界而非表征模式。
     
-    注意: 中间层输出 student_dim, 最终层经proj后输出 teacher_dim,
-    两者可能不同 (如 hidden_dim=64, hgt_out_dim=32)
+    参考: Be Your Own Teacher (Zhang et al., CVPR 2019)
+          Distilling the Knowledge in a Neural Network (Hinton et al., 2015)
     """
     def __init__(self, student_dim: int, teacher_dim: int = None,
                  num_layers: int = 2, num_tasks: int = 3,
@@ -1107,33 +1104,41 @@ class SelfDistillationModule(nn.Module):
         self.num_tasks = num_tasks
         self.alpha = alpha  # 蒸馏损失权重
         self.temperature = temperature
-        
+
         # 教师维度投影 (若 teacher_dim != student_dim)
         if teacher_dim != student_dim:
             self.teacher_proj = nn.Linear(teacher_dim, student_dim)
         else:
             self.teacher_proj = None
-        
-        # 每层的辅助预测头 (浅层→深层知识蒸馏)
+
+        # 每层的辅助预测头 → 输出标量logit (任务预测概率)
+        # 输出1维 = 每个任务产生一个二进制预测logit
         self.layer_heads = nn.ModuleList([
             nn.ModuleDict({
                 f'task_{t}': nn.Sequential(
                     nn.Linear(student_dim, student_dim // 2),
                     nn.ReLU(),
-                    nn.Linear(student_dim // 2, student_dim)  # 输出logits用于KL
+                    nn.Linear(student_dim // 2, 1)  # 标量logit: 任务预测概率
                 )
                 for t in range(num_tasks)
             })
             for _ in range(num_layers)
         ])
-    
+
+        logger.info(f"  [SelfDistillation] alpha={alpha}, temperature={temperature}, "
+                    f"layers={num_layers}, tasks={num_tasks}, "
+                    f"student_dim={student_dim}, teacher_dim={teacher_dim}")
+
     def compute_distillation_loss(self, student_logits: torch.Tensor,
                                    teacher_logits: torch.Tensor) -> torch.Tensor:
-        """KL散度蒸馏损失: KL(softmax(teacher/T) || softmax(student/T))"""
-        student_soft = F.log_softmax(student_logits / self.temperature, dim=-1)
-        teacher_soft = F.softmax(teacher_logits / self.temperature, dim=-1)
-        return F.kl_div(student_soft, teacher_soft, reduction='batchmean') * (self.temperature ** 2)
-    
+        """蒸馏损失: BCE + 温度缩放
+           将教师logit经sigmoid(T)转化为概率, 学生logit经温度缩放后拟合该概率"""
+        teacher_probs = torch.sigmoid(teacher_logits / self.temperature)
+        loss = F.binary_cross_entropy_with_logits(
+            student_logits / self.temperature, teacher_probs, reduction='mean'
+        )
+        return loss * (self.temperature ** 2)
+
     def forward(self, layer_outputs: list) -> torch.Tensor:
         """
         Args:
@@ -1144,36 +1149,38 @@ class SelfDistillationModule(nn.Module):
         """
         if len(layer_outputs) < 2:
             return torch.tensor(0.0, device=next(self.parameters()).device)
-        
+
         total_loss = torch.tensor(0.0, device=next(self.parameters()).device)
         n_valid = 0
-        
+
         teacher_out = layer_outputs[-1]  # 最深HGT层 = 教师
         teacher_head = self.layer_heads[-1]  # 最后一层的投影头
-        
+
         for l in range(self.num_layers - 1):  # 浅层 = 学生
             student_out = layer_outputs[l]
             student_head = self.layer_heads[l]
-            
+
             for task_idx in range(self.num_tasks):
                 s_key = f'task_{task_idx}'
                 t_key = f'task_{task_idx}'
-                
+
                 for ntype in student_out:
                     if ntype in teacher_out:
-                        # 学生: 直接使用中间层嵌入
-                        s_logit = student_head[s_key](student_out[ntype])
-                        # 教师: 若维度不匹配, 先投影到学生维度
+                        # 学生: 使用中间层嵌入 → 任务预测logit
+                        s_logit = student_head[s_key](student_out[ntype])  # [N, 1]
+                        # 教师: 使用最终层嵌入 → 任务预测logit (detach梯度)
                         t_emb = teacher_out[ntype]
                         if self.teacher_proj is not None:
                             t_emb = self.teacher_proj(t_emb)
-                        t_logit = teacher_head[t_key](t_emb).detach()
+                        t_logit = teacher_head[t_key](t_emb).detach()  # [N, 1]
+
+                        # 蒸馏: 学生任务logit → 教师任务概率
                         total_loss += self.compute_distillation_loss(s_logit, t_logit)
                         n_valid += 1
-        
+
         if n_valid > 0:
             total_loss = total_loss / n_valid
-        
+
         return self.alpha * total_loss
 
 
@@ -1875,8 +1882,8 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
         # VIB KL损失 (模块3)
         vib_kl_loss = getattr(model, '_vib_kl', torch.tensor(0.0, device=device))
         
-        # 总损失 = 任务损失 + α·蒸馏损失 + β·VIB KL
-        loss = task_loss + distill_loss + 0.001 * vib_kl_loss
+        # 总损失 = 任务损失 + α·蒸馏损失 + 风险(β已由VIBLayer内部处理)
+        loss = task_loss + distill_loss + vib_kl_loss
         
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -2174,102 +2181,150 @@ def compute_gnn_explainability(model, graph_data: dict, x_dict: dict,
                                 target_gene: str = 'ACSL4',
                                 device: str = 'cpu') -> dict:
     """
-    边级可解释性分析 (扰动法)
-    
-    对每条边类型, 移除该类型所有边后计算目标基因嵌入变化,
-    变化越大 → 该边类型对目标基因越重要。
-    
-    参考: EdgeSHAPer (Mastropietro et al., 2022) 扰动法
-          GNNExplainer: Generating Explanations for Graph Neural Networks
-          (Ying et al., NeurIPS 2019)
+    GNN可解释性分析 v3.0 — 三重解释框架
+
+    方法A: HGT p_rel 边类型注意力 (Hu et al., WWW 2020)
+      HGT原生的元关系权重, 直接反映模型学到的边类型重要性, 无需额外计算
+
+    方法B: Integrated Gradients 节点特征归因 (Sundararajan et al., ICML 2017)
+      沿特征空间直线路径积分梯度, 满足敏感性/完整性公理
+      量化每个节点类型的输入特征对目标基因嵌入范数的贡献
+      参考: Captum (Kokhlikyan et al., 2020), PyG CaptumExplainer
+
+    方法C: 梯度敏感性分析 (GradCAM风格)
+      通过 ∂(target_gene_embedding)/∂(input_embedding) 计算各节点类型
+      对目标基因的跨类型影响力, 捕捉不同类型节点间的协同效应
+
+    输出:
+      edge_type_importance: {edge_type_str: importance} ← p_rel + 梯度融合
+      feature_importance: [n_genes] ← gene节点IG归因
+      node_feature_importance: {node_type: [n_nodes]} ← 全类型IG归因
+      explainer_type: 'integrated_gradients'
     """
     logger.info("=" * 60)
-    logger.info("边级可解释性分析 (扰动法)")
-    
+    logger.info("GNN可解释性分析 v3.0 (三重解释框架)")
     explain_results = {}
-    
+
     try:
         model.eval()
-        
+        device = next(model.parameters()).device
+
         # 查找目标基因索引
-        if target_gene not in gene_names:
-            target_gene = gene_names[0] if gene_names else 'Unknown'
-        target_idx = gene_names.index(target_gene)
-        
-        # 基准: 全图的嵌入范数
-        with torch.no_grad():
-            x_hgt_base = model(x_dict, edge_index_dict, gene_gat_edge, celltype_gat_edge)
-            base_norm = torch.norm(x_hgt_base['gene'][target_idx]).item()
-        
-        # 对每种边类型, 计算移除后的嵌入变化
-        edge_type_importance = {}
-        edge_masks = {}
-        
-        for edge_key in edge_index_dict:
-            if not isinstance(edge_key, tuple) or len(edge_key) != 3:
-                continue
+        if target_gene in gene_names:
+            target_idx = gene_names.index(target_gene)
+        else:
+            target_idx = 0
 
-            ei = edge_index_dict[edge_key]
-            if ei.size(1) < 2:
-                continue
+        # ---- 方法A: HGT p_rel 边类型注意力 ----
+        edge_type_importance = model.get_edge_type_importance()
+        logger.info(f"  方法A (p_rel): 获取 {len(edge_type_importance)} 种边类型注意力权重")
 
-            ek_str = f"{edge_key[0]}-{edge_key[1]}-{edge_key[2]}"
+        # ---- 方法B: Integrated Gradients 节点特征归因 ----
+        node_types = [nt for nt in x_dict.keys()
+                      if x_dict[nt] is not None and x_dict[nt].numel() > 0]
+        feature_importance = {}
+        gene_feat_importance = None
 
-            try:
-                # 创建移除该边类型的边字典 (保留其他边不变)
-                perturbed_dict = dict(edge_index_dict)
-                # 移除当前边类型: 用仅含1条自环边替代空边, 避免 HGTConv shape 错误
-                # 选择第一条边的目标节点作为自环节点
-                first_dst = ei[1, 0].item()
-                perturbed_dict[edge_key] = torch.tensor(
-                    [[first_dst], [first_dst]], dtype=torch.long, device=device
-                )
+        try:
+            from captum.attr import IntegratedGradients as _IG
 
-                with torch.no_grad():
-                    x_hgt_pert = model(x_dict, perturbed_dict, gene_gat_edge, celltype_gat_edge)
-                    pert_norm = torch.norm(x_hgt_pert['gene'][target_idx]).item()
+            def forward_fn(*args):
+                """包装器: Captum的多个tensor → x_dict → model
+                Captum要求输出为1D 1-element tensor"""
+                x_rebuild = {nt: args[i] for i, nt in enumerate(node_types)}
+                out = model(x_rebuild, edge_index_dict, gene_gat_edge,
+                            celltype_gat_edge)
+                return out['gene'][target_idx].norm(p=2).unsqueeze(0)
 
-                # 重要性 = 移除后嵌入变化
-                delta = abs(base_norm - pert_norm)
-                edge_type_importance[ek_str] = float(delta)
+            inputs = tuple(x_dict[nt].to(device).detach().requires_grad_()
+                           for nt in node_types)
+            ig = _IG(forward_fn)
+            attributions = ig.attribute(inputs, n_steps=50)
 
-                # 归一化边重要性掩码 (全边等权, 扰动法给出类型级重要性)
-                edge_masks[ek_str] = np.ones(ei.size(1)) * delta
-                
-            except Exception:
-                edge_type_importance[ek_str] = 0.0
-                edge_masks[ek_str] = np.zeros(1)
-        
-        # 归一化到 [0, 1]
-        if edge_type_importance:
-            max_val = max(edge_type_importance.values()) or 1.0
-            for k in edge_type_importance:
-                edge_type_importance[k] /= max_val
-        
+            for i, nt in enumerate(node_types):
+                attr = attributions[i].detach().cpu().numpy()
+                # 每个节点的特征重要性 = 全特征维度的L2范数
+                feature_importance[nt] = np.linalg.norm(attr, axis=1)
+
+            gene_feat_importance = feature_importance.get('gene')
+            logger.info("  方法B (IG): 节点特征归因完成")
+
+        except ImportError:
+            logger.warning("  captum未安装, 跳过IG归因 (pip install captum)")
+            gene_feat_importance = np.zeros(
+                x_dict['gene'].shape[0]) if 'gene' in x_dict else None
+        except Exception as e:
+            logger.warning(f"  IG归因异常: {e}, 使用零填充")
+            gene_feat_importance = np.zeros(
+                x_dict['gene'].shape[0]) if 'gene' in x_dict else None
+
+        # ---- 方法C: 梯度敏感性分析 ----
+        # 计算 ∂(target_gene_L2)/∂(各节点类型输入嵌入)
+        # 梯度范数大的节点类型 → 该类型对目标基因影响大
+        gradient_importance = {}
+        try:
+            model.zero_grad()
+            # 分离输入tensor并设置requires_grad
+            grad_x = {}
+            for nt, x in x_dict.items():
+                grad_x[nt] = x.detach().clone().requires_grad_(True)
+
+            x_hgt = model(grad_x, edge_index_dict, gene_gat_edge,
+                          celltype_gat_edge)
+            target_l2 = x_hgt['gene'][target_idx].norm(p=2)
+            target_l2.backward()
+
+            for nt, gx in grad_x.items():
+                if gx.grad is not None:
+                    # 梯度范数均值: 该节点类型对目标基因的平均影响力
+                    grad_mean = torch.norm(gx.grad, p=2, dim=1).mean().item()
+                    gradient_importance[nt] = grad_mean
+
+            model.zero_grad()
+            logger.info("  方法C (梯度敏感): 跨类型梯度敏感性计算完成")
+        except Exception as e:
+            logger.warning(f"  方法C (梯度敏感) 失败: {e}")
+
+        # ---- 融合: 边类型重要性 = p_rel (已由HGT学习) ----
+        # p_rel 是 HGT 论文设计用于边类型重要性的原生参数
+        # 无需与梯度融合 (梯度用于方法C的跨类型分析, 输出在 gradient_importance 中)
+        sorted_edges = sorted(edge_type_importance.items(), key=lambda x: -x[1])
+        logger.info(f"  融合边类型重要性 (对{target_gene}):")
+        for ek, imp in sorted_edges[:8]:
+            logger.info(f"    {ek}: {imp:.6f}")
+
+        # 目标基因的细胞类型梯度敏感性
+        if 'celltype' in gradient_importance:
+            logger.info(f"  梯度敏感性: celltype={gradient_importance['celltype']:.6f}, "
+                        f"pathway={gradient_importance.get('pathway', 0):.6f}, "
+                        f"lr={gradient_importance.get('lr', 0):.6f}")
+
         explain_results = {
             'edge_type_importance': edge_type_importance,
-            'edge_masks': edge_masks,
+            'feature_importance': (
+                gene_feat_importance
+                if gene_feat_importance is not None
+                else np.zeros(x_dict.get('gene', torch.zeros(1)).shape[0])
+            ),
+            'node_feature_importance': feature_importance,
+            'gradient_sensitivity': gradient_importance,
             'target_gene': target_gene,
-            'explainer_type': 'perturbation',
+            'explainer_type': 'integrated_gradients',
         }
-        
-        sorted_edges = sorted(edge_type_importance.items(), key=lambda x: -x[1])
-        logger.info(f"  扰动法边类型重要性 (对{target_gene}):")
-        for ek, imp in sorted_edges[:5]:
-            logger.info(f"    {ek}: {imp:.6f}")
-        
-        logger.info("  扰动法分析完成")
-        
+
+        logger.info("  三重可解释性分析完成")
+
     except Exception as e:
-        logger.warning(f"  扰动法失败 ({e}), 回退到嵌入范数分析")
-        gene_emb = x_dict['gene'].detach().cpu().numpy()
-        feature_importance = np.abs(gene_emb).mean(axis=0)
+        logger.error(f"  可解释性分析异常: {e}", exc_info=True)
+        edge_type_importance = model.get_edge_type_importance()
         explain_results = {
-            'feature_importance': feature_importance,
-            'explainer_type': 'embedding_norm_fallback',
+            'edge_type_importance': edge_type_importance,
+            'feature_importance': np.zeros(
+                x_dict.get('gene', torch.zeros(1)).shape[0]),
             'target_gene': target_gene,
+            'explainer_type': 'fallback_pgrad',
         }
-    
+
     return explain_results
 
 
@@ -2526,7 +2581,10 @@ def plot_fig3d_comm_flow(comm_flow: dict, graph_data: dict, save_path: str):
     fig, ax = plt.subplots(figsize=(8, 7))
     im = ax.imshow(ct_comm_matrix, cmap='Blues', aspect='auto', vmin=0, vmax=1)
     
-    short_labels = ['Neu', 'Mic', 'Ast', 'Oli', 'End', 'Per']
+    # 生成细胞类型短标签 (动态映射, 避免硬编码)
+    short_label_map = {'Neuron': 'Neu', 'Microglia': 'Mic', 'Astrocyte': 'Ast',
+                       'Oligodendrocyte': 'Oli', 'Endothelial': 'End', 'Pericyte': 'Per'}
+    short_labels = [short_label_map.get(ct, ct[:3]) for ct in celltype_names]
     ax.set_xticks(range(n_ct))
     ax.set_xticklabels(short_labels)
     ax.set_yticks(range(n_ct))
@@ -2826,7 +2884,7 @@ def main():
     # BCP-ACSL4
     bcp_acsl4 = compound_ranking[(compound_ranking['compound'] == 'BCP') & (compound_ranking['gene'] == 'ACSL4')]
     if not bcp_acsl4.empty:
-        logger.info(f"  BCP-ACSL4 嵌入相似度: {bcp_acsl4['similarity'].values[0]:.4f}")
+        logger.info(f"  BCP-ACSL4 结合概率: {bcp_acsl4['binding_probability'].values[0]:.4f}")
     
     # Microglia→Neuron通讯
     ct_names = graph_data['celltype']['names']
