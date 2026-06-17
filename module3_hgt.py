@@ -978,6 +978,10 @@ class VIBLayer(nn.Module):
             return mu + eps * std
         return mu  # 推理时直接使用均值
     
+    def set_beta(self, new_beta: float):
+        """动态调整 β 权重 (用于预热调度)"""
+        self.beta = new_beta
+    
     def kl_divergence(self, mu: torch.Tensor, logvar: torch.Tensor) -> torch.Tensor:
         """
         KL(q(z|x) || p(z))
@@ -1884,6 +1888,25 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
                               milestones=[warmup_epochs])
     bce_loss = nn.BCEWithLogitsLoss()
     
+    # ---- VIB β 线性预热调度 (Alemi et al., ICLR 2017 推荐) ----
+    # 训练早期 β=0, 让encoder自由学习; 50 epoch内线性增至 1e-3, 逐步引入信息压缩
+    vib_beta_max = 1e-3
+    vib_warmup_epochs = 50
+    if hasattr(model, 'vib_layers'):
+        for v in model.vib_layers.values():
+            v.set_beta(0.0)  # 从0开始
+    
+    # ---- TensorBoard 日志 (pip install tensorboard) ----
+    try:
+        from torch.utils.tensorboard import SummaryWriter
+        tb_writer = SummaryWriter(log_dir=str(OUTPUT_DIR / 'tb_logs'))
+        tb_available = True
+        logger.info("  TensorBoard 日志已启用 -> results/tb_logs")
+    except Exception:
+        tb_writer = None
+        tb_available = False
+        logger.warning("  TensorBoard 不可用 (pip install tensorboard)")
+    
     # -- 课程学习调度器 (模块4) --
     curriculum = CurriculumScheduler(
         total_epochs=epochs,
@@ -1965,6 +1988,12 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
     
     for epoch in range(1, epochs + 1):
         optimizer.zero_grad()
+        
+        # VIB β 线性预热: 逐步引入信息压缩正则
+        if epoch <= vib_warmup_epochs and hasattr(model, 'vib_layers'):
+            cur_beta = vib_beta_max * (epoch / vib_warmup_epochs)
+            for v in model.vib_layers.values():
+                v.set_beta(cur_beta)
         
         # L2升级: DropEdge图增强 (对共表达和调控边随机丢弃)
         aug_edge_index_dict = augment_graph(
@@ -2097,6 +2126,21 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
                         f"| gp={loss1.item():.4f}, ct={loss2.item():.4f}, lr_comm={loss3.item():.4f} "
                         f"| val_AUC: gp={val_auc1:.3f}, ct={val_auc2:.3f}, lr_comm={val_auc3:.3f}")
             
+            # TensorBoard 记录关键指标
+            if tb_writer is not None:
+                step = epoch
+                tb_writer.add_scalar('Loss/train_total', loss.item(), step)
+                tb_writer.add_scalar('Loss/task', task_loss.item(), step)
+                tb_writer.add_scalar('Loss/distill', distill_loss.item(), step)
+                tb_writer.add_scalar('Loss/vib_kl', vib_kl_loss.item(), step)
+                tb_writer.add_scalar('AUC/val_gp', val_auc1, step)
+                tb_writer.add_scalar('AUC/val_ct', val_auc2, step)
+                tb_writer.add_scalar('AUC/val_lr', val_auc3, step)
+                tb_writer.add_scalar('AUC/val_mean', val_auc_mean, step)
+                tb_writer.add_scalar('LR', optimizer.param_groups[0]['lr'], step)
+                if hasattr(model, 'vib_layers') and list(model.vib_layers.values()):
+                    tb_writer.add_scalar('VIB/beta', list(model.vib_layers.values())[0].beta, step)
+            
             # 保存最佳模型 + 早停机制
             if val_auc_mean > best_val_auc:
                 best_val_auc = val_auc_mean
@@ -2131,6 +2175,23 @@ def train_model(graph_data: dict, hidden_dim: int = 64, epochs: int = 200,
     logger.info(f"  训练完成: final_loss={losses[-1]:.4f}")
     logger.info(f"  测试集AUC: gp={test_auc1:.3f}, ct={test_auc2:.3f}, lr_comm={test_auc3:.3f} | "
                 f"均值={((test_auc1 + test_auc2 + test_auc3) / 3):.3f}")
+    
+    # TensorBoard 记录最终测试AUC + 嵌入可视化
+    if tb_writer is not None:
+        tb_writer.add_scalar('AUC/test_gp', test_auc1, epochs)
+        tb_writer.add_scalar('AUC/test_ct', test_auc2, epochs)
+        tb_writer.add_scalar('AUC/test_lr', test_auc3, epochs)
+        if len(x_hgt_test.get('gene', torch.tensor([]))) > 0:
+            n_viz = min(500, len(x_hgt_test['gene']))
+            try:
+                tb_writer.add_embedding(
+                    x_hgt_test['gene'][:n_viz].cpu(),
+                    metadata=graph_data['gene']['names'][:n_viz],
+                    tag='gene_embeddings', global_step=epochs
+                )
+            except Exception:
+                pass
+        tb_writer.close()
     
     # 输出边类型重要性 (PyG HGTConv 内置 p_rel)
     edge_imp = model.get_edge_type_importance()
@@ -3238,13 +3299,26 @@ def augment_graph(train_edge_index_dict: dict, drop_p: float = 0.1,
     """
     对训练边字典应用随机DropEdge增强
     
-    对 gene_coexp 和 regulates 边类型以概率 drop_p 随机丢弃边,
-    生成增强视图 aug_edge_index_dict, 防止过平滑并提升鲁棒性
+    扩展: 对 gene_coexp, regulates, enriched_in, lr_interaction 等核心边类型
+    以不同概率随机丢弃边, 生成增强视图, 防止过平滑并提升鲁棒性。
+    
+    丢弃策略 (参考 Rong et al., ICLR 2020):
+      - 高密度边 (coexp): drop_p = 0.1 (防止信息短路)
+      - 语义边 (enriched_in, regulates, lr_interaction): drop_p = 0.05 (保守)
+      - 关键边 (其他): 不丢弃
     """
     if seed is not None:
         rng_drop = np.random.RandomState(seed)
     else:
         rng_drop = np.random.RandomState()
+    
+    # 边类型 → 丢弃率映射 (可网格搜索优化)
+    drop_rates = {
+        'coexp': drop_p,            # 共表达边 (密度高, 可激进丢弃)
+        'regulates': drop_p * 0.5,  # 调控边 (稀疏, 保守丢弃)
+        'enriched_in': drop_p * 0.5, # 通路富集边
+        'lr_interaction': drop_p * 0.3,  # 配体-受体边 (极稀疏)
+    }
     
     aug_dict = {}
     for key, ei in train_edge_index_dict.items():
@@ -3253,17 +3327,19 @@ def augment_graph(train_edge_index_dict: dict, drop_p: float = 0.1,
             continue
         
         rel = key[1]
-        if rel in ('coexp', 'regulates') and ei.size(1) > 0:
-            # 随机保留边: bernoulli(1-drop_p), GPU兼容
-            keep_mask = torch.from_numpy(
-                rng_drop.random(ei.size(1)) > drop_p
-            ).to(ei.device)
-            if keep_mask.sum() < 1:
-                aug_dict[key] = ei  # 至少保留1条边
-            else:
-                aug_dict[key] = ei[:, keep_mask]
-        else:
+        rate = drop_rates.get(rel, None)
+        if rate is None or ei.size(1) < 2:
             aug_dict[key] = ei
+            continue
+        
+        # 随机保留边: bernoulli(1-rate), GPU兼容
+        keep_mask = torch.from_numpy(
+            rng_drop.random(ei.size(1)) > rate
+        ).to(ei.device)
+        if keep_mask.sum() < 1:
+            aug_dict[key] = ei  # 至少保留1条边
+        else:
+            aug_dict[key] = ei[:, keep_mask]
     
     return aug_dict
 
