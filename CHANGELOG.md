@@ -2,6 +2,22 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 和 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范.
 
+## [3.1.0] - 2026-06-19
+
+### 化合物-靶点数据增强 (ChEMBL)
+- 新增 `fetch_chembl_compound_targets.py`, 通过 ChEMBL Web Resource Client 下载 63 个化合物的生物活性记录.
+- 解析成功 61/63 个分子, 获取 11,319 条原始活性记录; 经 pChEMBL ≥ 5 / standard_value ≤ 10,000 nM 过滤后得到 180 条有效化合物-靶点边.
+- 合并原有 curated 数据与 ChEMBL 数据, `network_files/compound_target_edges.csv` 正样本边从 91 条增至 268 条, 稀疏度从 ~0.5% 显著下降.
+- `network_files/chembl_compound_targets.csv` 保存原始 ChEMBL 靶点与活性信息, 含 target_chembl_id、standard_type、standard_value、pchembl_value 等字段.
+
+### 模型效果
+- `module3_hgt.py` 重新训练后, 测试集化合物-靶点 (ct) AUC 从 ~0.52 提升至 0.635, 平均 AUC 提升至 0.785.
+
+### 工程与质量
+- 新增脚本通过 `ruff check fetch_chembl_compound_targets.py`.
+- `validate_inputs.py` 54/54 项检查通过, `compound_target_edges.csv` 记录数校验为 268.
+- `test_config_loading.py` 通过, 确认 63 个化合物配置完整.
+
 ## [3.0.0] - 2026-06-19
 
 ### 架构升级 (Modularization)
