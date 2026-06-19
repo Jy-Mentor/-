@@ -106,6 +106,13 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional
 
+# 确保 src 与项目根目录可被导入 (兼容直接运行 python module3_hgt.py)
+_PROJECT_ROOT = Path(__file__).resolve().parent
+_SRC_DIR = _PROJECT_ROOT / "src"
+for _path in (_SRC_DIR, _PROJECT_ROOT):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
+
 import matplotlib
 
 matplotlib.use("Agg")
