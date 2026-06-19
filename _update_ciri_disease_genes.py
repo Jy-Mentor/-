@@ -3,8 +3,9 @@
 本脚本仅用于数据持久化; module3_hgt.py 运行时会自动从 L1_genome_wide_de.csv
 重新提取 CIRI-gene 关联。
 """
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 BASE_DIR = Path(__file__).parent
 CSV_FILE = BASE_DIR / "network_files" / "disease_gene_associations.csv"

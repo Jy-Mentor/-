@@ -32,7 +32,6 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors, MACCSkeys, RDKFingerprint
-from rdkit.Chem.AtomPairs import Pairs as AtomPairs
 from rdkit.Chem.rdMolDescriptors import (
     CalcNumHBA,
     CalcNumHBD,
@@ -429,7 +428,13 @@ def main():
         d = _compute_descriptors(r["smiles"])
         if not d:
             logger.warning(f"RDKit parse failure for {r['compound']}; using zero descriptors")
-            d = {k: 0 for k in ["MolWt", "LogP", "HBA", "HBD", "RotBonds", "TPSA", "RingCount", "HeavyAtomCount", "NumAtoms"]}
+            d = {
+                k: 0
+                for k in [
+                    "MolWt", "LogP", "HBA", "HBD", "RotBonds", "TPSA",
+                    "RingCount", "HeavyAtomCount", "NumAtoms",
+                ]
+            }
         desc_rows.append({
             "Compound": r["compound"],
             "Category": r["category"],

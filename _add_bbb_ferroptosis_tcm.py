@@ -16,7 +16,6 @@ New compounds:
   Resveratrol (CID 445154)  - Polygonum cuspidatum, sirtuin activator, anti-ferroptosis
 """
 
-import csv
 import json
 import time
 import urllib.parse
@@ -71,7 +70,7 @@ def _safe_request(url: str, retries: int = 3):
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return resp.read().decode("utf-8")
-        except Exception as e:
+        except Exception:
             if attempt == retries - 1:
                 raise
             time.sleep(1.0)
@@ -79,7 +78,10 @@ def _safe_request(url: str, retries: int = 3):
 
 def fetch_pubchem_properties(cid: int) -> dict:
     """Fetch CanonicalSMILES, MolecularFormula, MolecularWeight, XLogP, HBD, HBA, TPSA, RotatableBondCount."""
-    props = "CanonicalSMILES,MolecularFormula,MolecularWeight,XLogP,HBondDonorCount,HBondAcceptorCount,TPSA,RotatableBondCount"
+    props = (
+        "CanonicalSMILES,MolecularFormula,MolecularWeight,XLogP,"
+        "HBondDonorCount,HBondAcceptorCount,TPSA,RotatableBondCount"
+    )
     url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/property/{props}/JSON"
     data = json.loads(_safe_request(url))
     return data["PropertyTable"]["Properties"][0]

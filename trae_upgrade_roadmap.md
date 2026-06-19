@@ -192,4 +192,240 @@
 | 2.2 | 重新生成 AttentiveFP 预训练嵌入 | DGL-LifeSci 预训练权重 | compound_attentivefp_embeddings.csv |
 | 2.3 | 修正 ACSL4 口袋特征标准化问题 | PDB 5W8I / AlphaFold DB | acsl4_pocket_features.csv (非全零) |
 | 2.4 | 补充/修正 CIRI 疾病-基因关联 | L3/L1_genome_wide_de.csv + DisGeNET | disease_gene_associations.csv |
-| 2.5 | 验证 STRING PPI
+| 2.5 | 验证 STRING PPI 边分数 | STRING 官网下载 / 本地缓存 | string_ppi_edges.csv (分数 ≥400) |
+| 2.6 | 扩展 TCM 单体集至 50+ | 现有 20 核心 + 43 扩展 | compound_smiles.csv |
+| 2.7 | 建立外部数据 README | 手动整理 | external_data/README.md |
+| 2.8 | 重新运行 generate_all_network_files.py | 本地数据 | 更新 network_files/ |
+| 2.9 | 运行 validate_inputs.py | - | 全部检查通过 |
+
+#### 3.2.3 资源分配
+
+- 主导: AI 助手执行数据脚本
+- 依赖: PubChem API、STRING 数据、DisGeNET GitHub 数据
+- 时间: 1-2 周
+
+#### 3.2.4 风险与应对
+
+| 风险 | 应对 |
+|------|------|
+| PubChem API 限流 | 本地缓存 + 批量请求 + 失败重试 |
+| 外部数据下载失败 | 记录失败日志, 使用本地备份 |
+| 数据版权合规 | 仅使用公开学术数据库, 记录来源与版本 |
+
+---
+
+### 阶段 3: 模型升级与训练策略优化 (Week 3-5)
+
+#### 3.3.1 目标
+
+将 HGT/GAT 模型从 module3_hgt.py 迁移到 src/iron_aging/models, 引入预训练、课程学习、负采样优化, 并解决 GPU 加速比问题.
+
+#### 3.3.2 任务清单
+
+| 任务 ID | 任务 | 输出 | 验收标准 |
+|---------|------|------|----------|
+| 3.1 | 实现 src/iron_aging/models/gat_encoder.py | GATv2 编码器 | dummy 输入 forward 通过 |
+| 3.2 | 实现 src/iron_aging/models/hgt_encoder.py | HGT 编码器 | dummy 输入 forward 通过 |
+| 3.3 | 实现 compound_encoder.py (AttentiveFP) | 化合物编码器 | 真实 SMILES 嵌入非零 |
+| 3.4 | 实现 link_predictor.py (异质边解码器) | 链路预测头 | 输出形状正确 |
+| 3.5 | 迁移多任务训练 (GAT+HGT+课程学习+负采样+EMA) | training/trainer.py | val_AUC ≥ 0.90 |
+| 3.6 | 实现图构建缓存集成训练流程 | trainer.py | 训练启动时间 < 30s |
+| 3.7 | 优化 GPU 使用策略 | trainer.py | 大图用 GPU, 小图用 CPU |
+| 3.8 | 集成 TensorBoard / CSVLogger | training/logger.py | 训练日志可记录 |
+| 3.9 | 实现 Early Stopping + 学习率调度 | trainer.py | 训练稳定收敛 |
+| 3.10 | 跑通完整训练并记录指标 | L3_results/ | test AUC 达到 baseline |
+
+#### 3.3.3 资源分配
+
+- 主导: AI 助手
+- 依赖: PyTorch Geometric, DGL-LifeSci
+- 时间: 2-3 周
+
+#### 3.3.4 风险与应对
+
+| 风险 | 应对 |
+|------|------|
+| 模型迁移后性能下降 | 与 module3_hgt.py 结果对比, 调参对齐 |
+| GPU 内存不足 | 梯度累积 / 子图采样 |
+| 训练不稳定 | EMA、DropEdge、VIB 预热 |
+
+---
+
+### 阶段 4: TCM 单体筛选与机制阐释 (Week 5-6)
+
+#### 3.4.1 目标
+
+基于升级后的 HGT-GAT 模型, 系统筛选中药单体, 解释 BCP 靶向 ACSL4 的机制.
+
+#### 3.4.2 任务清单
+
+| 任务 ID | 任务 | 输出 |
+|---------|------|------|
+| 4.1 | 化合物-靶点链路预测打分 | compound_target_ranking.csv |
+| 4.2 | 铁衰老 Hub 基因排名 (ACSL4 等) | hub_genes_ranking.csv |
+| 4.3 | 跨细胞通讯注意力流分析 | cell_communication_flow.csv |
+| 4.4 | SHAP / Integrated Gradients 解释 ACSL4 Hub 边贡献 | acsl4_shap_importance.csv |
+| 4.5 | BBB 透过率预测对比 (BCP vs VC vs Fer-1) | bbb_prediction.csv |
+| 4.6 | 分子对接 (AutoDock Vina) | docking_results.csv |
+| 4.7 | 生成 TCM 单体 top-K 推荐表 | tcm_monomer_recommendation.xlsx |
+
+#### 3.4.3 资源分配
+
+- 主导: AI 助手
+- 依赖: RDKit, AutoDock Vina, LightGBM
+- 时间: 1-2 周
+
+#### 3.4.4 风险与应对
+
+| 风险 | 应对 |
+|------|------|
+| 对接软件未安装 | 先检查命令可用性, 缺失则记录并跳过 |
+| 可解释性结果不稳定 | 多次采样取平均 |
+| BCP 排名不突出 | 检查特征质量, 不人为调整权重 |
+
+---
+
+### 阶段 5: 验证、文档与部署上线 (Week 6-7)
+
+#### 3.5.1 目标
+
+完成单元测试、集成测试、文档更新, 并将最终代码提交到 GitHub.
+
+#### 3.5.2 任务清单
+
+| 任务 ID | 任务 | 输出 |
+|---------|------|------|
+| 5.1 | 编写/补全单元测试 (pytest) | tests/*.py, 覆盖率 ≥80% |
+| 5.2 | 运行 ruff + validate_inputs + test_config_loading + test_module3 | 质量报告 |
+| 5.3 | 更新 CHANGELOG.md 与 VERSION | v3.0.0 |
+| 5.4 | 更新 dry_lab_report.md / 生成 Excel 报告 | 技术路线执行报告 |
+| 5.5 | 清理大文件、确认 .gitignore | 仓库体积合规 |
+| 5.6 | 提交代码到 GitHub | GitHub commit/PR |
+| 5.7 | 编写部署说明 (环境安装、运行命令) | DEPLOY.md |
+| 5.8 | 建立后续维护计划 | MAINTENANCE.md |
+
+#### 3.5.3 资源分配
+
+- 主导: AI 助手
+- 依赖: GitHub MCP 工具
+- 时间: 1 周
+
+#### 3.5.4 风险与应对
+
+| 风险 | 应对 |
+|------|------|
+| 测试覆盖不足 | 重点覆盖 data/models/training 核心路径 |
+| GitHub 推送失败 | 检查文件大小, 使用 .gitattributes LFS |
+| 文档过期 | 文档与代码同步更新 |
+
+---
+
+## 四、时间节点总览
+
+```
+Week 1-2: 阶段 1  架构重构与代码质量升级
+Week 2-3: 阶段 2  数据层增强与开源数据整合
+Week 3-5: 阶段 3  模型升级与训练策略优化
+Week 5-6: 阶段 4  TCM 单体筛选与机制阐释
+Week 6-7: 阶段 5  验证、文档与部署上线
+```
+
+---
+
+## 五、资源分配
+
+| 资源 | 说明 |
+|------|------|
+| 计算资源 | CPU: 多核(并发评估); GPU: NVIDIA CUDA (训练大图) |
+| 存储资源 | 项目目录 + 缓存目录 + 外部数据目录 |
+| 数据资源 | 现有 network_files/, L3/, L1/ + GitHub 开源补充 |
+| 人力资源 | AI 助手主导, 用户关键决策 |
+| 工具资源 | ruff, pytest, PyTorch Geometric, DGL-LifeSci, RDKit, MCP 工具 |
+
+---
+
+## 六、风险评估与应对策略
+
+| 风险类别 | 具体风险 | 可能性 | 影响 | 应对策略 |
+|----------|----------|--------|------|----------|
+| 数据风险 | 外部数据下载失败/限流 | 中 | 中 | 本地缓存 + 多源备份 + 记录日志 |
+| 技术风险 | 模型迁移后性能下降 | 中 | 高 | 保留 legacy 对比 + 回归测试 |
+| 性能风险 | 图构建耗时过长 | 高 | 高 | 图构建缓存 + 增量更新 |
+| 质量风险 | 测试覆盖不足 | 中 | 中 | 核心模块 pytest 覆盖 ≥80% |
+| 合规风险 | 数据版权/学术不端 | 低 | 高 | 记录来源、不调整 bio 先验权重 |
+| 部署风险 | GitHub 大文件限制 | 中 | 中 | .gitignore + LFS + 清理 |
+
+---
+
+## 七、验收标准
+
+### 7.1 功能验收
+
+- [ ] 运行 `python run_hgt_pipeline.py --config config.yaml` 完成训练
+- [ ] ACSL4 在 hub 排名中进入 top-K (K ≤ 30)
+- [ ] BCP-ACSL4 结合概率排名进入 top-N (N ≤ 30)
+- [ ] 生成 TCM 单体推荐表
+
+### 7.2 质量验收
+
+- [ ] `ruff check .` 关键文件 0 错误
+- [ ] `python validate_inputs.py` 全部通过
+- [ ] `python test_config_loading.py` 通过
+- [ ] `python test_module3.py` 通过
+- [ ] 新增核心模块单元测试 ≥80% 覆盖
+
+### 7.3 文档验收
+
+- [ ] trae_upgrade_roadmap.md 已更新并执行
+- [ ] CHANGELOG.md 记录 v3.0.0 变更
+- [ ] DEPLOY.md 包含环境安装与运行命令
+- [ ] dry_lab_report.md 更新为升级后结果
+
+### 7.4 部署验收
+
+- [ ] 代码提交到 GitHub
+- [ ] 仓库无大文件 (>100MB)
+- [ ] .gitignore 正确配置
+
+---
+
+## 八、执行纪律
+
+1. **零造假铁律**: 不生成/模拟数据, 所有数据从真实文件读取.
+2. **异常传播**: 不使用 `try-except: pass`, 必须 `traceback.print_exc()` 并传播.
+3. **缺失数据日志**: 缺失数据必须写日志警告, 不准静默补零.
+4. **先验证后运行**: 每次运行核心模块前必须运行 `python validate_inputs.py`.
+5. **修改后必 lint**: 每次修改 Python 文件后必须运行 `ruff check .`.
+6. **持续监控**: 长时间任务使用 `CheckCommandStatus` 轮询.
+7. **真实进度报告**: 每轮回复报告已完成、正在运行、卡住的环节.
+
+---
+
+## 九、附录: 关键命令速查
+
+```bash
+# 静态检查
+ruff check .
+
+# 输入验证
+python validate_inputs.py
+
+# 配置加载测试
+python test_config_loading.py
+
+# 模块 3 回归测试
+python test_module3.py
+
+# 训练入口
+python run_hgt_pipeline.py --config config.yaml --device cuda
+
+# 并发资源评估
+python concurrency_utils.py
+
+# 生成网络文件
+python generate_all_network_files.py
+```
+
+---
+
+*本文件为指导项目升级改造的活的文档, 各阶段执行过程中可根据实际进展迭代更新.*

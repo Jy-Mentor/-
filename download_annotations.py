@@ -153,7 +153,10 @@ def main():
                     all_kegg.update(kegg_s)
                     all_ipr.update(ipr_s)
                     save_done_genes(batch)
-                    print(f"[{completed}/{len(batches)}] ({pct:.0f}%) GO+{len(go_s)} KEGG+{len(kegg_s)} IPR+{len(ipr_s)} | {elapsed:.0f}s")
+                    print(
+                        f"[{completed}/{len(batches)}] ({pct:.0f}%) "
+                        f"GO+{len(go_s)} KEGG+{len(kegg_s)} IPR+{len(ipr_s)} | {elapsed:.0f}s"
+                    )
 
         # 每10批保存一次
         if (i // MAX_WORKERS) % 10 == 0:

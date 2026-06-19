@@ -182,7 +182,7 @@ def generate_pathway_enrichment():
 
             rows = []
             for _, row in results.iterrows():
-                genes_in_term = row.get("Overlap", "").split("/")[0] if "/" in str(row.get("Overlap", "")) else ""
+                row.get("Overlap", "").split("/")[0] if "/" in str(row.get("Overlap", "")) else ""
                 # 尝试从 Genes 列获取
                 genes_str = row.get("Genes", "")
                 if genes_str and pd.notna(genes_str):

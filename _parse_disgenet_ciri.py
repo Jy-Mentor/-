@@ -10,11 +10,11 @@ and extracts CIRI / AD / Aging related genes, generating:
   - network_files/disgenet_ciri_genes.csv
 """
 
-import gzip
 import csv
-import yaml
+import gzip
 from pathlib import Path
-from collections import defaultdict
+
+import yaml
 
 BASE_DIR = Path(__file__).parent
 DISGENET_DIR = BASE_DIR / "external_data" / "disgenet"

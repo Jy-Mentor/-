@@ -21,10 +21,11 @@ References / GitHub repos consulted:
 - ML BBB classifiers: github.com/orvelte/BBB_permeability, github.com/ScriptsOfLife/SOL_BBB
 """
 
+from pathlib import Path
+
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Descriptors, rdMolDescriptors
-from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 compound_file = BASE_DIR / "network_files" / "compound_smiles.csv"
@@ -104,7 +105,10 @@ def main():
 
     out_df = pd.DataFrame(results)
     out_df = out_df[
-        ["compound", "CanonicalSMILES", "MW", "LogP", "HBD", "HBA", "TPSA", "RotBonds", "BBB_score", "BBB_pass", "BBB_reasons"]
+        [
+            "compound", "CanonicalSMILES", "MW", "LogP", "HBD", "HBA",
+            "TPSA", "RotBonds", "BBB_score", "BBB_pass", "BBB_reasons",
+        ]
     ]
     out_df = out_df.sort_values(by=["BBB_pass", "BBB_score"], ascending=[False, False])
     out_df.to_csv(out_file, index=False)

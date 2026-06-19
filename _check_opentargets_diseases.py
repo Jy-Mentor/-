@@ -1,6 +1,6 @@
 """查询 OpenTargets 中 CIRI/卒中相关疾病的正确 EFO ID。"""
+
 import requests
-import json
 
 OT_URL = "https://api.platform.opentargets.org/api/v4/graphql"
 

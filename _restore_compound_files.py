@@ -1,7 +1,8 @@
 """Restore compound-related CSVs to the original 20-compound state before re-expansion."""
 
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 
 BASE_DIR = Path(__file__).parent
 NETWORK_DIR = BASE_DIR / "network_files"

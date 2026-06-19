@@ -82,14 +82,10 @@ download_external_data.py — 从外部权威数据库和GitHub开源项目下�
 - gene_pathway_enrichment_external.csv — 基因通路映射 (MSigDB标准化)
 """
 
-import os
-import sys
 import csv
-import json
-import time
 import logging
+import time
 from pathlib import Path
-from collections import defaultdict
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -103,7 +99,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 # =============================================================================
 def _load_db_config() -> dict:
     """从 external_db_config.yaml 加载外部数据库查询配置
-    
+
     替代所有硬编码的化合物CID、疾病关键词、KEGG通路ID、细胞类型列表。
     配置文件: network_files/external_db_config.yaml
     """
@@ -237,7 +233,6 @@ MSIGDB_MOUSE_GENESETS = {
 
 def download_msigdb_gene_pathways():
     """从 MSigDB 下载小鼠基因通路映射"""
-    import requests
     out_file = OUT_DIR / "msigdb_gene_pathways.csv"
     if out_file.exists():
         logger.info(f"  MSigDB 已存在: {out_file}")
@@ -289,13 +284,13 @@ PANGLAODB_MARKER_URL = "https://panglaodb.se/markers/PanglaoDB_markers_27_Mar_20
 
 def download_panglaodb_markers():
     """从 PanglaoDB 下载细胞类型标记基因
-    
+
     细胞类型列表: 从 external_db_config.yaml 加载 (替代硬编码)
     文献: Franzén et al., Database 2019, PMID: 30929243
     """
     import gzip
     import io
-    import requests
+
     out_file = OUT_DIR / "panglaodb_celltype_markers.csv"
     if out_file.exists():
         logger.info(f"  PanglaoDB 已存在: {out_file}")
@@ -388,7 +383,6 @@ def download_cellchat_lr_pairs():
     logger.info("=== 下载 CellChatDB 配体-受体对 ===")
     rows = []
     try:
-        import requests
         resp = _safe_request(CELLCHAT_RAW_URL)
         lines = resp.text.strip().split('\n')
         reader = csv.DictReader(lines)
@@ -425,7 +419,7 @@ def download_cellchat_lr_pairs():
 
 def download_pubchem_compound_props():
     """从 PubChem PUG REST API 获取化合物理化性质
-    
+
     化合物CID列表: 从 external_db_config.yaml 加载 (替代硬编码)
     文献: Kim et al., NAR 2021, PMID: 33137181
     API: https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest
@@ -436,7 +430,7 @@ def download_pubchem_compound_props():
         return out_file
 
     logger.info("=== 下载 PubChem 化合物理化性质 ===")
-    
+
     # 从配置文件加载化合物CID (替代硬编码)
     db_config = _load_db_config()
     compound_cids = db_config.get('compounds', {})
@@ -507,7 +501,7 @@ STITCH_CHEMICAL_MAP_URL = (
 
 def download_stitch_compound_targets():
     """从 STITCH 下载化合物-蛋白互作数据
-    
+
     化合物CID列表: 从 external_db_config.yaml 加载 (替代硬编码)
     文献: Szklarczyk et al., NAR 2021, PMID: 33125081
     """
@@ -519,7 +513,7 @@ def download_stitch_compound_targets():
         return out_file
 
     logger.info("=== 下载 STITCH 化合物-靶点互作 ===")
-    
+
     # 从配置文件加载化合物CID (替代硬编码)
     db_config = _load_db_config()
     compound_cids = db_config.get('compounds', {})
@@ -533,7 +527,7 @@ def download_stitch_compound_targets():
             content = gz.read().decode('utf-8')
             lines = content.strip().split('\n')
             # 解析 header
-            header = lines[0].strip().split('\t')
+            lines[0].strip().split('\t')
             # expected: chemical, protein, experimental, ...
             cid_to_stitch = {}
             for name, pubchem_cid in compound_cids.items():
@@ -585,7 +579,7 @@ DISGENET_CURATED_URL = (
 
 def download_disgenet_disease_genes():
     """从 DisGeNET GitHub 开源镜像下载疾病-基因关联 (公开 curated 数据集)
-    
+
     疾病关键词列表: 从 external_db_config.yaml 加载 (替代硬编码)
     数据来源: https://github.com/dhimmel/disgenet (DisGeNET v3.0, May 2015)
     许可证: Open Database License
@@ -599,7 +593,7 @@ def download_disgenet_disease_genes():
         return out_file
 
     logger.info("=== 下载 DisGeNET 疾病-基因关联 (GitHub 镜像) ===")
-    
+
     # 从配置文件加载疾病关键词 (替代硬编码)
     db_config = _load_db_config()
     target_diseases_config = db_config.get('diseases', {})
@@ -681,7 +675,7 @@ def download_disgenet_disease_genes():
 # =============================================================================
 def _load_pathway_keyword_config() -> dict:
     """从 pathway_keyword_config.yaml 加载通路关键词映射 (替代硬编码)
-    
+
     配置文件: network_files/pathway_keyword_config.yaml
     数据来源: MSigDB (Subramanian et al., PNAS 2005)
               KEGG (Kanehisa et al., NAR 2021)
@@ -713,7 +707,7 @@ def _load_pathway_keyword_config() -> dict:
 
 def build_gene_pathway_csv():
     """从 MSigDB 数据构建项目特定的基因通路映射
-    
+
     通路关键词映射: 从 pathway_keyword_config.yaml 加载 (替代硬编码)
     """
     msigdb_file = OUT_DIR / "msigdb_gene_pathways.csv"
@@ -795,10 +789,10 @@ def build_gene_pathway_csv():
 
 def download_string_ppi(gene_list: list = None):
     """从 STRING API 下载蛋白-蛋白互作数据 (小鼠)
-    
+
     如果提供了 gene_list, 则只下载这些基因的互作数据。
     否则下载所有已有的基因。
-    
+
     Args:
         gene_list: 可选, 基因符号列表
     """
@@ -808,7 +802,7 @@ def download_string_ppi(gene_list: list = None):
         return out_file
 
     logger.info("=== 下载 STRING PPI 数据 ===")
-    
+
     if not gene_list:
         # 尝试从铁衰老基因.txt读取基因列表
         ferroaging_file = BASE_DIR / "铁衰老基因.txt"
@@ -819,9 +813,8 @@ def download_string_ppi(gene_list: list = None):
             logger.warning("  无基因列表, 跳过 STRING PPI 下载")
             return None
 
-    import requests
     rows = []
-    
+
     try:
         # 步骤1: 将基因符号映射到 STRING ID
         logger.info(f"  映射 {len(gene_list)} 个基因到 STRING ID...")
@@ -829,7 +822,7 @@ def download_string_ppi(gene_list: list = None):
         # 分批处理 (STRING API 限制)
         batch_size = 100
         gene_to_string_id = {}
-        
+
         for i in range(0, len(gene_list), batch_size):
             batch = gene_list[i:i + batch_size]
             params = {
@@ -846,14 +839,14 @@ def download_string_ppi(gene_list: list = None):
                 if string_id:
                     gene_to_string_id[query_item] = string_id
             time.sleep(0.5)  # 速率限制
-        
+
         logger.info(f"  映射成功: {len(gene_to_string_id)}/{len(gene_list)} 个基因")
-        
+
         # 步骤2: 下载 PPI 网络
         if gene_to_string_id:
             string_ids = list(gene_to_string_id.values())
             logger.info(f"  下载 PPI 网络 ({len(string_ids)} 个蛋白)...")
-            
+
             for i in range(0, len(string_ids), batch_size):
                 batch_ids = string_ids[i:i + batch_size]
                 params = {
@@ -888,7 +881,7 @@ def download_string_ppi(gene_list: list = None):
                                 'score': int(score * 1000),  # 转换为 0-1000
                             })
                 time.sleep(0.5)
-        
+
         logger.info(f"  STRING PPI: {len(rows)} 条互作边 (score >= 400)")
     except Exception as e:
         logger.warning(f"  STRING PPI 下载失败: {e}")
@@ -962,7 +955,7 @@ FERRDB_URL = "http://www.zhounan.org/ferrdb/current/"
 
 def download_ferrdb_genes():
     """从 FerrDb V2 下载铁死亡调控因子基因列表"""
-    out_file = OUT_DIR / "ferrdb_ferroptosis_genes.csv"
+    OUT_DIR / "ferrdb_ferroptosis_genes.csv"
     # FerrDb 数据已在 idsp_gene_sets.py 中整理, 此处仅作记录
     logger.info("=== FerrDb V2 铁死亡基因 ===")
     logger.info("  FerrDb V2 数据已整合在 L1/idsp_gene_sets.py 中")
@@ -979,7 +972,7 @@ def download_ferrdb_genes():
 
 def download_kegg_pathway_genes():
     """从 KEGG REST API 下载小鼠通路基因映射
-    
+
     通路ID列表: 从 external_db_config.yaml 加载 (替代硬编码)
     文献: Kanehisa et al., NAR 2021, PMID: 33125081
     API: https://rest.kegg.jp/
@@ -990,7 +983,7 @@ def download_kegg_pathway_genes():
         return out_file
 
     logger.info("=== 下载 KEGG 通路基因映射 ===")
-    
+
     # 从配置文件加载 KEGG 通路ID (替代硬编码)
     db_config = _load_db_config()
     target_pathways = db_config.get('kegg_pathways', {})
