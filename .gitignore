@@ -18,6 +18,7 @@ to_delete.json
 
 # 缓存与临时文件
 .annotation_cache/
+.cache/
 L3/disease_cache/
 results/figs/
 
@@ -43,6 +44,13 @@ L3_results/
 _tmp_*.py
 _check_*.ps1
 RefHub_*.html
+extract_paper.py
+extract_pdf_images.py
+extract_pdf_text.py
+paper_extracted.txt
+
+# 生成报告目录
+dry_lab_report/
 
 # Trae IDE 配置（可选）
 .trae/

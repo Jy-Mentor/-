@@ -10,9 +10,9 @@
   - |log2FC| > 0.5
   - 在至少 1 个数据集中显著 (可调整为 ≥2 个以提高稳健性)
 """
-from pathlib import Path
-
 import pandas as pd
+import numpy as np
+from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 

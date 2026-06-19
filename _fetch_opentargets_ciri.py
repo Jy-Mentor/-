@@ -14,6 +14,7 @@ API: https://api.platform.opentargets.org/api/v4/graphql
 输出:
   - network_files/opentargets_ciri_genes.csv (追加到 disease_gene_associations.csv)
 """
+import json
 import logging
 import time
 from pathlib import Path

@@ -21,11 +21,10 @@ References / GitHub repos consulted:
 - ML BBB classifiers: github.com/orvelte/BBB_permeability, github.com/ScriptsOfLife/SOL_BBB
 """
 
-from pathlib import Path
-
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import Descriptors, rdMolDescriptors
+from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 compound_file = BASE_DIR / "network_files" / "compound_smiles.csv"

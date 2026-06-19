@@ -11,14 +11,18 @@
   - network_files/acsl4_pocket_features.csv: 口袋结构特征
   - network_files/acsl4_pocket_residues.csv: 口袋内残基列表
 """
+import os
+import re
+import csv
+import json
 import logging
-from collections import Counter
 from pathlib import Path
+from collections import Counter
 
 import numpy as np
 import pandas as pd
 import requests
-from Bio.PDB import PDBParser
+from Bio.PDB import PDBParser, PDBIO, Select
 from scipy.spatial import ConvexHull
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')

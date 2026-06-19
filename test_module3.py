@@ -21,6 +21,7 @@ import unittest
 import warnings
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
 warnings.filterwarnings("ignore")
 
@@ -33,8 +34,8 @@ class TestGraphConstruction(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from module3_hgt import build_heterogeneous_graph
-        cls.graph = build_heterogeneous_graph()
+        from iron_aging.data.graph_builder import build_heterogeneous_graph
+        cls.graph = build_heterogeneous_graph(use_cache=True)
 
     def test_node_counts(self):
         """验证节点数量 (5种节点: gene, pathway, compound, disease, pocket)"""
@@ -200,8 +201,8 @@ class TestEdgeSplitValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from module3_hgt import build_heterogeneous_graph
-        cls.graph = build_heterogeneous_graph()
+        from iron_aging.data.graph_builder import build_heterogeneous_graph
+        cls.graph = build_heterogeneous_graph(use_cache=True)
 
     def test_split_ratio(self):
         """验证 train/val/test 比例为 70/15/15"""
@@ -295,8 +296,8 @@ class TestHeCoCompoundMetapath(unittest.TestCase):
 
     def test_compound_metapath_available(self):
         """验证 compound→gene→compound 元路径所需的边类型存在"""
-        from module3_hgt import build_heterogeneous_graph
-        g = build_heterogeneous_graph()
+        from iron_aging.data.graph_builder import build_heterogeneous_graph
+        g = build_heterogeneous_graph(use_cache=True)
         ct_edges = g['edges'].get('compound_targets', [])
         self.assertGreater(len(ct_edges), 0,
                            "compound_targets 边存在, 支持 compound→gene→compound 元路径")

@@ -5,14 +5,15 @@
 
 ## 1. 设计目标
 
-针对当前 Trae 在铁衰老项目中的使用痛点，建立一套**四位一体**的优化体系：
+针对当前 Trae 在铁衰老项目中的使用痛点，建立一套**五位一体**的优化体系：
 
 1. **MCP（主控制面板）**：把项目常用操作（lint、验证、测试、状态查询）封装为标准 MCP 工具，供 AI 直接调用。
 2. **规则（Rules）**：把零造假铁律、硬约束、强制行为、工具路由写入 `.trae/rules/project_rules.md`，让 Trae 每次交互前自动加载。
 3. **技能（Skills）**：创建 `iron-aging-workflow` skill，作为项目级入口协调器，负责任务分发、合规检查与进度报告。
 4. **命令（Commands）**：创建 `project_commands.ps1`，把常用命令封装为可复用函数，供用户与 AI 在终端中一键执行。
+5. **并发机制（Concurrency）**：通过 `concurrency_utils.py` 提供资源感知的进程/线程池，在质量门禁、批量文件检查等独立任务上实现安全并行，遵循“适度并发”原则。
 
-四者协同关系如下图所示：
+五者协同关系如下图所示：
 
 ```
 用户请求
@@ -37,6 +38,9 @@ iron-aging-workflow skill    （任务路由、SOP、决策树）
    │
    ▼
 project_commands.ps1         （人类与 AI 共用的终端命令）
+   │
+   ├─ 串行质量门禁
+   └─ 并发质量门禁（调用 concurrency_utils.py）
    │
    ▼
 真实代码运行 / 结果 / 日志
@@ -65,6 +69,9 @@ project_commands.ps1         （人类与 AI 共用的终端命令）
 | `log_missing_data_warning` | `file_path`, `reason`, `fallback_action` | success, log_file, error | 缺失数据日志 |
 | `get_project_status` | 无 | success, status, error | 项目状态概览 |
 | `run_whitelisted_command` | `command_name` | success, returncode, stdout, stderr | 运行白名单命令 |
+| `get_system_resources` | `memory_reserve_mb`, `memory_per_worker_mb` | success, resources, error | 查询 CPU/内存与推荐 worker 数 |
+| `run_parallel_file_checks` | `file_paths`, `max_workers` | success, completed, failed, results, errors | 并发检查多个文件是否存在 |
+| `run_parallel_quality_gate` | `max_workers` | success, completed, failed, results, errors | 并发执行 lint + 验证 + tests |
 
 ### 2.3 安全与约束
 
@@ -145,9 +152,10 @@ python -m pip install mcp pyyaml
 5. **项目关键路径**：数据流与关键文件清单。
 6. **反造假检查清单**：7 条必确认项。
 7. **命令速查**：对应 `project_commands.ps1` 函数。
-8. **输出格式约定**：进度报告、代码修改报告格式。
-9. **异常处理模板**：`traceback.print_exc()` + `raise`。
-10. **与其他 skill 的关系**：明确本 skill 只做分发，不替代领域 skill。
+8. **并发处理规范**：适用/不适用场景、资源评估、错误处理。
+9. **输出格式约定**：进度报告、代码修改报告格式。
+10. **异常处理模板**：`traceback.print_exc()` + `raise`。
+11. **与其他 skill 的关系**：明确本 skill 只做分发，不替代领域 skill。
 
 ### 4.3 技能开发标准
 
@@ -184,12 +192,66 @@ python -m pip install mcp pyyaml
 | `Get-IronAgingProjectStatus` | 项目状态 | `get_project_status` |
 | `Get-IronAgingGitStatus` | git 状态 | `run_whitelisted_command` |
 | `Install-IronAgingMcpDeps` | 安装 mcp/pyyaml | - |
+| `Start-IronAgingParallelQualityGate` | 并发 lint + validation + tests | `run_parallel_quality_gate` |
+| `Get-IronAgingSystemResources` | 显示 CPU/内存与推荐 worker 数 | `get_system_resources` |
 
 ### 5.3 命令与 MCP 的协同
 
 - 人类用户可直接在 PowerShell 中使用 `project_commands.ps1`。
 - AI 助手优先通过 MCP 工具调用，减少直接 shell 执行。
 - 两者底层调用的是同一批脚本（如 `validate_inputs.py`），结果一致。
+
+### 5.4 并发机制设计
+
+#### 5.4.1 设计原则
+
+- **适度并发**：根据 CPU 物理核心数与可用内存动态计算 `max_workers`，禁止无限制创建进程。
+- **透明错误**：任何子任务异常都会记录并向上传播，禁止静默吞错。
+- **任务隔离**：CPU 密集型任务使用进程池；IO 密集型任务使用线程池。
+- **资源感知**：启用并发前必须调用 `get_system_resources()` 评估资源。
+
+#### 5.4.2 核心实现
+
+- **`concurrency_utils.py`**：
+  - `get_system_resources()`：返回 CPU、内存与推荐 worker 数。
+  - `recommend_workers()`：根据任务内存与系统资源计算 worker 数。
+  - `run_tasks_parallel()`：通用并发执行器，支持进程/线程池与超时。
+  - `parallel_file_checks()`：并发文件存在性检查。
+  - `parallel_command_runners()`：并发运行外部命令。
+  - `parallel_quality_gate()`：并发执行 lint + 验证 + tests。
+
+#### 5.4.3 适用与不适用的场景
+
+| 适用场景 | 工具 | 说明 |
+|---|---|---|
+| 批量文件存在性检查 | `run_parallel_file_checks` | IO 轻量，可并行 |
+| lint + validate_inputs + test_config_loading + test_module3 | `run_parallel_quality_gate` | 彼此独立，快速暴露问题 |
+
+| 不适用场景 | 原因 |
+|---|---|
+| 顺序依赖强的 pipeline | 如必须先 validate_inputs 再 module3 |
+| GPU 训练任务 | 显存受限，不应与 CPU 密集型任务并行 |
+| 单个大模型训练 | 本身已占满 GPU/CPU |
+
+#### 5.4.4 协作流程
+
+```
+用户：并发运行质量门禁
+ │
+ ▼
+iron-aging-workflow skill 触发
+ │
+ ├─ 调用 mcp_project_server.get_system_resources()
+ ├─ 推荐 worker 数 = min(物理核心数, (可用内存 - 保留内存)/任务内存)
+ ├─ 调用 mcp_project_server.run_parallel_quality_gate(max_workers=推荐值)
+ │     ├─ 并发执行：ruff check .
+ │     ├─ 并发执行：python validate_inputs.py
+ │     ├─ 并发执行：python test_config_loading.py
+ │     └─ 并发执行：python test_module3.py
+ │
+ ▼
+报告结果：成功/失败任务数、错误日志
+```
 
 ---
 
@@ -259,14 +321,15 @@ iron-aging-workflow skill 触发
 
 ### 7.1 单元验证
 
-- [ ] `ruff check mcp_project_server.py` 通过。
-- [ ] `python mcp_project_server.py --help` 或 `python -c "from mcp_project_server import mcp; print('OK')"` 可加载。
+- [ ] `ruff check mcp_project_server.py concurrency_utils.py` 通过。
+- [ ] `python -c "from mcp_project_server import mcp; print('OK')"` 可加载。
+- [ ] `python concurrency_utils.py` 可正确输出系统资源与推荐 worker 数。
 - [ ] `. ./project_commands.ps1` 在 PowerShell 中加载无报错。
 - [ ] `Get-IronAgingProjectStatus` 显示关键文件状态。
 
 ### 7.2 集成验证
 
-- [ ] 在 Trae 中加载 MCP 配置后，8 个工具可被识别。
+- [ ] 在 Trae 中加载 MCP 配置后，11 个工具可被识别。
 - [ ] 修改任意 Python 文件后，AI 自动调用 `run_ruff` 与 `validate_inputs`。
 - [ ] 触发 `iron-aging-workflow` skill 关键词时，AI 优先按 SOP 执行。
 
@@ -295,5 +358,6 @@ iron-aging-workflow skill 触发
 | `mcp_project_server.py` | 项目 MCP 服务器实现 |
 | `mcp_project_server_config.json` | MCP 注册配置 |
 | `project_commands.ps1` | PowerShell 命令集 |
+| `concurrency_utils.py` | 资源感知并发执行器 |
 | `trae_optimization_spec.md` | 本总规文档 |
 | `project_memory.md` | 跨会话项目记忆 |

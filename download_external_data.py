@@ -82,10 +82,14 @@ download_external_data.py — 从外部权威数据库和GitHub开源项目下�
 - gene_pathway_enrichment_external.csv — 基因通路映射 (MSigDB标准化)
 """
 
+import os
+import sys
 import csv
-import logging
+import json
 import time
+import logging
 from pathlib import Path
+from collections import defaultdict
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -233,6 +237,7 @@ MSIGDB_MOUSE_GENESETS = {
 
 def download_msigdb_gene_pathways():
     """从 MSigDB 下载小鼠基因通路映射"""
+    import requests
     out_file = OUT_DIR / "msigdb_gene_pathways.csv"
     if out_file.exists():
         logger.info(f"  MSigDB 已存在: {out_file}")
@@ -290,7 +295,7 @@ def download_panglaodb_markers():
     """
     import gzip
     import io
-
+    import requests
     out_file = OUT_DIR / "panglaodb_celltype_markers.csv"
     if out_file.exists():
         logger.info(f"  PanglaoDB 已存在: {out_file}")
@@ -383,6 +388,7 @@ def download_cellchat_lr_pairs():
     logger.info("=== 下载 CellChatDB 配体-受体对 ===")
     rows = []
     try:
+        import requests
         resp = _safe_request(CELLCHAT_RAW_URL)
         lines = resp.text.strip().split('\n')
         reader = csv.DictReader(lines)
@@ -430,7 +436,7 @@ def download_pubchem_compound_props():
         return out_file
 
     logger.info("=== 下载 PubChem 化合物理化性质 ===")
-
+    
     # 从配置文件加载化合物CID (替代硬编码)
     db_config = _load_db_config()
     compound_cids = db_config.get('compounds', {})
@@ -513,7 +519,7 @@ def download_stitch_compound_targets():
         return out_file
 
     logger.info("=== 下载 STITCH 化合物-靶点互作 ===")
-
+    
     # 从配置文件加载化合物CID (替代硬编码)
     db_config = _load_db_config()
     compound_cids = db_config.get('compounds', {})
@@ -593,7 +599,7 @@ def download_disgenet_disease_genes():
         return out_file
 
     logger.info("=== 下载 DisGeNET 疾病-基因关联 (GitHub 镜像) ===")
-
+    
     # 从配置文件加载疾病关键词 (替代硬编码)
     db_config = _load_db_config()
     target_diseases_config = db_config.get('diseases', {})
@@ -802,7 +808,7 @@ def download_string_ppi(gene_list: list = None):
         return out_file
 
     logger.info("=== 下载 STRING PPI 数据 ===")
-
+    
     if not gene_list:
         # 尝试从铁衰老基因.txt读取基因列表
         ferroaging_file = BASE_DIR / "铁衰老基因.txt"
@@ -813,8 +819,9 @@ def download_string_ppi(gene_list: list = None):
             logger.warning("  无基因列表, 跳过 STRING PPI 下载")
             return None
 
+    import requests
     rows = []
-
+    
     try:
         # 步骤1: 将基因符号映射到 STRING ID
         logger.info(f"  映射 {len(gene_list)} 个基因到 STRING ID...")
@@ -822,7 +829,7 @@ def download_string_ppi(gene_list: list = None):
         # 分批处理 (STRING API 限制)
         batch_size = 100
         gene_to_string_id = {}
-
+        
         for i in range(0, len(gene_list), batch_size):
             batch = gene_list[i:i + batch_size]
             params = {
@@ -839,14 +846,14 @@ def download_string_ppi(gene_list: list = None):
                 if string_id:
                     gene_to_string_id[query_item] = string_id
             time.sleep(0.5)  # 速率限制
-
+        
         logger.info(f"  映射成功: {len(gene_to_string_id)}/{len(gene_list)} 个基因")
-
+        
         # 步骤2: 下载 PPI 网络
         if gene_to_string_id:
             string_ids = list(gene_to_string_id.values())
             logger.info(f"  下载 PPI 网络 ({len(string_ids)} 个蛋白)...")
-
+            
             for i in range(0, len(string_ids), batch_size):
                 batch_ids = string_ids[i:i + batch_size]
                 params = {
@@ -881,7 +888,7 @@ def download_string_ppi(gene_list: list = None):
                                 'score': int(score * 1000),  # 转换为 0-1000
                             })
                 time.sleep(0.5)
-
+        
         logger.info(f"  STRING PPI: {len(rows)} 条互作边 (score >= 400)")
     except Exception as e:
         logger.warning(f"  STRING PPI 下载失败: {e}")
@@ -983,7 +990,7 @@ def download_kegg_pathway_genes():
         return out_file
 
     logger.info("=== 下载 KEGG 通路基因映射 ===")
-
+    
     # 从配置文件加载 KEGG 通路ID (替代硬编码)
     db_config = _load_db_config()
     target_pathways = db_config.get('kegg_pathways', {})

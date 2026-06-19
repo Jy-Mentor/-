@@ -32,6 +32,7 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors, MACCSkeys, RDKFingerprint
+from rdkit.Chem.AtomPairs import Pairs as AtomPairs
 from rdkit.Chem.rdMolDescriptors import (
     CalcNumHBA,
     CalcNumHBD,

@@ -3,12 +3,12 @@ Generate real RDKit descriptors and fingerprints for newly added TCM monomers
 and append them to the L4/药物指纹/ CSV files.
 """
 
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from rdkit import Chem
-from rdkit.Chem import AllChem, Descriptors, MACCSkeys, RDKFingerprint, rdMolDescriptors
+from rdkit.Chem import Descriptors, rdMolDescriptors, AllChem, MACCSkeys, RDKFingerprint
+from rdkit.Chem.AtomPairs import Pairs as AtomPairs
 from rdkit.Chem.rdMolDescriptors import GetHashedAtomPairFingerprintAsBitVect
 
 BASE_DIR = Path(__file__).parent

@@ -2,6 +2,27 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 和 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范.
 
+## [3.0.0-dev] - 2026-06-19
+
+### 架构升级 (Modularization)
+- 新建 `src/iron_aging` 模块化包, 按 data / models / training / evaluation / utils / apps 分层.
+- 实现配置中心 `src/iron_aging/config.py`, 统一从 `config.yaml` 加载超参数与路径.
+- 封装数据层 `src/iron_aging/data/graph_builder.py`, 过渡复用 legacy `module3_hgt.py` 图构建逻辑.
+- 新增图构建缓存机制 (pickle + 输入哈希), 二次构建从 >120s 降至 <0.01s.
+- 拆分模型层 `src/iron_aging/models/gat_encoder.py`、`hgt_encoder.py` 与 `link_predictor.py`, 独立 GATv2/HGT 编码器与链路预测头.
+- 拆分训练层 `src/iron_aging/training/`, 包含 `trainer.py`、`losses.py`、`negative_sampling.py`, 支持 BCE 损失、VIB KL 损失、负采样与早停.
+- 拆分评估层 `src/iron_aging/evaluation/`, 包含 `metrics.py` 与 `explainability.py`, 支持 AUC/AP/分类指标与梯度边归因.
+- 新增应用层 `src/iron_aging/apps/hgt_pipeline.py`, 统一训练/推理入口.
+- 新增训练入口 `run_hgt_pipeline.py`, 支持 `--config` 与 `--clear-cache` 参数.
+- 新增测试目录 `tests/`, 包含 `test_graph_builder.py`、`test_models.py`、`test_training.py`、`test_evaluation.py`.
+
+### 修复
+- 修复图构建缓存失效问题: 排除构建过程中会生成的输出文件 (compound_attentivefp_embeddings.csv 等), 避免每次构建后缓存立即失效.
+- 将 `test_module3.py` 的图构建调用迁移至缓存封装, 回归测试耗时从 >120s 降至 ~150s.
+
+### 文档
+- 新增 `trae_upgrade_roadmap.md`, 定义从项目启动到部署上线的完整升级改造技术路线.
+
 ## [2.0.0] - 2026-06-19
 
 ### 重大变更 (Breaking Changes)

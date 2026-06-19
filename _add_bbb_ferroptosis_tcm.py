@@ -16,6 +16,7 @@ New compounds:
   Resveratrol (CID 445154)  - Polygonum cuspidatum, sirtuin activator, anti-ferroptosis
 """
 
+import csv
 import json
 import time
 import urllib.parse
@@ -70,7 +71,7 @@ def _safe_request(url: str, retries: int = 3):
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
             with urllib.request.urlopen(req, timeout=30) as resp:
                 return resp.read().decode("utf-8")
-        except Exception:
+        except Exception as e:
             if attempt == retries - 1:
                 raise
             time.sleep(1.0)

@@ -3,9 +3,8 @@ Append PubChem properties for newly added TCM monomers to pubchem_compound_props
 Properties are sourced from real PubChem PUG-REST (already fetched in _add_bbb_ferroptosis_tcm.py).
 """
 
-from pathlib import Path
-
 import pandas as pd
+from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 NETWORK_DIR = BASE_DIR / "network_files"
