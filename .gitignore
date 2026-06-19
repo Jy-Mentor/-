@@ -5,6 +5,47 @@ __pycache__/
 *.RData
 *.pdf
 *.lnk
+*.png
+*.jpg
+*.jpeg
+*.xlsx
+*.pt
+*.pdb
+*.mtx
+*.npz
 files_to_delete.txt
 to_delete.json
-module3_interface/raw_counts_for_cytotrace.mtx
+
+# 缓存与临时文件
+.annotation_cache/
+L3/disease_cache/
+results/figs/
+
+# 大型数据输出（可复现生成）
+checkpoints/
+external_data/
+data/
+L1/l1_results/
+L2_WGCNA_input/
+L2_WGCNA_output/
+L2_results/
+L3/
+L3_results/
+L4/
+L2_integrated_report/
+
+# 报告文件（可重新生成）
+input_validation_report.csv
+L2_optimization_report.xlsx
+L3_results/
+
+# 临时/一次性脚本
+_tmp_*.py
+_check_*.ps1
+RefHub_*.html
+
+# Trae IDE 配置（可选）
+.trae/
+
+# 外部参考实现子仓库
+pyHGT/

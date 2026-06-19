@@ -23,7 +23,6 @@
   python drug_fingerprint_generator.py
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -31,14 +30,10 @@ import numpy as np
 import pandas as pd
 from rdkit import Chem, DataStructs
 from rdkit.Chem import (
-    AllChem,
-    MACCSkeys,
     Descriptors,
+    MACCSkeys,
     rdFingerprintGenerator,
 )
-from rdkit.Chem.AtomPairs import Pairs as AtomPairs
-from rdkit.Chem.Draw import IPythonConsole
-from rdkit.Chem import Draw
 
 # ---------------------------------------------------------------------------
 # 路径配置

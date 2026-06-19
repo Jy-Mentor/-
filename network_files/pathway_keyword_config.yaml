@@ -1,0 +1,53 @@
+# ============================================================
+# 通路关键词映射配置文件
+# ============================================================
+# 用于 _load_gene_pathway_map() 中将 MSigDB 通路名称匹配到标准化名称
+# 数据来源: MSigDB (Subramanian et al., PNAS 2005)
+#           KEGG (Kanehisa et al., NAR 2021)
+#           Reactome (Jassal et al., NAR 2020)
+# ============================================================
+# 格式: 关键词 (小写, 空格分隔) → 标准化通路名称
+
+target_keywords:
+  ferroptosis: Ferroptosis
+  glutathione: Glutathione_metabolism
+  lipid peroxidation: Lipid_peroxidation
+  cellular senescence: Cellular_senescence
+  p53: p53_pathway
+  nf-kb: NF-kB_signaling
+  nlrp3: NLRP3_inflammasome
+  nrf2: Nrf2_pathway
+  jak-stat: JAK_STAT_pathway
+  mapk: MAPK_signaling
+  mtor: mTOR_signaling
+  autophagy: Autophagy
+  apoptosis: Apoptosis
+  neuroinflammation: Neuroinflammation
+  iron homeostasis: Iron_homeostasis
+  cuproptosis: Cuproptosis
+  er stress: ER_stress
+  unfolded protein: ER_stress
+  oxidative stress: Oxidative_stress
+  blood brain barrier: BBB_disruption
+  hif1: HIF1_signaling
+  hypoxia: HIF1_signaling
+
+# ============================================================
+# 细胞类型名称标准化映射
+# ============================================================
+# 用于 _load_celltype_marker_map() 中将 PanglaoDB 原始名称映射到标准名称
+# 数据来源: PanglaoDB (Franzén et al., Database 2019)
+
+celltype_name_map:
+  neuron: Neuron
+  neurons: Neuron
+  neuronal: Neuron
+  microglia: Microglia
+  astrocyte: Astrocyte
+  astrocytes: Astrocyte
+  oligodendrocyte: Oligodendrocyte
+  oligodendrocytes: Oligodendrocyte
+  endothelial: Endothelial
+  endothelial cells: Endothelial
+  pericyte: Pericyte
+  pericytes: Pericyte

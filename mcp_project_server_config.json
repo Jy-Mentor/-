@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "iron-aging-project-server": {
+      "command": "python",
+      "args": [
+        "mcp_project_server.py"
+      ],
+      "cwd": "c:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老",
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      },
+      "description": "铁衰老项目专用 MCP 服务器，提供 ruff 检查、输入验证、测试运行、配置读取、项目状态与缺失数据日志等工具。",
+      "disabled": false,
+      "autoApprove": [
+        "run_ruff",
+        "run_tests",
+        "validate_inputs",
+        "read_config",
+        "get_project_status",
+        "check_file_exists",
+        "log_missing_data_warning",
+        "run_whitelisted_command",
+        "get_system_resources",
+        "run_parallel_file_checks",
+        "run_parallel_quality_gate"
+      ]
+    }
+  }
+}

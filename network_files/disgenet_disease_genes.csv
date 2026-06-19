@@ -1,0 +1,185 @@
+disease,gene,disease_name,disease_id,score,source
+AD,APP,alzheimer disease,umls:C0002395,0.852707275405662,DisGeNET_curated_github_mirror
+AD,PSEN2,alzheimer disease type 4,umls:C1847200,0.62,DisGeNET_curated_github_mirror
+AD,PSEN1,"alzheimer disease, familial, type 3",umls:C1843013,0.510283504570094,DisGeNET_curated_github_mirror
+AD,APOE,alzheimer disease,umls:C0002395,0.49,DisGeNET_curated_github_mirror
+AD,MAPT,alzheimer disease,umls:C0002395,0.437135245920984,DisGeNET_curated_github_mirror
+AD,ADAM10,alzheimer disease 18,umls:C3810041,0.41,DisGeNET_curated_github_mirror
+CIRI,CCL2,brain ischemia,umls:C0007786,0.41,DisGeNET_curated_github_mirror
+AD,ACE,alzheimer disease,umls:C0002395,0.396672257563875,DisGeNET_curated_github_mirror
+CIRI,ACE,stroke,umls:C0038454,0.393756455755641,DisGeNET_curated_github_mirror
+AD,IL1B,alzheimer disease,umls:C0002395,0.382807609868084,DisGeNET_curated_github_mirror
+AD,BDNF,alzheimer disease,umls:C0002395,0.380715245531332,DisGeNET_curated_github_mirror
+CIRI,PDE4D,stroke,umls:C0038454,0.368446131777357,DisGeNET_curated_github_mirror
+CIRI,TNF,stroke,umls:C0038454,0.362422949416947,DisGeNET_curated_github_mirror
+CIRI,ITGB3,stroke,umls:C0038454,0.361748492648574,DisGeNET_curated_github_mirror
+AD,PLAU,alzheimer disease,umls:C0002395,0.333992713375002,DisGeNET_curated_github_mirror
+CIRI,ITGA2B,stroke,umls:C0038454,0.33268214961536,DisGeNET_curated_github_mirror
+CIRI,MTHFR,stroke,umls:C0038454,0.325502831515089,DisGeNET_curated_github_mirror
+AD,INS,alzheimer disease,umls:C0002395,0.321976289795017,DisGeNET_curated_github_mirror
+CIRI,MMP9,brain ischemia,umls:C0007786,0.319679289168154,DisGeNET_curated_github_mirror
+AD,BACE1,alzheimer disease,umls:C0002395,0.31959631235228,DisGeNET_curated_github_mirror
+CIRI,NOS2,stroke,umls:C0038454,0.318290730383799,DisGeNET_curated_github_mirror
+CIRI,PLAT,brain ischemia,umls:C0007786,0.316951202558043,DisGeNET_curated_github_mirror
+AD,IGF2,alzheimer disease,umls:C0002395,0.314634135038695,DisGeNET_curated_github_mirror
+CIRI,IL18,brain ischemia,umls:C0007786,0.314634135038695,DisGeNET_curated_github_mirror
+CIRI,PTGS2,brain ischemia,umls:C0007786,0.314634135038695,DisGeNET_curated_github_mirror
+AD,BCL2,alzheimer disease,umls:C0002395,0.313734590369816,DisGeNET_curated_github_mirror
+CIRI,CXCR3,stroke,umls:C0038454,0.310283504570094,DisGeNET_curated_github_mirror
+CIRI,HIF1A,brain ischemia,umls:C0007786,0.310283504570094,DisGeNET_curated_github_mirror
+CIRI,IL17A,brain ischemia,umls:C0007786,0.310283504570094,DisGeNET_curated_github_mirror
+AD,BAX,alzheimer disease,umls:C0002395,0.31,DisGeNET_curated_github_mirror
+CIRI,CAT,brain ischemia,umls:C0007786,0.31,DisGeNET_curated_github_mirror
+CIRI,CXCL10,brain ischemia,umls:C0007786,0.31,DisGeNET_curated_github_mirror
+CIRI,IL1A,heat stroke,umls:C0018843,0.31,DisGeNET_curated_github_mirror
+CIRI,TNFRSF1A,brain ischemia,umls:C0007786,0.31,DisGeNET_curated_github_mirror
+CIRI,F5,stroke,umls:C0038454,0.306536989384926,DisGeNET_curated_github_mirror
+AD,SORL1,alzheimer disease,umls:C0002395,0.293494379870662,DisGeNET_curated_github_mirror
+CIRI,F2,stroke,umls:C0038454,0.286894417941165,DisGeNET_curated_github_mirror
+AD,TNF,alzheimer disease,umls:C0002395,0.285281155974215,DisGeNET_curated_github_mirror
+AD,BCHE,alzheimer disease,umls:C0002395,0.279336945713237,DisGeNET_curated_github_mirror
+AD,MTHFR,alzheimer disease,umls:C0002395,0.275074118195572,DisGeNET_curated_github_mirror
+AD,A2M,alzheimer disease,umls:C0002395,0.266949636827457,DisGeNET_curated_github_mirror
+AD,CYP46A1,alzheimer disease,umls:C0002395,0.265893613571794,DisGeNET_curated_github_mirror
+AD,PRNP,alzheimer disease,umls:C0002395,0.264661533374223,DisGeNET_curated_github_mirror
+AD,CST3,alzheimer disease,umls:C0002395,0.264505054787439,DisGeNET_curated_github_mirror
+CIRI,IL6,stroke,umls:C0038454,0.257632824328829,DisGeNET_curated_github_mirror
+AD,ESR1,alzheimer disease,umls:C0002395,0.256752858015074,DisGeNET_curated_github_mirror
+AD,HFE,alzheimer disease,umls:C0002395,0.253741266834869,DisGeNET_curated_github_mirror
+AD,IDE,alzheimer disease,umls:C0002395,0.251658672927017,DisGeNET_curated_github_mirror
+AD,TF,alzheimer disease,umls:C0002395,0.247484099400324,DisGeNET_curated_github_mirror
+AD,CLU,alzheimer disease,umls:C0002395,0.247180527937746,DisGeNET_curated_github_mirror
+AD,NOS3,alzheimer disease,umls:C0002395,0.241461405577274,DisGeNET_curated_github_mirror
+CIRI,IL1RN,stroke,umls:C0038454,0.239789830760186,DisGeNET_curated_github_mirror
+AD,CHRNA7,alzheimer disease,umls:C0002395,0.236515290439732,DisGeNET_curated_github_mirror
+AD,VEGFA,alzheimer disease,umls:C0002395,0.236387775919062,DisGeNET_curated_github_mirror
+AD,PICALM,alzheimer disease,umls:C0002395,0.236289225464505,DisGeNET_curated_github_mirror
+CIRI,IL1B,stroke,umls:C0038454,0.234999217134707,DisGeNET_curated_github_mirror
+AD,NCSTN,alzheimer disease,umls:C0002395,0.234226698449138,DisGeNET_curated_github_mirror
+AD,GSK3B,alzheimer disease,umls:C0002395,0.233093168706123,DisGeNET_curated_github_mirror
+AD,TFAM,alzheimer disease,umls:C0002395,0.231626126359697,DisGeNET_curated_github_mirror
+AD,CR1,alzheimer disease,umls:C0002395,0.231420616814315,DisGeNET_curated_github_mirror
+AD,CHRNB2,alzheimer disease,umls:C0002395,0.229514568385731,DisGeNET_curated_github_mirror
+AD,HMOX1,alzheimer disease,umls:C0002395,0.22853702869214,DisGeNET_curated_github_mirror
+AD,MPO,alzheimer disease,umls:C0002395,0.227842505031283,DisGeNET_curated_github_mirror
+AD,CYP2D6,alzheimer disease,umls:C0002395,0.227559000461189,DisGeNET_curated_github_mirror
+AD,PPARG,alzheimer disease,umls:C0002395,0.227481005436477,DisGeNET_curated_github_mirror
+AD,BIN1,alzheimer disease,umls:C0002395,0.227353490915807,DisGeNET_curated_github_mirror
+CIRI,TGFB1,stroke,umls:C0038454,0.225525437511935,DisGeNET_curated_github_mirror
+CIRI,LPA,stroke,umls:C0038454,0.224958916909108,DisGeNET_curated_github_mirror
+AD,ACHE,alzheimer disease,umls:C0002395,0.22490939741315,DisGeNET_curated_github_mirror
+Aging,WRN,"aging, premature",umls:C0231341,0.222190696514028,DisGeNET_curated_github_mirror
+CIRI,ICAM1,stroke,umls:C0038454,0.220246298308341,DisGeNET_curated_github_mirror
+CIRI,VKORC1,stroke,umls:C0038454,0.220118783787671,DisGeNET_curated_github_mirror
+AD,BLMH,alzheimer disease,umls:C0002395,0.219757284192866,DisGeNET_curated_github_mirror
+CIRI,APOA1,stroke,umls:C0038454,0.219679289168154,DisGeNET_curated_github_mirror
+AD,APBB2,alzheimer disease,umls:C0002395,0.219473779622772,DisGeNET_curated_github_mirror
+AD,PCDH11X,alzheimer disease,umls:C0002395,0.219473779622772,DisGeNET_curated_github_mirror
+AD,GAPDHS,alzheimer disease,umls:C0002395,0.21926827007739,DisGeNET_curated_github_mirror
+AD,IGF1,alzheimer disease,umls:C0002395,0.219063249069368,DisGeNET_curated_github_mirror
+CIRI,EDN1,stroke,umls:C0038454,0.217929230788994,DisGeNET_curated_github_mirror
+AD,DHCR24,alzheimer disease,umls:C0002395,0.217851235764282,DisGeNET_curated_github_mirror
+AD,CASP3,alzheimer disease,umls:C0002395,0.217029686120114,DisGeNET_curated_github_mirror
+AD,ABCA7,alzheimer disease,umls:C0002395,0.216618667029351,DisGeNET_curated_github_mirror
+CIRI,SOD1,brain ischemia,umls:C0007786,0.215612163269646,DisGeNET_curated_github_mirror
+AD,SOD2,alzheimer disease,umls:C0002395,0.215406653724264,DisGeNET_curated_github_mirror
+CIRI,ADH1B,cerebral infarction,umls:C0007785,0.21512314915417,DisGeNET_curated_github_mirror
+AD,RELN,alzheimer disease,umls:C0002395,0.21512314915417,DisGeNET_curated_github_mirror
+AD,EIF2S1,alzheimer disease,umls:C0002395,0.215045154129459,DisGeNET_curated_github_mirror
+AD,ENO1,alzheimer disease,umls:C0002395,0.215045154129459,DisGeNET_curated_github_mirror
+AD,IGF2R,alzheimer disease,umls:C0002395,0.214839644584077,DisGeNET_curated_github_mirror
+AD,CD33,alzheimer disease,umls:C0002395,0.214634135038695,DisGeNET_curated_github_mirror
+CIRI,SELE,brain ischemia,umls:C0007786,0.214634135038695,DisGeNET_curated_github_mirror
+CIRI,HDAC9,stroke,umls:C0038454,0.214301599510003,DisGeNET_curated_github_mirror
+Aging,KL,"aging, premature",umls:C0231341,0.213685559411218,DisGeNET_curated_github_mirror
+AD,TREM2,alzheimer disease,umls:C0002395,0.213656595345104,DisGeNET_curated_github_mirror
+CIRI,NOS3,cerebral infarction,umls:C0007785,0.21337309077501,DisGeNET_curated_github_mirror
+CIRI,PRKCH,cerebral infarction,umls:C0007785,0.21337309077501,DisGeNET_curated_github_mirror
+AD,MIR146A,alzheimer disease,umls:C0002395,0.213089586204917,DisGeNET_curated_github_mirror
+AD,SLC30A6,alzheimer disease,umls:C0002395,0.213089586204917,DisGeNET_curated_github_mirror
+AD,DPYSL2,alzheimer disease,umls:C0002395,0.212806081634823,DisGeNET_curated_github_mirror
+AD,CD2AP,alzheimer disease,umls:C0002395,0.212600572089441,DisGeNET_curated_github_mirror
+AD,F2,alzheimer disease,umls:C0002395,0.212600572089441,DisGeNET_curated_github_mirror
+AD,ATP5A1,alzheimer disease,umls:C0002395,0.212522577064729,DisGeNET_curated_github_mirror
+CIRI,CASP3,brain ischemia,umls:C0007786,0.212522577064729,DisGeNET_curated_github_mirror
+AD,SLC30A4,alzheimer disease,umls:C0002395,0.212522577064729,DisGeNET_curated_github_mirror
+CIRI,CCL11,brain ischemia,umls:C0007786,0.212317067519348,DisGeNET_curated_github_mirror
+AD,EPHA1,alzheimer disease,umls:C0002395,0.212317067519348,DisGeNET_curated_github_mirror
+AD,IGF1R,alzheimer disease,umls:C0002395,0.212317067519348,DisGeNET_curated_github_mirror
+CIRI,ALOX5AP,cerebral infarction,umls:C0007785,0.211417522850468,DisGeNET_curated_github_mirror
+CIRI,PLA2G7,stroke,umls:C0038454,0.211134018280375,DisGeNET_curated_github_mirror
+CIRI,BDNF,brain ischemia,umls:C0007786,0.210567009140187,DisGeNET_curated_github_mirror
+AD,AD5,alzheimer disease,umls:C0002395,0.210283504570094,DisGeNET_curated_github_mirror
+CIRI,ALB,stroke,umls:C0038454,0.210283504570094,DisGeNET_curated_github_mirror
+AD,CALM1,alzheimer disease,umls:C0002395,0.210283504570094,DisGeNET_curated_github_mirror
+AD,CRH,alzheimer disease,umls:C0002395,0.210283504570094,DisGeNET_curated_github_mirror
+CIRI,NFKB1,brain ischemia,umls:C0007786,0.210283504570094,DisGeNET_curated_github_mirror
+CIRI,PARP1,brain ischemia,umls:C0007786,0.210283504570094,DisGeNET_curated_github_mirror
+AD,PAXIP1,alzheimer disease,umls:C0002395,0.210283504570094,DisGeNET_curated_github_mirror
+CIRI,UCP2,brain ischemia,umls:C0007786,0.210283504570094,DisGeNET_curated_github_mirror
+AD,ND1,"alzheimer disease, susceptibility to, mitochondrial",umls:C1838990,0.21,DisGeNET_curated_github_mirror
+AD,ND2,"alzheimer disease, susceptibility to, mitochondrial",umls:C1838990,0.21,DisGeNET_curated_github_mirror
+AD,PLD3,alzheimer disease 19,umls:C3810349,0.21,DisGeNET_curated_github_mirror
+AD,AD10,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+AD,AD11,alzheimer disease 11,umls:C1853360,0.21,DisGeNET_curated_github_mirror
+AD,AD12,alzheimer disease 12,umls:C1970209,0.21,DisGeNET_curated_github_mirror
+AD,AD13,alzheimer disease 13,umls:C1970147,0.21,DisGeNET_curated_github_mirror
+AD,AD14,alzheimer disease 14,umls:C1970144,0.21,DisGeNET_curated_github_mirror
+AD,AD15,alzheimer disease 15,umls:C1970143,0.21,DisGeNET_curated_github_mirror
+AD,AD16,alzheimer disease 16,umls:C2677888,0.21,DisGeNET_curated_github_mirror
+AD,AD6,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+AD,AD7,alzheimer disease 7,umls:C1853555,0.21,DisGeNET_curated_github_mirror
+AD,AD8,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+AD,AD9,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+CIRI,ADD3,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+AD,AMFR,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+Aging,APP,"aging, premature",umls:C0231341,0.21,DisGeNET_curated_github_mirror
+AD,ARC,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+CIRI,ASIC1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,BBC3,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,CASP9,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,CCL3,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,CCL4,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,CCR4,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,CEBPB,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,CHRM1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,CYCS,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,DIABLO,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,DYNLL1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,EGR1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,FOS,heat stroke,umls:C0018843,0.21,DisGeNET_curated_github_mirror
+CIRI,GPX1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,HBA1,cerebral infarction,umls:C0007785,0.21,DisGeNET_curated_github_mirror
+CIRI,HTR4,stroke,umls:C0038454,0.21,DisGeNET_curated_github_mirror
+CIRI,IL10,heat stroke,umls:C0018843,0.21,DisGeNET_curated_github_mirror
+CIRI,IL10RB,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,IL12RB1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,IL17RA,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,IRF1,stroke,umls:C0038454,0.21,DisGeNET_curated_github_mirror
+CIRI,ITGAV,stroke,umls:C0038454,0.21,DisGeNET_curated_github_mirror
+CIRI,JUN,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+AD,LEP,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+CIRI,MAP2K1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,MAPK1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,MAPK3,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,MPO,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+AD,MS4A4A,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+CIRI,NFKB2,heat stroke,umls:C0018843,0.21,DisGeNET_curated_github_mirror
+CIRI,NFKBIA,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+AD,NPY,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+CIRI,NPY,cerebral infarction,umls:C0007785,0.21,DisGeNET_curated_github_mirror
+CIRI,PAOX,stroke,umls:C0038454,0.21,DisGeNET_curated_github_mirror
+CIRI,PLAU,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,PRKAA2,stroke,umls:C0038454,0.21,DisGeNET_curated_github_mirror
+AD,PYY,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+CIRI,RB1,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,REL,heat stroke,umls:C0018843,0.21,DisGeNET_curated_github_mirror
+CIRI,RELA,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,RELB,heat stroke,umls:C0018843,0.21,DisGeNET_curated_github_mirror
+CIRI,SMOX,stroke,umls:C0038454,0.21,DisGeNET_curated_github_mirror
+CIRI,SOD2,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,STAT3,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,TNFRSF1B,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+CIRI,TP53,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror
+AD,TPI1,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror
+AD,TPP1,alzheimer disease,umls:C0002395,0.21,DisGeNET_curated_github_mirror

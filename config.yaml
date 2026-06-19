@@ -11,23 +11,29 @@ paths:
   network_dir: "network_files"
   l1_results_dir: "L1/l1_results"
 
-  # 输入文件
+  # 输入文件 (实际路径, 与 module3_hgt.py 中一致)
   input_files:
-    celltype_express_edges: "L3/celltype_express_edges.csv"
-    celltype_marker_genes: "L3/celltype_marker_genes.csv"
-    compound_target_edges: "L3/compound_target_edges.csv"
-    disease_gene_associations: "L3/disease_gene_associations.csv"
-    gene_coexp_edges: "L3/gene_coexp_edges.csv"
-    gene_pathway_enrichment: "L3/gene_pathway_enrichment.csv"
-    l1_gene_level_analysis: "L3/L1_gene_level_analysis.csv"
-    ligand_receptor_pairs: "L3/ligand_receptor_pairs.csv"
-    string_ppi_edges: "L3/string_ppi_edges.csv"
-    trrust_tf_target: "L3/trrust_tf_target.csv"
+    l1_genome_wide_de: "L3/L1_genome_wide_de.csv"           # 全基因组差异表达
+    l1_gene_level_analysis: "L3/L1_gene_level_analysis.csv"  # 基因级分析
+    celltype_express_edges: "L3/celltype_express_edges.csv"      # 细胞类型表达边
+    gene_pathway_enrichment: "L3/gene_pathway_enrichment.csv"    # 基因通路富集
 
-  # 网络文件 (celltype_marker_genes.csv, ligand_receptor_pairs.csv)
+  # 网络文件 (实际路径, 与 module3_hgt.py 中一致)
   network_files:
-    celltype_marker_genes: "network_files/celltype_marker_genes.csv"
-    ligand_receptor_pairs: "network_files/ligand_receptor_pairs.csv"
+    string_ppi_edges: "network_files/string_ppi_edges.csv"               # STRING PPI (小鼠)
+    trrust_tf_target: "network_files/trrust_tf_target.csv"               # TRRUST v2 TF-target
+    celltype_marker_genes: "network_files/celltype_marker_genes.csv"     # 细胞类型标记基因
+    ligand_receptor_pairs: "network_files/ligand_receptor_pairs.csv"     # 配体-受体对
+    compound_target_edges: "network_files/compound_target_edges.csv"     # 化合物-靶点
+    disease_gene_associations: "network_files/disease_gene_associations.csv" # 疾病-基因关联
+    gene_pathway_enrichment: "network_files/gene_pathway_enrichment.csv" # 基因通路富集(KEGG+Reactome)
+    gene_coexp_edges: "network_files/gene_coexp_edges.csv"               # 基因共表达边
+
+  # GO/KEGG/InterPro 注释文件 (来自 mygene.info API)
+  annotation_files:
+    go_terms: "data/go_terms.tsv"
+    kegg_pathways: "data/kegg_pathways.tsv"
+    interpro_domains: "data/interpro_domains.tsv"
 
 # ---- 模型架构配置 ----
 model:
@@ -92,8 +98,8 @@ heco:
 
 # ---- GradNorm 配置 ----
 gradnorm:
-  alpha: 0.12
-  lr_weight: 0.025
+  alpha: 1.5    # ICML 2018 原文推荐: 控制恢复力强度
+  lr_weight: 0.001  # 比主学习率小1-2个数量级, 确保权重平滑更新
 
 # ---- 自蒸馏配置 ----
 self_distill:
@@ -111,3 +117,34 @@ explainability:
   ig_steps: 50
   n_perturb: 30
   top_k_explain: 30
+
+# ---- L2 模块配置 (新增) ----
+l2:
+  # 外部 GEO 数据根目录 (可覆盖为环境变量 IRON_GEO_DIR)
+  geo_dir: "D:/反向网络药理学/L1 数据集"
+  # Rscript 可执行文件路径 (可覆盖为环境变量 RSCRIPT)
+  rscript: "C:/R/R-4.5.2/bin/Rscript.exe"
+  # 输出目录
+  output_dir: "L2_results"
+  l1_results_dir: "L1/l1_results"
+  wgcna_input_dir: "L2_WGCNA_input"
+  wgcna_output_dir: "L2_WGCNA_output"
+  module2_output_dir: "module2_results"
+  module2_plot_dir: "module2_plot_data"
+  module3_interface_dir: "module3_interface"
+  # 数据集路径 (相对于 geo_dir)
+  datasets:
+    GSE16561: "bulk/GSE16561"
+    GSE37587: "bulk/GSE37587"
+    GSE61616: "bulk/GSE61616（7d）"
+    GSE97537: "bulk/GSE97537(24H)"
+    GSE104036: "bulk/GSE104036（多时序）"
+    GSE174574: "RNA-seq/GSE174574_RAW.tar"
+  # 平台注释文件 (相对于 geo_dir 或项目根目录)
+  annotations:
+    GPL6883: "C:/Users/Jy-Mentor-7/Downloads/GPL6883-11606.txt"
+    GPL1355: "bulk/GSE61616（7d）/GPL1355-10794 (1).txt"
+  # 核心基因集 (方法学上保留, 但鼓励从 FerrDb/MSigDB 下载更新)
+  gene_sets:
+    isp_core: ["ACSL4", "PTGS2", "HMOX1", "TFRC", "ALOX15", "HMGB1", "TLR4", "NLRP3", "HIF1A", "KEAP1", "SOD1", "MPO", "CDO1", "DPP4", "NOX4"]
+    discriminator: ["GPX4", "ACSL4", "PTGS2", "HMOX1", "TFRC", "CDKN1A", "IL6"]

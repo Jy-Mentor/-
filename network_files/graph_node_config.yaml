@@ -1,0 +1,241 @@
+# ============================================================
+# 异质图节点配置文件
+# ============================================================
+# 所有节点列表均从本文件加载, 无硬编码。
+# 修改此文件即可调整图中包含的节点类型和数量。
+#
+# 数据来源:
+#   - 通路名称: KEGG (Kanehisa et al., NAR 2021), Reactome (Jassal et al., NAR 2020)
+#   - 化合物: PubChem (Kim et al., NAR 2021)
+#   - 细胞类型: PanglaoDB (Franzén et al., Database 2019)
+#   - 疾病: DisGeNET (Piñero et al., NAR 2020)
+# ============================================================
+
+# ---- 通路节点 (生物学通路, 来自KEGG/Reactome/文献) ----
+pathways:
+  # 铁死亡相关
+- Ferroptosis
+- Glutathione_metabolism
+- Iron_homeostasis
+- Lipid_peroxidation
+- Nrf2_pathway
+- Autophagy
+- Mitochondrial_dysfunction
+- ROS_signaling
+  # 衰老相关
+- Cellular_senescence
+- p53_pathway
+- p16_Rb_pathway
+- SASP
+- DNA_damage_response
+- Telomere_maintenance
+- mTOR_signaling
+- AMPK_signaling
+- Sirtuin_pathway
+  # 炎症/免疫
+- NF-kB_signaling
+- JAK_STAT_pathway
+- MAPK_signaling
+- TLR_signaling
+- NLRP3_inflammasome
+- Complement_cascade
+- Cytokine_storm
+- Chemokine_signaling
+  # 脑I/R相关
+- Apoptosis
+- Necroptosis
+- Pyroptosis
+- ER_stress
+- Oxidative_stress
+- BBB_disruption
+- Neuroinflammation
+- Excitotoxicity
+- Calcium_signaling
+- Synaptic_plasticity
+- Neurotrophin_signaling
+  # 铜死亡相关
+- Cuproptosis
+- Copper_homeostasis
+- Mitochondrial_metabolism
+  # 细胞通讯
+- Cell_adhesion
+- ECM_receptor
+- Gap_junction
+- Tight_junction
+- Focal_adhesion
+  # 代谢
+- Glycolysis
+- TCA_cycle
+- Fatty_acid_metabolism
+- Arachidonic_acid_metabolism
+- Prostaglandin_synthesis
+  # 补充通路
+- Wnt_signaling
+- Notch_signaling
+- Hedgehog_signaling
+- TGF-beta_signaling
+- VEGF_signaling
+- HIF1_signaling
+- PI3K_Akt_pathway
+- Ras_signaling
+- Rap1_signaling
+- cAMP_signaling
+- cGMP_PKG_pathway
+- Phospholipase_D
+- Insulin_signaling
+- Glucagon_signaling
+- Adipocytokine
+- Circadian_rhythm
+- Long_term_potentiation
+- Dopaminergic_synapse
+- Glutamatergic_synapse
+- GABAergic_synapse
+- Serotonergic_synapse
+- Cholinergic_synapse
+- Axon_guidance
+- Myelin_maintenance
+- Oligodendrocyte_differentiation
+- Microglia_activation
+- Astrocyte_reactivity
+- Angiogenesis
+- Blood_brain_barrier
+- Neurogenesis
+- Neuronal_death
+- Protein_processing_ER
+- Ubiquitin_proteasome
+- Lysosome
+- Peroxisome
+- Ribosome
+- Spliceosome
+- RNA_transport
+- mRNA_surveillance
+- Protein_export
+- Oxidative_phosphorylation
+- Carbon_metabolism
+- Amino_acid_metabolism
+- Nucleotide_metabolism
+- Lipid_metabolism
+- Steroid_biosynthesis
+- Drug_metabolism_cytochrome_P450
+- Xenobiotic_metabolism
+- ABC_transporters
+- Endocytosis
+- Phagosome
+- Antigen_processing
+- Natural_killer_cytotoxicity
+- T_cell_receptor
+- B_cell_receptor
+- Fc_gamma_phagocytosis
+- Leukocyte_transendothelial_migration
+- Platelet_activation
+
+# ---- 化合物节点 (63个: 20个核心验证集 + 43个BBB/铁死亡/神经保护扩展集) ----
+# 核心20个: 5本研究化合物 + 3对照 + 6柴桂剂/艾叶单体 + 6 BBB/铁死亡相关补充单体
+# BBB 评估来源: _evaluate_bbb.py (RDKit descriptors + 文献经验规则 MW<=400, logP 1-4, HBD<=3, HBA<=8, TPSA<=90)
+# 参考仓库: github.com/ActisDa/BBB-Permeability-Prediction, github.com/theochem/B3DB
+# 扩展脚本: _expand_compounds.py (PubChem PUG-REST + RDKit, 无硬编码CID)
+compounds:
+  # 本研究化合物
+- BCP
+- VC
+- Fer-1
+- DFO
+- Lip-1
+- Erastin
+- RSL3
+- ML162
+- Cinnamaldehyde
+- Cinnamic_acid
+- Quercetin
+- Naringenin
+- Eucalyptol
+- Borneol
+- Baicalein
+- Wogonin
+- Luteolin
+- Kaempferol
+- Hesperetin
+- Resveratrol
+- Curcumin
+- Ferulic acid
+- Pinocembrin
+- Chrysin
+- Apigenin
+- Genistein
+- Daidzein
+- Formononetin
+- Oroxylin A
+- Scutellarein
+- Tangeretin
+- Nobiletin
+- Fisetin
+- Galangin
+- Phloretin
+- Catechin
+- Epicatechin
+- Tetramethylpyrazine
+- Tanshinone IIA
+- Danshensu
+- Honokiol
+- Magnolol
+- Schisandrin
+- Schisandrin B
+- Dihydroartemisinin
+- Artemisinin
+- Shikonin
+- Plumbagin
+- Emodin
+- Aloe emodin
+- Physcion
+- Chrysophanol
+- Salidroside
+- Tyrosol
+- Hydroxytyrosol
+- Sulforaphane
+- Dimethyl fumarate
+- Edaravone
+- Idebenone
+- Alpha-lipoic acid
+- Melatonin
+- Huperzine A
+- N-acetylcysteine
+cell_types:
+- Neuron
+- Microglia
+- Astrocyte
+- Oligodendrocyte
+- Endothelial
+- Pericyte
+
+# ---- 疾病节点 (3种) ----
+diseases:
+- CIRI      # 脑缺血再灌注损伤
+- AD        # 阿尔茨海默病
+- Aging     # 衰老
+
+# ---- 可视化配置 ----
+visualization:
+  # 细胞类型短标签 (用于图表紧凑显示)
+  celltype_short_labels:
+    Neuron: Neu
+    Microglia: Mic
+    Astrocyte: Ast
+    Oligodendrocyte: Oli
+    Endothelial: End
+    Pericyte: Per
+
+  # t-SNE图中标注的关键基因
+  key_genes:
+  - ACSL4
+  - GPX4
+  - PTGS2
+  - TFRC
+  - HMOX1
+  - TP53
+  - CDKN1A
+  - HIF1A
+  - NFE2L2
+  - KEAP1
+  - IL6
+  - TLR4
+  - NLRP3

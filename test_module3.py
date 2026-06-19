@@ -15,14 +15,17 @@ module3_hgt.py 单元测试
   9. HGT 多层前向传播验证
 """
 
-import sys, os, warnings, unittest
+import os
+import sys
+import unittest
+import warnings
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 import numpy as np
 import torch
-import torch.nn as nn
 
 
 class TestGraphConstruction(unittest.TestCase):
@@ -182,7 +185,7 @@ class TestHeCoContrastive(unittest.TestCase):
 
     def test_loss_non_negative(self):
         """验证 HeCo 损失 >= 0"""
-        from module3_hgt import HeCoPreTrainer, MetaPathLearner
+        from module3_hgt import HeCoPreTrainer
         trainer = HeCoPreTrainer(hidden_dim=32, temperature=0.07)
         # 模拟两份投影 (模拟 schema view 和 metapath view)
         schema = torch.randn(100, 32)
@@ -208,6 +211,7 @@ class TestEdgeSplitValidation(unittest.TestCase):
         n_val = int(n * 0.15)
         n_test = n - n_train - n_val
 
+        self.assertGreater(n_test, 0, "测试集 > 0")
         self.assertGreater(n_train, n_val, "训练集 > 验证集")
         self.assertAlmostEqual(n_train / n, 0.7, delta=0.02, msg="训练集 ~70%")
         self.assertAlmostEqual(n_val / n, 0.15, delta=0.02, msg="验证集 ~15%")

@@ -1,0 +1,18 @@
+# Ruff 静态分析配置
+# 本项目使用 120 字符行宽, 兼顾中文注释与长 URL 可读性
+line-length = 120
+# 排除外部克隆依赖 (GitHub 开源参考实现, 不参与本项目 lint)
+exclude = ["pyHGT", "pyHGT/**"]
+
+[lint]
+select = ["E", "W", "F", "I", "C901"]
+ignore = [
+    "E402",  # 模块级导入不在顶部: 项目需先配置 sys.path 再导入本地模块
+]
+
+[lint.mccabe]
+# 数据分析/ML 项目函数天然较长, 阈值放宽至 55; 超过此值的函数需重点审查
+max-complexity = 55
+
+[lint.pydocstyle]
+convention = "google"

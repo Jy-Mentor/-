@@ -18,11 +18,7 @@
   python core_gene_set_integrator.py
 """
 
-import sys
-from pathlib import Path
 
-import numpy as np
-import pandas as pd
 
 # ---------------------------------------------------------------------------
 # 路径配置

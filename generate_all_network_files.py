@@ -30,17 +30,14 @@
   - drexml: Esteban-Medina M, et al. CSBJ, 2024.
 """
 
-import os
-import sys
-import logging
-from pathlib import Path
-import pandas as pd
-import numpy as np
-import requests
 import gzip
 import io
-from typing import Set, List, Dict, Tuple
-import time
+import logging
+import os
+from pathlib import Path
+
+import pandas as pd
+import requests
 
 # ── 配置 ──────────────────────────────────────────────
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -633,8 +630,9 @@ def generate_ligand_receptor_pairs():
         url_rda = "https://raw.githubusercontent.com/sqjin/CellChat/master/data/CellChatDB.human.rda"
 
         try:
-            import pyreadr
             import tempfile
+
+            import pyreadr
             resp = session.get(url_rda, timeout=60)
             resp.raise_for_status()
             tmp = tempfile.NamedTemporaryFile(suffix='.rda', delete=False)

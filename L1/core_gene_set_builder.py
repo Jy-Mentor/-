@@ -19,10 +19,10 @@
 =====================================================================
 """
 
-import sys
 from pathlib import Path
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = BASE_DIR / "l1_results"
@@ -30,10 +30,7 @@ RESULTS_DIR = BASE_DIR / "l1_results"
 # ================================================================
 # 1. 加载 IDSP 基因集
 # ================================================================
-from idsp_gene_sets import (
-    PURE_FERROPTOSIS, PURE_SENESCENCE, SHARED_GENES,
-    FERROPTOSIS_ALL, SENESCENCE_ALL
-)
+from idsp_gene_sets import PURE_FERROPTOSIS, PURE_SENESCENCE, SHARED_GENES
 
 # ================================================================
 # 2. 加载铁衰老基因.txt
@@ -67,12 +64,12 @@ rra_dict = df_rra.set_index("gene")[["n_datasets", "mean_normalized_rank", "rra_
 def classify_gene(gene):
     """分类基因：纯铁死亡 / 纯衰老 / 共享 / 铁衰老候选"""
     categories = []
-    
+
     in_ferr = gene in PURE_FERROPTOSIS
-    in_sene = gene in PURE_SENESCENCE  
+    in_sene = gene in PURE_SENESCENCE
     in_shared = gene in SHARED_GENES
     in_iron_aging = gene in IRON_AGING_GENES
-    
+
     if in_shared:
         categories.append("桥接基因")
     if in_ferr:
@@ -84,7 +81,7 @@ def classify_gene(gene):
     # 不在任何IDSP中的铁衰老候选
     if in_iron_aging and not in_ferr and not in_sene and not in_shared:
         categories.append("铁衰老独有")
-    
+
     return " | ".join(categories) if categories else "其他"
 
 
@@ -99,7 +96,7 @@ def calc_evidence_level(gene):
     in_idsp = gene in PURE_FERROPTOSIS or gene in PURE_SENESCENCE or gene in SHARED_GENES
     in_iron = gene in IRON_AGING_GENES
     sig_count = gene_sig.get(gene, 0)
-    
+
     if in_idsp and in_iron and sig_count >= 3:
         return "Tier1_核心"
     elif in_idsp and in_iron:
@@ -139,7 +136,7 @@ df_core = pd.DataFrame(records)
 # 按证据层级排序
 tier_order = {"Tier1_核心": 0, "Tier2_双验证": 1, "Tier3_L1支持": 2, "Tier4_单证据": 3, "Tier5_其他": 4}
 df_core["_tier_sort"] = df_core["evidence_tier"].map(tier_order)
-df_core = df_core.sort_values(["_tier_sort", "n_sig_datasets_L1", "gene"], 
+df_core = df_core.sort_values(["_tier_sort", "n_sig_datasets_L1", "gene"],
                                 ascending=[True, False, True]).drop(columns=["_tier_sort"])
 
 # ================================================================

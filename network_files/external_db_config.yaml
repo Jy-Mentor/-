@@ -1,0 +1,153 @@
+# ============================================================
+# 外部数据库查询配置文件
+# ============================================================
+# 所有外部数据库查询所需的标识符/关键词, 无硬编码。
+# 修改此文件即可调整查询目标, 无需修改代码。
+#
+# 数据来源:
+#   - PubChem CIDs: 公开可查 (https://pubchem.ncbi.nlm.nih.gov/)
+#   - STITCH 化学ID: 基于PubChem CID映射
+#   - DisGeNET 疾病关键词: 用于匹配 curated gene-disease associations
+#   - KEGG 通路ID: 公开可查 (https://www.kegg.jp/)
+#   - PanglaoDB 细胞类型: 公开可查 (https://panglaodb.se/)
+# ============================================================
+
+# ---- 化合物 PubChem CID (公开信息, 可验证) ----
+compounds:
+  BCP: 5281515       # beta-Caryophyllene
+  VC: 54670067       # Ascorbic acid (Vitamin C)
+  Fer-1: 4063092     # Ferrostatin-1
+  DFO: 2973          # Deferoxamine
+  Lip-1: 42608917    # Liproxstatin-1
+  Erastin: 11294402  # Erastin
+  RSL3: 25195377     # RSL3
+  ML162: 609375      # ML162
+
+# ---- DisGeNET 疾病关键词 (用于匹配 curated_gene_disease_associations) ----
+diseases:
+  CIRI:
+    keywords:
+      - cerebral ischemia
+      - stroke
+      - brain ischemia
+      - cerebral infarction
+      - ischemic stroke
+    mesh_ids:
+      - C091771
+      - C10.228.140.300.775
+  AD:
+    keywords:
+      - alzheimer
+      - alzheimer disease
+      - alzheimer's disease
+    mesh_ids:
+      - D000544
+  Aging:
+    keywords:
+      - aging
+      - ageing
+      - senescence
+      - cellular senescence
+    mesh_ids:
+      - D000375
+
+# ---- KEGG 通路ID (小鼠 mmu, 公开可查) ----
+# 文献: Kanehisa et al., NAR 2021
+kegg_pathways:
+  mmu04216: Ferroptosis
+  mmu00480: Glutathione_metabolism
+  mmu04140: Autophagy
+  mmu04210: Apoptosis
+  mmu04150: mTOR_signaling
+  mmu04151: PI3K_Akt_pathway
+  mmu04010: MAPK_signaling
+  mmu04630: JAK_STAT_pathway
+  mmu04064: NF-kB_signaling
+  mmu04621: NLRP3_inflammasome
+  mmu04115: p53_pathway
+  mmu04066: HIF1_signaling
+  mmu00640: Propanoate_metabolism
+  mmu00010: Glycolysis
+  mmu00020: TCA_cycle
+  mmu01212: Fatty_acid_metabolism
+  mmu00590: Arachidonic_acid_metabolism
+  mmu00190: Oxidative_phosphorylation
+  mmu04310: Wnt_signaling
+  mmu04330: Notch_signaling
+  mmu04340: Hedgehog_signaling
+  mmu04350: TGF-beta_signaling
+  mmu04370: VEGF_signaling
+  mmu04020: Calcium_signaling
+  mmu04024: cAMP_signaling
+  mmu04022: cGMP_PKG_pathway
+  mmu04015: Rap1_signaling
+  mmu04014: Ras_signaling
+  mmu04910: Insulin_signaling
+  mmu04920: Adipocytokine
+  mmu04710: Circadian_rhythm
+  mmu04720: Long_term_potentiation
+  mmu04728: Dopaminergic_synapse
+  mmu04724: Glutamatergic_synapse
+  mmu04727: GABAergic_synapse
+  mmu04726: Serotonergic_synapse
+  mmu04725: Cholinergic_synapse
+  mmu04360: Axon_guidance
+  mmu04510: Focal_adhesion
+  mmu04512: ECM_receptor
+  mmu04514: Cell_adhesion
+  mmu04530: Tight_junction
+  mmu04540: Gap_junction
+  mmu04610: Complement_cascade
+  mmu04612: Antigen_processing
+  mmu04640: Hematopoietic_cell_lineage
+  mmu04144: Endocytosis
+  mmu04145: Phagosome
+  mmu04142: Lysosome
+  mmu04146: Peroxisome
+  mmu03010: Ribosome
+  mmu03040: Spliceosome
+  mmu03013: RNA_transport
+  mmu02010: ABC_transporters
+  mmu00980: Drug_metabolism_cytochrome_P450
+  mmu00982: Xenobiotic_metabolism
+  mmu00100: Steroid_biosynthesis
+  mmu00230: Nucleotide_metabolism
+  mmu00250: Amino_acid_metabolism
+  mmu01200: Carbon_metabolism
+  mmu03015: mRNA_surveillance
+  mmu03060: Protein_export
+  mmu04141: Protein_processing_ER
+  mmu04120: Ubiquitin_proteasome
+  mmu04650: Natural_killer_cytotoxicity
+  mmu04660: T_cell_receptor
+  mmu04662: B_cell_receptor
+  mmu04666: Fc_gamma_phagocytosis
+  mmu04670: Leukocyte_transendothelial_migration
+  mmu04611: Platelet_activation
+
+# ---- PanglaoDB 目标细胞类型 (中枢神经系统相关) ----
+target_cell_types:
+  - Neuron
+  - Neurons
+  - Neuronal stem cells
+  - Neural stem cells
+  - Microglia
+  - Astrocyte
+  - Astrocytes
+  - Oligodendrocyte
+  - Oligodendrocytes
+  - Endothelial cells
+  - Endothelial
+  - Pericytes
+  - Pericyte
+  - Radial glia
+  - Bergmann glia
+  - Ependymal cells
+  - Interneurons
+  - Pyramidal neurons
+  - GABAergic neurons
+  - Glutamatergic neurons
+  - Dopaminergic neurons
+  - Cholinergic neurons
+  - Granule cells
+  - Purkinje cells

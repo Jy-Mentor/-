@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
+r"""
 =====================================================================
 L1: 双评分分析 — 在CIRI中识别铁驱动的衰老程序 (IDSP)
 =====================================================================
@@ -27,17 +27,24 @@ L1: 双评分分析 — 在CIRI中识别铁驱动的衰老程序 (IDSP)
 =====================================================================
 """
 
-import os, sys, re, gzip, json, warnings, logging, hashlib
+import gzip
+import json
+import logging
+import os
+import re
+import warnings
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Set, Any
+from typing import Any, Dict, List, Optional, Set, Tuple
+
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 import pandas as pd
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
+
 try:
     from joblib import Memory
     _HAS_JOBLIB = True
@@ -61,10 +68,8 @@ if _HAS_JOBLIB:
 # ============================================================
 # 导入三基因集（带 fallback 保护）
 # ============================================================
-from idsp_gene_sets import (
-    PURE_FERROPTOSIS, PURE_SENESCENCE, SHARED_GENES,
-    FERROPTOSIS_ALL, SENESCENCE_ALL
-)
+from idsp_gene_sets import PURE_FERROPTOSIS, PURE_SENESCENCE, SHARED_GENES
+
 logger.info(f"基因集加载: idsp_gene_sets.py "
             f"(铁死亡={len(PURE_FERROPTOSIS)}, 衰老={len(PURE_SENESCENCE)}, 共享={len(SHARED_GENES)})")
 
@@ -259,8 +264,7 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
     Returns:
         校正后的 {dataset_name: expr_df_corrected}
     """
-    from collections import OrderedDict
-    
+
     # 1. 找到所有数据集共有且非NaN的基因交集
     common_genes_list = []
     for name, df in expr_dict.items():
@@ -269,24 +273,24 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
         # 每个基因在所有样本中至少 50% 非 NaN
         valid_genes = df.index[df.notna().sum(axis=1) >= max(1, df.shape[1] // 2)]
         common_genes_list.append(set(valid_genes))
-    
+
     if len(common_genes_list) < 2:
         logger.warning("  ComBat: 可合并的数据集 < 2, 跳过批次校正")
         return expr_dict
-    
+
     common_genes = sorted(set.intersection(*common_genes_list))
     if len(common_genes) < 100:
         logger.warning(f"  ComBat: 共有基因仅 {len(common_genes)} < 100, 跳过批次校正")
         return expr_dict
-    
+
     logger.info(f"  ComBat: {len(common_genes)} 共有基因, {len(expr_dict)} 数据集")
-    
+
     # 2. 构建合并矩阵 (基因 × 所有样本)
     merged_parts = []
     batch_labels = []
     group_labels = []  # 生物学分组标签 (case=1, control=0)
     dataset_order = []
-    
+
     for name, df in expr_dict.items():
         if df is None or df.empty:
             continue
@@ -321,14 +325,14 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
     if len(merged_parts) < 2:
         logger.warning("  ComBat: 有效数据集 < 2, 跳过批次校正")
         return expr_dict
-    
+
     merged_expr = pd.concat(merged_parts, axis=1)
     logger.info(f"  ComBat 合并矩阵: {merged_expr.shape} (基因 × 样本)")
-    
+
     # 3. 先用基因中心化预处理 (每个基因减去全局均值, 更稳定)
     gene_means = merged_expr.mean(axis=1)
     merged_centered = merged_expr.sub(gene_means, axis=0)
-    
+
     # 4. 构建 neuroCombat covars DataFrame (Leek 2012 最佳实践)
     #    neuroCombat 的 categorical_cols 参数直接指定需要保护的生物学变量
     group_array = np.array(group_labels)
@@ -399,10 +403,10 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
         except Exception as e2:
             logger.warning(f"  pycombat 降级也失败 ({e2}), 返回原始数据")
             return expr_dict
-    
+
     # 6. 恢复基因均值 (加回全局均值)
     corrected = corrected.add(gene_means, axis=0)
-    
+
     # 7. 拆分回各数据集
     result = {}
     col_start = 0
@@ -881,7 +885,8 @@ def gene_set_sensitivity_analysis(expr_dict: Dict[str, pd.DataFrame],
     Returns:
         DataFrame: 每行 = 一次扰动, 列 = 各数据集的 d_ferr / d_sene
     """
-    from idsp_gene_sets import PURE_FERROPTOSIS as PF, PURE_SENESCENCE as PS
+    from idsp_gene_sets import PURE_FERROPTOSIS as PF
+    from idsp_gene_sets import PURE_SENESCENCE as PS
 
     # 构建背景基因池 (表达矩阵中除纯铁死亡/纯衰老/共享基因外的所有基因)
     all_expr_genes = set()
@@ -1411,8 +1416,8 @@ def bayesian_meta_analysis(effect_sizes: List[float],
     result = {'k': k}
 
     try:
-        import pymc as pm
         import arviz as az
+        import pymc as pm
 
         with pm.Model() as model:
             # 总体均值先验 (弱信息)
@@ -1423,7 +1428,7 @@ def bayesian_meta_analysis(effect_sizes: List[float],
             theta = pm.Normal('theta', mu=mu, sigma=tau, shape=k)
             # 观测似然
             y_like = pm.Normal('y_like', mu=theta, sigma=sigma_obs, observed=y_obs)
-            
+
             # MCMC 采样 (NUTS) — 提高 target_accept 减少发散
             trace = pm.sample(
                 draws=draws,
@@ -1439,34 +1444,34 @@ def bayesian_meta_analysis(effect_sizes: List[float],
             summary = az.summary(trace, var_names=['mu', 'tau'], hdi_prob=0.95)
         except TypeError:
             summary = az.summary(trace, var_names=['mu', 'tau'], ci_prob=0.95)
-        
+
         # 自动检测 CI/HDI 列名 (arviz 不同版本列名不同)
         cols = list(summary.columns)
         lo_candidates = ['hdi_2.5%', '2.5%', 'ci_2.5%']
         hi_candidates = ['hdi_97.5%', '97.5%', 'ci_97.5%']
         lo_col = next((c for c in lo_candidates if c in cols), cols[2] if len(cols) > 2 else cols[-1])
         hi_col = next((c for c in hi_candidates if c in cols), cols[3] if len(cols) > 3 else cols[-1])
-        
+
         # 使用实际列名读取
         result['mu_mean'] = float(summary.loc['mu', 'mean'])
         result['mu_sd'] = float(summary.loc['mu', 'sd'])
         result['mu_hdi_2.5'] = float(summary.loc['mu', lo_col])
         result['mu_hdi_97.5'] = float(summary.loc['mu', hi_col])
         result['mu_rhat'] = float(summary.loc['mu', 'r_hat'])
-        
+
         result['tau_mean'] = float(summary.loc['tau', 'mean'])
         result['tau_sd'] = float(summary.loc['tau', 'sd'])
         result['tau_hdi_2.5'] = float(summary.loc['tau', lo_col])
         result['tau_hdi_97.5'] = float(summary.loc['tau', hi_col])
         result['tau_rhat'] = float(summary.loc['tau', 'r_hat'])
-        
+
         result['tau2_mean'] = float(np.mean(trace.posterior['tau'].values ** 2))
         result['tau2_sd'] = float(np.std(trace.posterior['tau'].values ** 2))
-        
+
         # 收敛诊断 (R̂ < 1.05 则认为收敛)
         rhat_max = max(result['mu_rhat'], result['tau_rhat'])
         result['converged'] = rhat_max < 1.05
-        
+
         # μ 的 95% HDI 不包含 0 = 统计显著
         result['mu_significant'] = (
             (result['mu_hdi_2.5'] > 0) or (result['mu_hdi_97.5'] < 0)
@@ -1898,9 +1903,9 @@ def temporal_dual_analysis(expr_df: pd.DataFrame, timepoint_dict: dict,
         logger.info(f"    衰老/铁死亡累积FC比(24h)={df.attrs['sene_fc_dominance']:.2f} "
                     f"(>1.5=衰老晚期主导)")
     if df.attrs.get('sene_biphasic_detected'):
-        logger.info(f"    双相激活模式: ✓检测到 (衰老晚期加速 + 铁死亡衰减)")
+        logger.info("    双相激活模式: ✓检测到 (衰老晚期加速 + 铁死亡衰减)")
     else:
-        logger.info(f"    双相激活模式: 未检测到")
+        logger.info("    双相激活模式: 未检测到")
 
     return df
 
@@ -3070,7 +3075,7 @@ def main():
             valid_expr_dict, sample_info, n_iterations=100, replace_fraction=0.10)
         sensitivity_df.to_csv(
             OUTPUT_DIR / 'L1_gene_set_sensitivity.csv', index=False)
-        logger.info(f"  敏感性分析保存: L1_gene_set_sensitivity.csv")
+        logger.info("  敏感性分析保存: L1_gene_set_sensitivity.csv")
     except Exception as e:
         logger.warning(f"  敏感性分析失败: {e} (非关键)")
 
@@ -3256,7 +3261,7 @@ def main():
         f.write(f"\nGPX4验证: {gpx4_verdict}\n")
         f.write(f"时间动态: {temporal_verdict}\n")
         if not temporal_df.empty:
-            f.write(f"  时间动态生物指标:\n")
+            f.write("  时间动态生物指标:\n")
             sene_fc_dom = temporal_df.attrs.get('sene_fc_dominance', np.nan)
             ferr_late_ratio = temporal_df.attrs.get('ferr_late_rate_ratio', np.nan)
             sene_late_ratio = temporal_df.attrs.get('sene_late_rate_ratio', np.nan)
@@ -3269,7 +3274,7 @@ def main():
             f.write(f"    衰老/铁死亡AUC负荷比={safe_fmt(sene_auc_ratio)}\n")
 
         # 4i. 免疫反卷积关联
-        f.write(f"\n免疫细胞反卷积 × IDSP 关联:\n")
+        f.write("\n免疫细胞反卷积 × IDSP 关联:\n")
         if top_celltype_global:
             f.write(f"  全局最佳细胞类型: {top_celltype_global['cell_type']} "
                     f"(ρ={safe_fmt(top_celltype_global['rho'])}, "
@@ -3337,7 +3342,7 @@ def main():
         json.dump(_json_meta, jf, indent=2, ensure_ascii=False,
                   default=lambda o: None if pd.isna(o) else (
                       float(o) if isinstance(o, (np.floating,)) else o))
-    logger.info(f"  JSON摘要保存: L1_statistical_summary.json")
+    logger.info("  JSON摘要保存: L1_statistical_summary.json")
     logger.info(f"{'='*60}")
 
 

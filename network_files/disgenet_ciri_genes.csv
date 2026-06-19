@@ -1,0 +1,89 @@
+disease,gene,score,disease_id,disease_name,target_name
+CIRI,CCL2,0.41,umls:C0007786,brain ischemia,chemokine (C-C motif) ligand 2
+CIRI,ACE,0.393756455755641,umls:C0038454,stroke,angiotensin I converting enzyme
+CIRI,PDE4D,0.368446131777357,umls:C0038454,stroke,"phosphodiesterase 4D, cAMP-specific"
+CIRI,TNF,0.362422949416947,umls:C0038454,stroke,tumor necrosis factor
+CIRI,ITGB3,0.361748492648574,umls:C0038454,stroke,"integrin, beta 3 (platelet glycoprotein IIIa, antigen CD61)"
+CIRI,ITGA2B,0.33268214961536,umls:C0038454,stroke,"integrin, alpha 2b (platelet glycoprotein IIb of IIb/IIIa complex, antigen CD41)"
+CIRI,MTHFR,0.325502831515089,umls:C0038454,stroke,methylenetetrahydrofolate reductase (NAD(P)H)
+CIRI,MMP9,0.319679289168154,umls:C0007786,brain ischemia,"matrix metallopeptidase 9 (gelatinase B, 92kDa gelatinase, 92kDa type IV collagenase)"
+CIRI,NOS2,0.318290730383799,umls:C0038454,stroke,"nitric oxide synthase 2, inducible"
+CIRI,PLAT,0.316951202558043,umls:C0007786,brain ischemia,"plasminogen activator, tissue"
+CIRI,IL18,0.314634135038695,umls:C0007786,brain ischemia,interleukin 18
+CIRI,PTGS2,0.314634135038695,umls:C0007786,brain ischemia,prostaglandin-endoperoxide synthase 2 (prostaglandin G/H synthase and cyclooxygenase)
+CIRI,CXCR3,0.310283504570094,umls:C0038454,stroke,chemokine (C-X-C motif) receptor 3
+CIRI,HIF1A,0.310283504570094,umls:C0007786,brain ischemia,"hypoxia inducible factor 1, alpha subunit (basic helix-loop-helix transcription factor)"
+CIRI,IL17A,0.310283504570094,umls:C0007786,brain ischemia,interleukin 17A
+CIRI,CAT,0.31,umls:C0007786,brain ischemia,catalase
+CIRI,CXCL10,0.31,umls:C0007786,brain ischemia,chemokine (C-X-C motif) ligand 10
+CIRI,IL1A,0.31,umls:C0018843,heat stroke,"interleukin 1, alpha"
+CIRI,TNFRSF1A,0.31,umls:C0007786,brain ischemia,"tumor necrosis factor receptor superfamily, member 1A"
+CIRI,F5,0.306536989384926,umls:C0038454,stroke,"coagulation factor V (proaccelerin, labile factor)"
+CIRI,F2,0.286894417941165,umls:C0038454,stroke,coagulation factor II (thrombin)
+CIRI,IL6,0.257632824328829,umls:C0038454,stroke,interleukin 6
+CIRI,IL1RN,0.239789830760186,umls:C0038454,stroke,interleukin 1 receptor antagonist
+CIRI,IL1B,0.234999217134707,umls:C0038454,stroke,"interleukin 1, beta"
+CIRI,TGFB1,0.225525437511935,umls:C0038454,stroke,"transforming growth factor, beta 1"
+CIRI,LPA,0.224958916909108,umls:C0038454,stroke,"lipoprotein, Lp(a)"
+CIRI,ICAM1,0.220246298308341,umls:C0038454,stroke,intercellular adhesion molecule 1
+CIRI,VKORC1,0.220118783787671,umls:C0038454,stroke,"vitamin K epoxide reductase complex, subunit 1"
+CIRI,APOA1,0.219679289168154,umls:C0038454,stroke,apolipoprotein A-I
+CIRI,EDN1,0.217929230788994,umls:C0038454,stroke,endothelin 1
+CIRI,SOD1,0.215612163269646,umls:C0007786,brain ischemia,"superoxide dismutase 1, soluble"
+CIRI,ADH1B,0.21512314915417,umls:C0007785,cerebral infarction,"alcohol dehydrogenase 1B (class I), beta polypeptide"
+CIRI,SELE,0.214634135038695,umls:C0007786,brain ischemia,selectin E
+CIRI,HDAC9,0.214301599510003,umls:C0038454,stroke,histone deacetylase 9
+CIRI,NOS3,0.21337309077501,umls:C0007785,cerebral infarction,nitric oxide synthase 3 (endothelial cell)
+CIRI,PRKCH,0.21337309077501,umls:C0007785,cerebral infarction,"protein kinase C, eta"
+CIRI,CASP3,0.212522577064729,umls:C0007786,brain ischemia,"caspase 3, apoptosis-related cysteine peptidase"
+CIRI,CCL11,0.212317067519348,umls:C0007786,brain ischemia,chemokine (C-C motif) ligand 11
+CIRI,ALOX5AP,0.211417522850468,umls:C0007785,cerebral infarction,arachidonate 5-lipoxygenase-activating protein
+CIRI,PLA2G7,0.211134018280375,umls:C0038454,stroke,"phospholipase A2, group VII (platelet-activating factor acetylhydrolase, plasma)"
+CIRI,BDNF,0.210567009140187,umls:C0007786,brain ischemia,brain-derived neurotrophic factor
+CIRI,ALB,0.210283504570094,umls:C0038454,stroke,albumin
+CIRI,NFKB1,0.210283504570094,umls:C0007786,brain ischemia,nuclear factor of kappa light polypeptide gene enhancer in B-cells 1
+CIRI,PARP1,0.210283504570094,umls:C0007786,brain ischemia,poly (ADP-ribose) polymerase 1
+CIRI,UCP2,0.210283504570094,umls:C0007786,brain ischemia,"uncoupling protein 2 (mitochondrial, proton carrier)"
+CIRI,ADD3,0.21,umls:C0007786,brain ischemia,adducin 3 (gamma)
+CIRI,ASIC1,0.21,umls:C0007786,brain ischemia,acid sensing (proton gated) ion channel 1
+CIRI,BBC3,0.21,umls:C0007786,brain ischemia,BCL2 binding component 3
+CIRI,CASP9,0.21,umls:C0007786,brain ischemia,"caspase 9, apoptosis-related cysteine peptidase"
+CIRI,CCL3,0.21,umls:C0007786,brain ischemia,chemokine (C-C motif) ligand 3
+CIRI,CCL4,0.21,umls:C0007786,brain ischemia,chemokine (C-C motif) ligand 4
+CIRI,CCR4,0.21,umls:C0007786,brain ischemia,chemokine (C-C motif) receptor 4
+CIRI,CEBPB,0.21,umls:C0007786,brain ischemia,"CCAAT/enhancer binding protein (C/EBP), beta"
+CIRI,CHRM1,0.21,umls:C0007786,brain ischemia,"cholinergic receptor, muscarinic 1"
+CIRI,CYCS,0.21,umls:C0007786,brain ischemia,"cytochrome c, somatic"
+CIRI,DIABLO,0.21,umls:C0007786,brain ischemia,"diablo, IAP-binding mitochondrial protein"
+CIRI,DYNLL1,0.21,umls:C0007786,brain ischemia,"dynein, light chain, LC8-type 1"
+CIRI,EGR1,0.21,umls:C0007786,brain ischemia,early growth response 1
+CIRI,FOS,0.21,umls:C0018843,heat stroke,FBJ murine osteosarcoma viral oncogene homolog
+CIRI,GPX1,0.21,umls:C0007786,brain ischemia,glutathione peroxidase 1
+CIRI,HBA1,0.21,umls:C0007785,cerebral infarction,"hemoglobin, alpha 1"
+CIRI,HTR4,0.21,umls:C0038454,stroke,"5-hydroxytryptamine (serotonin) receptor 4, G protein-coupled"
+CIRI,IL10,0.21,umls:C0018843,heat stroke,interleukin 10
+CIRI,IL10RB,0.21,umls:C0007786,brain ischemia,"interleukin 10 receptor, beta"
+CIRI,IL12RB1,0.21,umls:C0007786,brain ischemia,"interleukin 12 receptor, beta 1"
+CIRI,IL17RA,0.21,umls:C0007786,brain ischemia,interleukin 17 receptor A
+CIRI,IRF1,0.21,umls:C0038454,stroke,interferon regulatory factor 1
+CIRI,ITGAV,0.21,umls:C0038454,stroke,"integrin, alpha V"
+CIRI,JUN,0.21,umls:C0007786,brain ischemia,jun proto-oncogene
+CIRI,MAP2K1,0.21,umls:C0007786,brain ischemia,mitogen-activated protein kinase kinase 1
+CIRI,MAPK1,0.21,umls:C0007786,brain ischemia,mitogen-activated protein kinase 1
+CIRI,MAPK3,0.21,umls:C0007786,brain ischemia,mitogen-activated protein kinase 3
+CIRI,MPO,0.21,umls:C0007786,brain ischemia,myeloperoxidase
+CIRI,NFKB2,0.21,umls:C0018843,heat stroke,nuclear factor of kappa light polypeptide gene enhancer in B-cells 2 (p49/p100)
+CIRI,NFKBIA,0.21,umls:C0007786,brain ischemia,"nuclear factor of kappa light polypeptide gene enhancer in B-cells inhibitor, alpha"
+CIRI,NPY,0.21,umls:C0007785,cerebral infarction,neuropeptide Y
+CIRI,PAOX,0.21,umls:C0038454,stroke,polyamine oxidase (exo-N4-amino)
+CIRI,PLAU,0.21,umls:C0007786,brain ischemia,"plasminogen activator, urokinase"
+CIRI,PRKAA2,0.21,umls:C0038454,stroke,"protein kinase, AMP-activated, alpha 2 catalytic subunit"
+CIRI,RB1,0.21,umls:C0007786,brain ischemia,retinoblastoma 1
+CIRI,REL,0.21,umls:C0018843,heat stroke,v-rel avian reticuloendotheliosis viral oncogene homolog
+CIRI,RELA,0.21,umls:C0007786,brain ischemia,v-rel avian reticuloendotheliosis viral oncogene homolog A
+CIRI,RELB,0.21,umls:C0018843,heat stroke,v-rel avian reticuloendotheliosis viral oncogene homolog B
+CIRI,SMOX,0.21,umls:C0038454,stroke,spermine oxidase
+CIRI,SOD2,0.21,umls:C0007786,brain ischemia,"superoxide dismutase 2, mitochondrial"
+CIRI,STAT3,0.21,umls:C0007786,brain ischemia,signal transducer and activator of transcription 3 (acute-phase response factor)
+CIRI,TNFRSF1B,0.21,umls:C0007786,brain ischemia,"tumor necrosis factor receptor superfamily, member 1B"
+CIRI,TP53,0.21,umls:C0007786,brain ischemia,tumor protein p53

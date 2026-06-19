@@ -1,0 +1,1110 @@
+disease,gene,score,efo_id,disease_name,target_name
+CIRI,APP,0.8806621678064895,EFO_0003763,CIRI_cerebrovascular_disorder,amyloid beta precursor protein
+CIRI,COL4A1,0.8794188081184772,EFO_0003763,CIRI_cerebrovascular_disorder,collagen type IV alpha 1 chain
+CIRI,NOTCH3,0.838596637408074,EFO_0003763,CIRI_cerebrovascular_disorder,notch receptor 3
+CIRI,COL4A2,0.8258260162037324,EFO_0003763,CIRI_cerebrovascular_disorder,collagen type IV alpha 2 chain
+CIRI,ITM2B,0.7952574079932486,EFO_0003763,CIRI_cerebrovascular_disorder,integral membrane protein 2B
+CIRI,ACE,0.7814233678981013,EFO_0003763,CIRI_cerebrovascular_disorder,angiotensin I converting enzyme
+CIRI,ACTA2,0.7777363549596444,EFO_0003763,CIRI_cerebrovascular_disorder,"actin alpha 2, smooth muscle"
+CIRI,F2,0.7669556671707969,EFO_0003763,CIRI_cerebrovascular_disorder,"coagulation factor II, thrombin"
+CIRI,RNF213,0.7500530606499308,EFO_0003763,CIRI_cerebrovascular_disorder,ring finger protein 213
+CIRI,COLGALT1,0.7458439134381536,EFO_0003763,CIRI_cerebrovascular_disorder,collagen beta(1-O)galactosyltransferase 1
+CIRI,CST3,0.7225508275298195,EFO_0003763,CIRI_cerebrovascular_disorder,cystatin C
+CIRI,THSD1,0.7122511745803987,EFO_0003763,CIRI_cerebrovascular_disorder,thrombospondin type 1 domain containing 1
+CIRI,F5,0.708882669252664,EFO_0003763,CIRI_cerebrovascular_disorder,coagulation factor V
+CIRI,PDE3A,0.6990766315021674,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 3A
+CIRI,GUCY1A1,0.6973975254483008,EFO_0003763,CIRI_cerebrovascular_disorder,guanylate cyclase 1 soluble subunit alpha 1
+CIRI,HMGCR,0.6936730353238338,EFO_0003763,CIRI_cerebrovascular_disorder,3-hydroxy-3-methylglutaryl-CoA reductase
+CIRI,ADRB1,0.6556272335360966,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor beta 1
+CIRI,PRNP,0.6549655960770518,EFO_0003763,CIRI_cerebrovascular_disorder,prion protein (Kanno blood group)
+CIRI,HTRA1,0.6514213015910538,EFO_0003763,CIRI_cerebrovascular_disorder,HtrA serine peptidase 1
+CIRI,PDE5A,0.6268185375586133,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 5A
+CIRI,PTGS2,0.6256738579004708,EFO_0003763,CIRI_cerebrovascular_disorder,prostaglandin-endoperoxide synthase 2
+CIRI,P2RY12,0.6200365000578153,EFO_0003763,CIRI_cerebrovascular_disorder,purinergic receptor P2Y12
+CIRI,EDNRA,0.6149039497202391,EFO_0003763,CIRI_cerebrovascular_disorder,endothelin receptor type A
+CIRI,AGTR1,0.6119222867583616,EFO_0003763,CIRI_cerebrovascular_disorder,angiotensin II receptor type 1
+CIRI,F10,0.6106120039749086,EFO_0003763,CIRI_cerebrovascular_disorder,coagulation factor X
+CIRI,PTGS1,0.6104247303760928,EFO_0003763,CIRI_cerebrovascular_disorder,prostaglandin-endoperoxide synthase 1
+CIRI,APOE,0.609112600410726,EFO_0003763,CIRI_cerebrovascular_disorder,apolipoprotein E
+CIRI,PLAT,0.6024158291808936,EFO_0003763,CIRI_cerebrovascular_disorder,"plasminogen activator, tissue type"
+CIRI,PDE8B,0.599452965342628,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 8B
+CIRI,ZFHX3,0.5992513415380458,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger homeobox 3
+CIRI,ADRB2,0.5930525910208744,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor beta 2
+CIRI,KCNK3,0.5831811525569967,EFO_0003763,CIRI_cerebrovascular_disorder,potassium two pore domain channel subfamily K member 3
+CIRI,CACNA1C,0.5823957942381282,EFO_0003763,CIRI_cerebrovascular_disorder,calcium voltage-gated channel subunit alpha1 C
+CIRI,HFE,0.5812056611341271,EFO_0003763,CIRI_cerebrovascular_disorder,homeostatic iron regulator
+CIRI,LDLR,0.5785900442377082,EFO_0003763,CIRI_cerebrovascular_disorder,low density lipoprotein receptor
+CIRI,CACNA1S,0.5757718806826736,EFO_0003763,CIRI_cerebrovascular_disorder,calcium voltage-gated channel subunit alpha1 S
+CIRI,CACNA1D,0.5757718806826736,EFO_0003763,CIRI_cerebrovascular_disorder,calcium voltage-gated channel subunit alpha1 D
+CIRI,CACNA1F,0.5757718806826736,EFO_0003763,CIRI_cerebrovascular_disorder,calcium voltage-gated channel subunit alpha1 F
+CIRI,PDE4B,0.5719731727928364,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 4B
+CIRI,FGA,0.5679281532261112,EFO_0003763,CIRI_cerebrovascular_disorder,fibrinogen alpha chain
+CIRI,F11,0.5678690937682714,EFO_0003763,CIRI_cerebrovascular_disorder,coagulation factor XI
+CIRI,SORT1,0.5674585774751035,EFO_0003763,CIRI_cerebrovascular_disorder,sortilin 1
+CIRI,ATP4A,0.563644482734376,EFO_0003763,CIRI_cerebrovascular_disorder,ATPase H+/K+ transporting subunit alpha
+CIRI,VKORC1,0.5628894632654511,EFO_0003763,CIRI_cerebrovascular_disorder,vitamin K epoxide reductase complex subunit 1
+CIRI,PDE4D,0.5615174807545674,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 4D
+CIRI,FGF5,0.5599746866137699,EFO_0003763,CIRI_cerebrovascular_disorder,fibroblast growth factor 5
+CIRI,SH2B3,0.5592482908310744,EFO_0003763,CIRI_cerebrovascular_disorder,SH2B adaptor protein 3
+CIRI,ATP4B,0.5564670010437158,EFO_0003763,CIRI_cerebrovascular_disorder,ATPase H+/K+ transporting subunit beta
+CIRI,PDE6B,0.554066293088357,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 6B
+CIRI,SLC29A1,0.5535488527748342,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 29 member 1 (Augustine blood group)
+CIRI,PDE10A,0.5529269270698532,EFO_0000712,CIRI_stroke,phosphodiesterase 10A
+CIRI,PDE3B,0.5466464744430357,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 3B
+CIRI,PDE4A,0.5458858406680246,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 4A
+CIRI,PDE1B,0.5445245853425352,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 1B
+CIRI,PDE2A,0.5442935979333573,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 2A
+CIRI,PDE1C,0.5436930306694946,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 1C
+CIRI,ABO,0.5434684290354714,EFO_0003763,CIRI_cerebrovascular_disorder,"ABO, alpha 1-3-N-acetylgalactosaminyltransferase and alpha 1-3-galactosyltransferase"
+CIRI,PDE9A,0.5434158457784811,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 9A
+CIRI,SLC12A3,0.5432277162236536,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 12 member 3
+CIRI,PDE7A,0.5427639479792455,EFO_0000712,CIRI_stroke,phosphodiesterase 7A
+CIRI,PDE6A,0.5414755515413864,EFO_0000712,CIRI_stroke,phosphodiesterase 6A
+CIRI,PDE7B,0.5413831565777153,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 7B
+CIRI,PDE1A,0.5409211817593593,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 1A
+CIRI,PDE4C,0.5409211817593593,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 4C
+CIRI,PDE6C,0.5409211817593593,EFO_0003763,CIRI_cerebrovascular_disorder,phosphodiesterase 6C
+CIRI,PDE6G,0.5409211817593593,EFO_0000712,CIRI_stroke,phosphodiesterase 6G
+CIRI,PDE8A,0.5409211817593593,EFO_0000712,CIRI_stroke,phosphodiesterase 8A
+CIRI,PDE6H,0.5409211817593593,EFO_0000712,CIRI_stroke,phosphodiesterase 6H
+CIRI,PDE6D,0.5409211817593593,EFO_0000712,CIRI_stroke,phosphodiesterase 6D
+CIRI,ZNF475,0.5359821426791257,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 475
+CIRI,CELSR2,0.5358198972651672,EFO_0003763,CIRI_cerebrovascular_disorder,cadherin EGF LAG seven-pass G-type receptor 2
+CIRI,LPA,0.5337824595738437,EFO_0003763,CIRI_cerebrovascular_disorder,lipoprotein(a)
+CIRI,COL3A1,0.5333128469006647,EFO_0003763,CIRI_cerebrovascular_disorder,collagen type III alpha 1 chain
+CIRI,GLA,0.5310477110755067,EFO_0003763,CIRI_cerebrovascular_disorder,galactosidase alpha
+CIRI,ANO1,0.5256558138321893,EFO_0003763,CIRI_cerebrovascular_disorder,anoctamin 1
+CIRI,STAMBPL1,0.5250810533419763,EFO_0003763,CIRI_cerebrovascular_disorder,STAM binding protein like 1
+CIRI,MPO,0.5191828231753288,EFO_0003763,CIRI_cerebrovascular_disorder,myeloperoxidase
+CIRI,SH3PXD2A,0.5164438048125454,EFO_0003763,CIRI_cerebrovascular_disorder,SH3 and PX domains 2A
+CIRI,CTAGE1,0.5144890875084548,EFO_0003763,CIRI_cerebrovascular_disorder,cutaneous T cell lymphoma-associated antigen 1
+CIRI,FBN1,0.5117406026464518,EFO_0003763,CIRI_cerebrovascular_disorder,fibrillin 1
+CIRI,MMP12,0.5082970073053796,EFO_0003763,CIRI_cerebrovascular_disorder,matrix metallopeptidase 12
+CIRI,FURIN,0.5060614736028458,EFO_0003763,CIRI_cerebrovascular_disorder,"furin, paired basic amino acid cleaving enzyme"
+CIRI,ALDH2,0.5051705814421532,EFO_0003763,CIRI_cerebrovascular_disorder,aldehyde dehydrogenase 2 family member
+CIRI,ADRA1D,0.5027668635319552,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor alpha 1D
+CIRI,FOXF2,0.5025567059676398,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box F2
+CIRI,GRK5,0.501019109922295,EFO_0003763,CIRI_cerebrovascular_disorder,G protein-coupled receptor kinase 5
+CIRI,PROCR,0.49637938992004926,EFO_0003763,CIRI_cerebrovascular_disorder,protein C receptor
+CIRI,ADRA1A,0.4919288023635038,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor alpha 1A
+CIRI,ADRA1B,0.4891320778278639,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor alpha 1B
+CIRI,PCSK9,0.4848342020235301,EFO_0003763,CIRI_cerebrovascular_disorder,proprotein convertase subtilisin/kexin type 9
+CIRI,CDKN2B,0.47574786938593594,EFO_0003763,CIRI_cerebrovascular_disorder,cyclin dependent kinase inhibitor 2B
+CIRI,H2BC4,0.4757121453193178,EFO_0003763,CIRI_cerebrovascular_disorder,H2B clustered histone 4
+CIRI,PITX2,0.4743379218776851,EFO_0003763,CIRI_cerebrovascular_disorder,paired like homeodomain 2
+CIRI,CASZ1,0.4735890632312065,EFO_0003763,CIRI_cerebrovascular_disorder,castor zinc finger 1
+CIRI,NR3C2,0.4734423167692614,EFO_0003763,CIRI_cerebrovascular_disorder,nuclear receptor subfamily 3 group C member 2
+CIRI,LIPA,0.47077520207226276,EFO_0003763,CIRI_cerebrovascular_disorder,"lipase A, lysosomal acid type"
+CIRI,REN,0.4692826553924667,EFO_0003763,CIRI_cerebrovascular_disorder,renin
+CIRI,MT-CO2,0.4667379002950983,EFO_0003763,CIRI_cerebrovascular_disorder,mitochondrially encoded cytochrome c oxidase II
+CIRI,CDKN1A,0.4667200789230593,EFO_0003763,CIRI_cerebrovascular_disorder,cyclin dependent kinase inhibitor 1A
+CIRI,CTSA,0.46616888333467804,EFO_0003763,CIRI_cerebrovascular_disorder,cathepsin A
+CIRI,KAT6B,0.463720056558555,EFO_0003763,CIRI_cerebrovascular_disorder,lysine acetyltransferase 6B
+CIRI,HECTD4,0.46271886144288016,EFO_0000712,CIRI_stroke,HECT domain E3 ubiquitin protein ligase 4
+CIRI,SWAP70,0.4623995613080171,EFO_0003763,CIRI_cerebrovascular_disorder,switching B cell complex subunit SWAP70
+CIRI,GRIK4,0.4611804114663981,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor kainate type subunit 4
+CIRI,TCF7L2,0.4583586297262049,EFO_0003763,CIRI_cerebrovascular_disorder,transcription factor 7 like 2
+CIRI,PLG,0.4576568360464998,EFO_0003763,CIRI_cerebrovascular_disorder,plasminogen
+CIRI,LRCH1,0.45441865830193506,EFO_0003763,CIRI_cerebrovascular_disorder,leucine rich repeats and calponin homology domain containing 1
+CIRI,VWF,0.4519216417375484,EFO_0003763,CIRI_cerebrovascular_disorder,von Willebrand factor
+CIRI,GABRG2,0.4445392289714424,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit gamma2
+CIRI,WNT2B,0.4444321136807123,EFO_0003763,CIRI_cerebrovascular_disorder,Wnt family member 2B
+CIRI,PIK3CA,0.4437628918973678,EFO_0003763,CIRI_cerebrovascular_disorder,"phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic subunit alpha"
+CIRI,HDAC9,0.4426244081325738,EFO_0003763,CIRI_cerebrovascular_disorder,histone deacetylase 9
+CIRI,NOS3,0.44113991180394735,EFO_0003763,CIRI_cerebrovascular_disorder,nitric oxide synthase 3
+CIRI,MT-CO1,0.4376066023474888,EFO_0003763,CIRI_cerebrovascular_disorder,mitochondrially encoded cytochrome c oxidase I
+CIRI,PIK3CG,0.4367667638214483,EFO_0003763,CIRI_cerebrovascular_disorder,"phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic subunit gamma"
+CIRI,TSPAN2,0.435985009338577,EFO_0000712,CIRI_stroke,tetraspanin 2
+CIRI,ZC3HC1,0.4343121796140488,EFO_0000712,CIRI_stroke,zinc finger C3HC-type containing 1
+CIRI,MT-ND1,0.43379101480868365,EFO_0003763,CIRI_cerebrovascular_disorder,mitochondrially encoded NADH:ubiquinone oxidoreductase core subunit 1
+CIRI,ATP2B1,0.4326641531630587,EFO_0003763,CIRI_cerebrovascular_disorder,ATPase plasma membrane Ca2+ transporting 1
+CIRI,SOS2,0.42934486412676914,EFO_0003763,CIRI_cerebrovascular_disorder,SOS Ras/Rho guanine nucleotide exchange factor 2
+CIRI,MMP3,0.4293105119525208,EFO_0003763,CIRI_cerebrovascular_disorder,matrix metallopeptidase 3
+CIRI,PTPN11,0.42778224337360754,EFO_0003763,CIRI_cerebrovascular_disorder,protein tyrosine phosphatase non-receptor type 11
+CIRI,SNAP25,0.42688689776467775,EFO_0003763,CIRI_cerebrovascular_disorder,synaptosome associated protein 25
+CIRI,MT-ND2,0.4260742419160883,EFO_0003763,CIRI_cerebrovascular_disorder,mitochondrially encoded NADH:ubiquinone oxidoreductase core subunit 2
+CIRI,FGB,0.42520243519291595,EFO_0003763,CIRI_cerebrovascular_disorder,fibrinogen beta chain
+CIRI,PIEZO2,0.4242121149768307,EFO_0003763,CIRI_cerebrovascular_disorder,piezo type mechanosensitive ion channel component 2
+CIRI,ULK4,0.421035319634144,EFO_0003763,CIRI_cerebrovascular_disorder,unc-51 like kinase 4
+CIRI,CUX2,0.42033280139668094,EFO_0003763,CIRI_cerebrovascular_disorder,cut like homeobox 2
+CIRI,ITGA2B,0.4173393626992761,EFO_0003763,CIRI_cerebrovascular_disorder,integrin subunit alpha 2b
+CIRI,PSRC1,0.4164112587925873,EFO_0003763,CIRI_cerebrovascular_disorder,proline and serine rich coiled-coil 1
+CIRI,ITGB3,0.4160142791939435,EFO_0003763,CIRI_cerebrovascular_disorder,integrin subunit beta 3
+CIRI,MTHFR,0.4153282129653303,EFO_0003763,CIRI_cerebrovascular_disorder,methylenetetrahydrofolate reductase
+CIRI,EFEMP1,0.41271995300470027,EFO_0003763,CIRI_cerebrovascular_disorder,EGF-like fibulin extracellular matrix protein 1
+CIRI,PRKCH,0.40996481657112116,EFO_0003763,CIRI_cerebrovascular_disorder,protein kinase C eta
+CIRI,TRAFD1,0.4073424593202084,EFO_0000712,CIRI_stroke,TRAF-type zinc finger domain containing 1
+CIRI,SEMA5B,0.4071562891506834,EFO_0000712,CIRI_stroke,semaphorin 5B
+CIRI,ACHE,0.4068083222523364,EFO_0003763,CIRI_cerebrovascular_disorder,acetylcholinesterase (Yt blood group)
+CIRI,GRIN2B,0.4066447026579011,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor NMDA type subunit 2B
+CIRI,KCNC2,0.4065228974903643,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily C member 2
+CIRI,GABRP,0.405929560326546,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit pi
+CIRI,PRRX1,0.40591244285697936,EFO_0003763,CIRI_cerebrovascular_disorder,paired related homeobox 1
+CIRI,SLK,0.40466510175734455,EFO_0003763,CIRI_cerebrovascular_disorder,STE20 like kinase
+CIRI,STARD13,0.40439302033028446,EFO_0003763,CIRI_cerebrovascular_disorder,StAR related lipid transfer domain containing 13
+CIRI,GABRA1,0.40374058683006636,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit alpha1
+CIRI,GABRB3,0.4026482045222995,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit beta3
+CIRI,DIAPH1,0.402150628366635,EFO_0003763,CIRI_cerebrovascular_disorder,diaphanous related formin 1
+CIRI,GABRD,0.40001813055086416,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit delta
+CIRI,SLC6A4,0.39993942819278844,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 6 member 4
+CIRI,GABRQ,0.39983334062352177,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit theta
+CIRI,SLC20A2,0.3987812259190486,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 20 member 2
+CIRI,CORO2A,0.3985757492559139,EFO_0003763,CIRI_cerebrovascular_disorder,coronin 2A
+CIRI,NR3C1,0.3981945194849101,EFO_0003763,CIRI_cerebrovascular_disorder,nuclear receptor subfamily 3 group C member 1
+CIRI,GABRG1,0.3981702312774406,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit gamma1
+CIRI,GABRA5,0.3981702312774406,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit alpha5
+CIRI,GABRA2,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit alpha2
+CIRI,GABRE,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit epsilon
+CIRI,GABRB2,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit beta2
+CIRI,GABRA6,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit alpha6
+CIRI,GABRA4,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit alpha4
+CIRI,GABRG3,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit gamma3
+CIRI,GABRB1,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit beta1
+CIRI,GABRA3,0.39780065142275595,EFO_0003763,CIRI_cerebrovascular_disorder,gamma-aminobutyric acid type A receptor subunit alpha3
+CIRI,KCNF1,0.3962717330785969,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel modifier subfamily F member 1
+CIRI,IL6R,0.3957395187883528,EFO_0003763,CIRI_cerebrovascular_disorder,interleukin 6 receptor
+CIRI,CCDC63,0.3953617246657863,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil domain containing 63
+CIRI,IL4,0.3949891571736568,EFO_0003763,CIRI_cerebrovascular_disorder,interleukin 4
+CIRI,PHACTR1,0.394959952768896,EFO_0003763,CIRI_cerebrovascular_disorder,phosphatase and actin regulator 1
+CIRI,SCARA5,0.39249043867592665,EFO_0003763,CIRI_cerebrovascular_disorder,scavenger receptor class A member 5
+CIRI,RP1,0.39247587787678945,EFO_0003763,CIRI_cerebrovascular_disorder,RP1 axonemal microtubule associated
+CIRI,KCNH8,0.39229889331176093,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily H member 8
+CIRI,CAMK2D,0.3907629912522688,EFO_0003763,CIRI_cerebrovascular_disorder,calcium/calmodulin dependent protein kinase II delta
+CIRI,CARF,0.39059418241927185,EFO_0003763,CIRI_cerebrovascular_disorder,calcium responsive transcription factor
+CIRI,DCC,0.39023576462305104,EFO_0003763,CIRI_cerebrovascular_disorder,DCC netrin 1 receptor
+CIRI,FHIT,0.38907072498077133,EFO_0003763,CIRI_cerebrovascular_disorder,fragile histidine triad diadenosine triphosphatase
+CIRI,LAMC1,0.388653903045196,EFO_0003763,CIRI_cerebrovascular_disorder,laminin subunit gamma 1
+CIRI,ABCG5,0.3883752511647248,EFO_0003763,CIRI_cerebrovascular_disorder,ATP binding cassette subfamily G member 5
+CIRI,RYR3,0.3875293729465657,EFO_0003763,CIRI_cerebrovascular_disorder,ryanodine receptor 3
+CIRI,FN1,0.38668605015099855,EFO_0003763,CIRI_cerebrovascular_disorder,fibronectin 1
+CIRI,F2R,0.38469697192491087,EFO_0003763,CIRI_cerebrovascular_disorder,coagulation factor II thrombin receptor
+CIRI,ALOX5AP,0.3828221280788283,EFO_0003763,CIRI_cerebrovascular_disorder,arachidonate 5-lipoxygenase activating protein
+CIRI,DPP4,0.38151969988548523,EFO_0003763,CIRI_cerebrovascular_disorder,dipeptidyl peptidase 4
+CIRI,KCNH2,0.3810215079335851,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily H member 2
+CIRI,CDH13,0.3808322881025123,EFO_0003763,CIRI_cerebrovascular_disorder,cadherin 13
+CIRI,FOXC1,0.37950190961540514,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box C1
+CIRI,PLEKHG1,0.3794503394711191,EFO_0003763,CIRI_cerebrovascular_disorder,pleckstrin homology and RhoGEF domain containing G1
+CIRI,ATXN2,0.37846351220812485,EFO_0003763,CIRI_cerebrovascular_disorder,ataxin 2
+CIRI,ATP1A2,0.37845443738583373,EFO_0003763,CIRI_cerebrovascular_disorder,ATPase Na+/K+ transporting subunit alpha 2
+CIRI,SAMHD1,0.3777806279705891,EFO_0003763,CIRI_cerebrovascular_disorder,SAM and HD domain containing deoxynucleoside triphosphate triphosphohydrolase 1
+CIRI,TENM2,0.3777625385401019,EFO_0003763,CIRI_cerebrovascular_disorder,teneurin transmembrane protein 2
+CIRI,PLAU,0.3764456756792589,EFO_0003763,CIRI_cerebrovascular_disorder,"plasminogen activator, urokinase"
+CIRI,SLC12A1,0.3762754835718568,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 12 member 1
+CIRI,PRDM2,0.3759591582294923,EFO_0003763,CIRI_cerebrovascular_disorder,PR/SET domain 2
+CIRI,RYR1,0.3751980740249122,EFO_0003763,CIRI_cerebrovascular_disorder,ryanodine receptor 1
+CIRI,GSK3B,0.3746113399349833,EFO_0003763,CIRI_cerebrovascular_disorder,glycogen synthase kinase 3 beta
+CIRI,IL1RN,0.3740718359838541,EFO_0003763,CIRI_cerebrovascular_disorder,interleukin 1 receptor antagonist
+CIRI,HABP2,0.37325897346394793,EFO_0003763,CIRI_cerebrovascular_disorder,hyaluronan binding protein 2
+CIRI,ANGPTL6,0.37275464829751415,EFO_0003763,CIRI_cerebrovascular_disorder,angiopoietin like 6
+CIRI,ADRA2B,0.3691741822826955,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor alpha 2B
+CIRI,GRIN2A,0.368981653610792,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor NMDA type subunit 2A
+CIRI,KCNN2,0.3688282202462826,EFO_0003763,CIRI_cerebrovascular_disorder,potassium calcium-activated channel subfamily N member 2
+CIRI,COL6A3,0.36865069939202705,EFO_0003763,CIRI_cerebrovascular_disorder,collagen type VI alpha 3 chain
+CIRI,PMF1,0.368524375657056,EFO_0003763,CIRI_cerebrovascular_disorder,polyamine modulated factor 1
+CIRI,E2F7,0.36802517325728246,EFO_0003763,CIRI_cerebrovascular_disorder,E2F transcription factor 7
+CIRI,ADRA2A,0.3679381386222105,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor alpha 2A
+CIRI,ADRA2C,0.3671142835294759,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor alpha 2C
+CIRI,CTNNA3,0.3659808072673007,EFO_0003763,CIRI_cerebrovascular_disorder,catenin alpha 3
+CIRI,HTR2A,0.36584664028926933,EFO_0003763,CIRI_cerebrovascular_disorder,5-hydroxytryptamine receptor 2A
+CIRI,TWIST1,0.36444015049207035,EFO_0003763,CIRI_cerebrovascular_disorder,twist family bHLH transcription factor 1
+CIRI,ZPR1,0.36298549645769607,EFO_0003763,CIRI_cerebrovascular_disorder,ZPR1 zinc finger
+CIRI,LIPC,0.3629546215515597,EFO_0003763,CIRI_cerebrovascular_disorder,"lipase C, hepatic type"
+CIRI,RGL3,0.3626826597218026,EFO_0000712,CIRI_stroke,ral guanine nucleotide dissociation stimulator like 3
+CIRI,TUBB2A,0.35931374761012674,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 2A class IIa
+CIRI,HGFAC,0.35891275067318706,EFO_0000712,CIRI_stroke,HGF activator
+CIRI,SOX17,0.35884213181933283,EFO_0003763,CIRI_cerebrovascular_disorder,SRY-box transcription factor 17
+CIRI,NKX2-5,0.3585929617305507,EFO_0003763,CIRI_cerebrovascular_disorder,NK2 homeobox 5
+CIRI,CALHM1,0.3584858124657071,EFO_0003763,CIRI_cerebrovascular_disorder,calcium homeostasis modulator 1
+CIRI,LAMA1,0.35745336476436385,EFO_0003763,CIRI_cerebrovascular_disorder,laminin subunit alpha 1
+CIRI,F7,0.3565824932537033,EFO_0003763,CIRI_cerebrovascular_disorder,coagulation factor VII
+CIRI,FER,0.35608401894396186,EFO_0003763,CIRI_cerebrovascular_disorder,FER tyrosine kinase
+CIRI,TENM3,0.35531126171238175,EFO_0003763,CIRI_cerebrovascular_disorder,teneurin transmembrane protein 3
+CIRI,GSK3A,0.35295902733096474,EFO_0003763,CIRI_cerebrovascular_disorder,glycogen synthase kinase 3 alpha
+CIRI,GRIN1,0.3529504362607599,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor NMDA type subunit 1
+CIRI,IMPA1,0.3528666323672936,EFO_0003763,CIRI_cerebrovascular_disorder,inositol monophosphatase 1
+CIRI,SOX5,0.35270439831352174,EFO_0003763,CIRI_cerebrovascular_disorder,SRY-box transcription factor 5
+CIRI,NLN,0.3525230175001256,EFO_0003763,CIRI_cerebrovascular_disorder,neurolysin
+CIRI,GULP1,0.35225866047730553,EFO_0003763,CIRI_cerebrovascular_disorder,GULP PTB domain containing engulfment adaptor 1
+CIRI,EFCAB5,0.3515606565907633,EFO_0003763,CIRI_cerebrovascular_disorder,EF-hand calcium binding domain 5
+CIRI,ADGRG1,0.35138443475548375,EFO_0003763,CIRI_cerebrovascular_disorder,adhesion G protein-coupled receptor G1
+CIRI,CETP,0.3513287025495668,EFO_0003763,CIRI_cerebrovascular_disorder,cholesteryl ester transfer protein
+CIRI,CXCL8,0.3512373682987021,EFO_0003763,CIRI_cerebrovascular_disorder,C-X-C motif chemokine ligand 8
+CIRI,HAAO,0.3507261986165561,EFO_0003763,CIRI_cerebrovascular_disorder,"3-hydroxyanthranilate 3,4-dioxygenase"
+CIRI,MELTF,0.350623749965885,EFO_0003763,CIRI_cerebrovascular_disorder,melanotransferrin
+CIRI,CAV1,0.35061916362599727,EFO_0003763,CIRI_cerebrovascular_disorder,caveolin 1
+CIRI,RRM2B,0.3505823992570599,EFO_0003763,CIRI_cerebrovascular_disorder,ribonucleotide reductase regulatory TP53 inducible subunit M2B
+CIRI,NFIA,0.3505545125890679,EFO_0003763,CIRI_cerebrovascular_disorder,nuclear factor I A
+CIRI,RBFOX1,0.35009352094968205,EFO_0003763,CIRI_cerebrovascular_disorder,RNA binding fox-1 homolog 1
+CIRI,DRD2,0.34947336070886076,EFO_0003763,CIRI_cerebrovascular_disorder,dopamine receptor D2
+CIRI,EPOR,0.34873608751844337,EFO_0003763,CIRI_cerebrovascular_disorder,erythropoietin receptor
+CIRI,WDR12,0.34831513221509935,EFO_0003763,CIRI_cerebrovascular_disorder,WD repeat domain 12
+CIRI,ESRRB,0.34780660849723655,EFO_0003763,CIRI_cerebrovascular_disorder,estrogen related receptor beta
+CIRI,OPRM1,0.3475620018014935,EFO_0003763,CIRI_cerebrovascular_disorder,opioid receptor mu 1
+CIRI,ALDH8A1,0.3472296922331979,EFO_0003763,CIRI_cerebrovascular_disorder,aldehyde dehydrogenase 8 family member A1
+CIRI,RRM2,0.34652573990582386,EFO_0000712,CIRI_stroke,ribonucleotide reductase regulatory subunit M2
+CIRI,RRM1,0.34597137012379686,EFO_0003763,CIRI_cerebrovascular_disorder,ribonucleotide reductase catalytic subunit M1
+CIRI,KCNH3,0.34573723164828424,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily H member 3
+CIRI,ENDOV,0.34508201739722527,EFO_0003763,CIRI_cerebrovascular_disorder,endonuclease V
+CIRI,FGG,0.3448780821503845,EFO_0003763,CIRI_cerebrovascular_disorder,fibrinogen gamma chain
+CIRI,BCHE,0.34478495249910884,EFO_0003763,CIRI_cerebrovascular_disorder,butyrylcholinesterase
+CIRI,FES,0.3446299492195621,EFO_0003763,CIRI_cerebrovascular_disorder,"FES proto-oncogene, tyrosine kinase"
+CIRI,ADRB3,0.34458125542094376,EFO_0003763,CIRI_cerebrovascular_disorder,adrenoceptor beta 3
+CIRI,NEURL1,0.34452554844319516,EFO_0003763,CIRI_cerebrovascular_disorder,neuralized E3 ubiquitin protein ligase 1
+CIRI,SERPINE1,0.3444869326254949,EFO_0003763,CIRI_cerebrovascular_disorder,serpin family E member 1
+CIRI,MS4A6A,0.34446726873264333,HP_0002140,CIRI_ischemic_stroke,membrane spanning 4-domains A6A
+CIRI,KCNA3,0.3444128403207433,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily A member 3
+CIRI,SERPINC1,0.3435263875359754,EFO_0003763,CIRI_cerebrovascular_disorder,serpin family C member 1
+CIRI,HHIPL1,0.3434232985616807,EFO_0003763,CIRI_cerebrovascular_disorder,HHIP like 1
+CIRI,GRIN3A,0.34329014475008146,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor NMDA type subunit 3A
+CIRI,SLC18A2,0.343245990150725,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 18 member A2
+CIRI,HNF4A,0.3427348184455966,EFO_0003763,CIRI_cerebrovascular_disorder,hepatocyte nuclear factor 4 alpha
+CIRI,STXBP5,0.3424150812213961,EFO_0000712,CIRI_stroke,syntaxin binding protein 5
+CIRI,SOX11,0.34210021721026185,EFO_0003763,CIRI_cerebrovascular_disorder,SRY-box transcription factor 11
+CIRI,ITGAV,0.34198083666705964,EFO_0003763,CIRI_cerebrovascular_disorder,integrin subunit alpha V
+CIRI,PLA2G6,0.3419626755995306,EFO_0003763,CIRI_cerebrovascular_disorder,phospholipase A2 group VI
+CIRI,TRIB1,0.3415640294347396,EFO_0003763,CIRI_cerebrovascular_disorder,tribbles pseudokinase 1
+CIRI,RPL6,0.3414755119966447,EFO_0000712,CIRI_stroke,ribosomal protein L6
+CIRI,KCNQ1,0.3411768518523829,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily Q member 1
+CIRI,KCNB1,0.3411365378578616,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily B member 1
+CIRI,CD163L1,0.34109435352102035,EFO_0003763,CIRI_cerebrovascular_disorder,CD163 molecule like 1
+CIRI,IL1R1,0.34106425770233834,EFO_0003763,CIRI_cerebrovascular_disorder,interleukin 1 receptor type 1
+CIRI,KCNV1,0.34084029857371195,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel modifier subfamily V member 1
+CIRI,KCNA5,0.3407405120129471,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily A member 5
+CIRI,GLRB,0.3400826598716083,EFO_0003763,CIRI_cerebrovascular_disorder,glycine receptor beta
+CIRI,SPG11,0.3400134663099256,EFO_0003763,CIRI_cerebrovascular_disorder,"SPG11 vesicle trafficking associated, spatacsin"
+CIRI,NSD2,0.3400134663099256,EFO_0003763,CIRI_cerebrovascular_disorder,nuclear receptor binding SET domain protein 2
+CIRI,MAP10,0.3396830037884527,EFO_0003763,CIRI_cerebrovascular_disorder,microtubule associated protein 10
+CIRI,NINJ2,0.33953857372005825,EFO_0003763,CIRI_cerebrovascular_disorder,ninjurin 2
+CIRI,ARNT2,0.33938789473778425,EFO_0003763,CIRI_cerebrovascular_disorder,aryl hydrocarbon receptor nuclear translocator 2
+CIRI,KCNV2,0.33915046654394476,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel modifier subfamily V member 2
+CIRI,JCAD,0.33902511416488124,EFO_0003763,CIRI_cerebrovascular_disorder,junctional cadherin 5 associated
+CIRI,DRD3,0.3389868556024681,EFO_0003763,CIRI_cerebrovascular_disorder,dopamine receptor D3
+CIRI,OLFML2A,0.33868084772608004,EFO_0003763,CIRI_cerebrovascular_disorder,olfactomedin like 2A
+CIRI,RGS6,0.33867540330944623,EFO_0003763,CIRI_cerebrovascular_disorder,regulator of G protein signaling 6
+CIRI,PTPRN2,0.33857123854169885,EFO_0003763,CIRI_cerebrovascular_disorder,protein tyrosine phosphatase receptor type N2
+CIRI,SLC22A5,0.3382987153615385,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 22 member 5
+CIRI,LRP1B,0.3381694897268867,EFO_0003763,CIRI_cerebrovascular_disorder,LDL receptor related protein 1B
+CIRI,TUBA1C,0.3380629059657564,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin alpha 1c
+CIRI,PLXNA4,0.33759912408615933,EFO_0003763,CIRI_cerebrovascular_disorder,plexin A4
+CIRI,PLEKHA1,0.3375185888769912,EFO_0003763,CIRI_cerebrovascular_disorder,pleckstrin homology domain containing A1
+CIRI,KCNH1,0.33746064826933575,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily H member 1
+CIRI,GRIN2D,0.3369469769840642,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor NMDA type subunit 2D
+CIRI,GRIN2C,0.33667076737322277,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor NMDA type subunit 2C
+CIRI,KCNC1,0.3364459941015108,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily C member 1
+CIRI,KCNK2,0.33637588054607637,EFO_0003763,CIRI_cerebrovascular_disorder,potassium two pore domain channel subfamily K member 2
+CIRI,CNOT7,0.33631747369044346,EFO_0003763,CIRI_cerebrovascular_disorder,CCR4-NOT transcription complex subunit 7
+CIRI,VPS33B,0.3347882182234131,EFO_0003763,CIRI_cerebrovascular_disorder,VPS33B late endosome and lysosome associated
+CIRI,TUBB,0.3346853567382212,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta class I
+CIRI,KCND2,0.33445436932904327,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily D member 2
+CIRI,KCNA2,0.3344004722669017,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily A member 2
+CIRI,GRIN3B,0.3343348687000093,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor NMDA type subunit 3B
+CIRI,KCNK10,0.3342439141340145,EFO_0003763,CIRI_cerebrovascular_disorder,potassium two pore domain channel subfamily K member 10
+CIRI,KCNQ2,0.33375309155477906,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily Q member 2
+CIRI,TUBB1,0.333735741833823,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 1 class VI
+CIRI,KCNK9,0.3337152096196739,EFO_0003763,CIRI_cerebrovascular_disorder,potassium two pore domain channel subfamily K member 9
+CIRI,SYNDIG1,0.3336493219086367,EFO_0003763,CIRI_cerebrovascular_disorder,synapse differentiation inducing 1
+CIRI,KCND3,0.33362281465600274,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily D member 3
+CIRI,TUBB6,0.3335355527458688,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 6 class V
+CIRI,KCNH5,0.3334431577821976,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily H member 5
+CIRI,TUBA3C,0.3334431577821976,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin alpha 3c
+CIRI,ETV1,0.3333202355185506,EFO_0003763,CIRI_cerebrovascular_disorder,ETS variant transcription factor 1
+CIRI,KLF12,0.3330925977213047,EFO_0003763,CIRI_cerebrovascular_disorder,KLF transcription factor 12
+CIRI,TUBB3,0.33275727916854525,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 3 class III
+CIRI,NCKAP5,0.3323466561560601,EFO_0003763,CIRI_cerebrovascular_disorder,NCK associated protein 5
+CIRI,TUBB4B,0.3323292851646062,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 4B class IVb
+CIRI,TRIM14,0.3322222590756175,EFO_0003763,CIRI_cerebrovascular_disorder,tripartite motif containing 14
+CIRI,KCNG1,0.33214962829080114,EFO_0000712,CIRI_stroke,potassium voltage-gated channel modifier subfamily G member 1
+CIRI,KCNA1,0.33214962829080114,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily A member 1
+CIRI,TUBA4A,0.33214962829080114,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin alpha 4a
+CIRI,KCNQ5,0.33205723332713,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily Q member 5
+CIRI,KCNQ3,0.33205723332713,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily Q member 3
+CIRI,KCNH6,0.3319648383634588,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily H member 6
+CIRI,KCNQ4,0.3319648383634588,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily Q member 4
+CIRI,TUBA1B,0.3319648383634588,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin alpha 1b
+CIRI,TUBB4A,0.3319648383634588,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 4A class IVa
+CIRI,SUGCT,0.33186627620761006,EFO_0003763,CIRI_cerebrovascular_disorder,succinyl-CoA:glutarate-CoA transferase
+CIRI,OBI1,0.331855923341819,EFO_0003763,CIRI_cerebrovascular_disorder,ORC ubiquitin ligase 1
+CIRI,SCARF1,0.3316799044402094,EFO_0003763,CIRI_cerebrovascular_disorder,scavenger receptor class F member 1
+CIRI,TUBB8,0.33159525850877414,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 8 class VIII
+CIRI,KCNA6,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily A member 6
+CIRI,KCNB2,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily B member 2
+CIRI,KCNG3,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel modifier subfamily G member 3
+CIRI,KCNG2,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel modifier subfamily G member 2
+CIRI,GLRA1,0.33159525850877414,EFO_0003763,CIRI_cerebrovascular_disorder,glycine receptor alpha 1
+CIRI,TUBA3E,0.33159525850877414,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin alpha 3e
+CIRI,TUBA1A,0.33159525850877414,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin alpha 1a
+CIRI,KCNK18,0.33159525850877414,EFO_0003763,CIRI_cerebrovascular_disorder,potassium two pore domain channel subfamily K member 18
+CIRI,KCND1,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily D member 1
+CIRI,TUBB2B,0.33159525850877414,EFO_0003763,CIRI_cerebrovascular_disorder,tubulin beta 2B class IIb
+CIRI,KCNG4,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel modifier subfamily G member 4
+CIRI,KCNA4,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily A member 4
+CIRI,KCNH7,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily H member 7
+CIRI,KCNH4,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily H member 4
+CIRI,KCNA10,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily A member 10
+CIRI,KCNC4,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily C member 4
+CIRI,KCNS3,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel modifier subfamily S member 3
+CIRI,KCNS1,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel modifier subfamily S member 1
+CIRI,KCNA7,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily A member 7
+CIRI,KCNC3,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel subfamily C member 3
+CIRI,KCNS2,0.33159525850877414,EFO_0000712,CIRI_stroke,potassium voltage-gated channel modifier subfamily S member 2
+CIRI,IGF1R,0.3311302476920845,EFO_0003763,CIRI_cerebrovascular_disorder,insulin like growth factor 1 receptor
+CIRI,ABCC8,0.3310800375578092,EFO_0003763,CIRI_cerebrovascular_disorder,ATP binding cassette subfamily C member 8
+CIRI,INSR,0.33091237420405334,EFO_0003763,CIRI_cerebrovascular_disorder,insulin receptor
+CIRI,SYK,0.32942372819226784,EFO_0003763,CIRI_cerebrovascular_disorder,spleen associated tyrosine kinase
+CIRI,CA4,0.32923918693515913,EFO_0003763,CIRI_cerebrovascular_disorder,carbonic anhydrase 4
+CIRI,LAT2,0.32919091615350476,EFO_0003763,CIRI_cerebrovascular_disorder,linker for activation of T cells family member 2
+CIRI,MARCHF10,0.32908033220021254,EFO_0003763,CIRI_cerebrovascular_disorder,membrane associated ring-CH-type finger 10
+CIRI,CDH19,0.3288229711790347,EFO_0003763,CIRI_cerebrovascular_disorder,cadherin 19
+CIRI,VGLL4,0.3282519878982909,EFO_0000712,CIRI_stroke,vestigial like family member 4
+CIRI,APOA5,0.32819319409143966,EFO_0003763,CIRI_cerebrovascular_disorder,apolipoprotein A5
+CIRI,TTC17,0.32751647243684207,EFO_0000712,CIRI_stroke,tetratricopeptide repeat domain 17
+CIRI,PLSCR5,0.32743175565628957,EFO_0000712,CIRI_stroke,phospholipid scramblase family member 5
+CIRI,KDM7A,0.32716826515602737,EFO_0003763,CIRI_cerebrovascular_disorder,lysine demethylase 7A
+CIRI,ZCCHC14,0.32716460095329414,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger CCHC-type containing 14
+CIRI,KCNJ11,0.3270056703010036,EFO_0003763,CIRI_cerebrovascular_disorder,potassium inwardly rectifying channel subfamily J member 11
+CIRI,TC2N,0.3263309772116681,HP_0002140,CIRI_ischemic_stroke,"tandem C2 domains, nuclear"
+CIRI,ABCG8,0.3263056336507898,EFO_0003763,CIRI_cerebrovascular_disorder,ATP binding cassette subfamily G member 8
+CIRI,CENPQ,0.32602379276411625,EFO_0000712,CIRI_stroke,centromere protein Q
+CIRI,NAALADL2,0.32550629517712387,EFO_0003763,CIRI_cerebrovascular_disorder,N-acetylated alpha-linked acidic dipeptidase like 2
+CIRI,PIGU,0.3252224942376315,EFO_0000712,CIRI_stroke,phosphatidylinositol glycan anchor biosynthesis class U
+CIRI,PPP1R17,0.3245619203317802,EFO_0003763,CIRI_cerebrovascular_disorder,protein phosphatase 1 regulatory subunit 17
+CIRI,TSPAN8,0.3245619203317802,EFO_0003763,CIRI_cerebrovascular_disorder,tetraspanin 8
+CIRI,CACNG4,0.3245619203317802,EFO_0003763,CIRI_cerebrovascular_disorder,calcium voltage-gated channel auxiliary subunit gamma 4
+CIRI,ABL1,0.3245108309555869,EFO_0003763,CIRI_cerebrovascular_disorder,"ABL proto-oncogene 1, non-receptor tyrosine kinase"
+CIRI,ABCC1,0.3244368571931027,EFO_0003763,CIRI_cerebrovascular_disorder,ATP binding cassette subfamily C member 1 (ABCC1 blood group)
+CIRI,RNF217,0.32441805104912064,EFO_0003763,CIRI_cerebrovascular_disorder,ring finger protein 217
+CIRI,SNX13,0.32400826811184374,EFO_0003763,CIRI_cerebrovascular_disorder,sorting nexin 13
+CIRI,KPNA5,0.3239965984207568,EFO_0003763,CIRI_cerebrovascular_disorder,karyopherin subunit alpha 5
+CIRI,JAZF1,0.32395296525303174,EFO_0003763,CIRI_cerebrovascular_disorder,JAZF zinc finger 1
+CIRI,SOCS6,0.3239373019832809,EFO_0003763,CIRI_cerebrovascular_disorder,suppressor of cytokine signaling 6
+CIRI,CTXND1,0.3238974002333948,EFO_0003763,CIRI_cerebrovascular_disorder,cortexin domain containing 1
+CIRI,CCDC192,0.32316605125123965,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil domain containing 192
+CIRI,CA2,0.3231028088819752,EFO_0003763,CIRI_cerebrovascular_disorder,carbonic anhydrase 2
+CIRI,TGFBR3,0.322974609597872,EFO_0003763,CIRI_cerebrovascular_disorder,transforming growth factor beta receptor 3
+CIRI,ADGRL3,0.32265144849661187,EFO_0003763,CIRI_cerebrovascular_disorder,adhesion G protein-coupled receptor L3
+CIRI,RFX6,0.32239341747080724,EFO_0003763,CIRI_cerebrovascular_disorder,regulatory factor X6
+CIRI,GLP1R,0.3213042201175315,EFO_0003763,CIRI_cerebrovascular_disorder,glucagon like peptide 1 receptor
+CIRI,F8,0.32102285965054833,EFO_0003763,CIRI_cerebrovascular_disorder,coagulation factor VIII
+CIRI,EYS,0.32052847924905775,EFO_0003763,CIRI_cerebrovascular_disorder,EGF-like photoreceptor maintenance factor
+CIRI,TAFA5,0.32052269236610986,EFO_0003763,CIRI_cerebrovascular_disorder,TAFA chemokine like family member 5
+CIRI,STN1,0.31966689606324633,EFO_0000712,CIRI_stroke,STN1 subunit of CST complex
+CIRI,ANKRD33B,0.3195853340321677,EFO_0000712,CIRI_stroke,ankyrin repeat domain 33B
+CIRI,HMCN1,0.3194699257988415,EFO_0003763,CIRI_cerebrovascular_disorder,hemicentin 1
+CIRI,MKI67,0.31892448426640907,EFO_0003763,CIRI_cerebrovascular_disorder,marker of proliferation Ki-67
+CIRI,FMO4,0.3187595450566568,EFO_0003763,CIRI_cerebrovascular_disorder,flavin containing dimethylaniline monoxygenase 4
+CIRI,ARVCF,0.31818093434686373,EFO_0003763,CIRI_cerebrovascular_disorder,ARVCF delta catenin family member
+CIRI,FAF1,0.31781591962686917,EFO_0000712,CIRI_stroke,Fas associated factor 1
+CIRI,TMEM106B,0.31781549960118705,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane protein 106B
+CIRI,RORA,0.317234231495772,EFO_0003763,CIRI_cerebrovascular_disorder,RAR related orphan receptor A
+CIRI,ADCYAP1R1,0.31654890982550454,EFO_0003763,CIRI_cerebrovascular_disorder,ADCYAP receptor type I
+CIRI,CA1,0.3165428524825444,EFO_0003763,CIRI_cerebrovascular_disorder,carbonic anhydrase 1
+CIRI,SEMA5A,0.3165179069915145,EFO_0003763,CIRI_cerebrovascular_disorder,semaphorin 5A
+CIRI,MYL2,0.3160648034226727,EFO_0003763,CIRI_cerebrovascular_disorder,myosin light chain 2
+CIRI,IGF2BP2,0.31449702479814357,EFO_0003763,CIRI_cerebrovascular_disorder,insulin like growth factor 2 mRNA binding protein 2
+CIRI,ZNF536,0.314489947083132,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 536
+CIRI,GNA14,0.314489947083132,EFO_0003763,CIRI_cerebrovascular_disorder,G protein subunit alpha 14
+CIRI,CA12,0.31427120282042875,EFO_0003763,CIRI_cerebrovascular_disorder,carbonic anhydrase 12
+CIRI,CCER1,0.31415224748074766,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil glutamate rich protein 1
+CIRI,TSKU,0.31395594413374556,EFO_0003763,CIRI_cerebrovascular_disorder,"tsukushi, small leucine rich proteoglycan"
+CIRI,TMC5,0.31342492668675387,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane channel like 5
+CIRI,TBX5,0.31341876817387454,EFO_0000712,CIRI_stroke,T-box transcription factor 5
+CIRI,RPL19,0.31328030842911175,EFO_0003763,CIRI_cerebrovascular_disorder,ribosomal protein L19
+CIRI,CNNM2,0.31225240943253624,EFO_0003763,CIRI_cerebrovascular_disorder,cyclin and CBS domain divalent metal cation transport mediator 2
+CIRI,MEST,0.3111956246801461,EFO_0003763,CIRI_cerebrovascular_disorder,mesoderm specific transcript
+CIRI,PRR5L,0.3111819338580403,EFO_0003763,CIRI_cerebrovascular_disorder,proline rich 5 like
+CIRI,PAX5,0.3108343179150029,EFO_0003763,CIRI_cerebrovascular_disorder,paired box 5
+CIRI,KCNJ5,0.310304531606653,EFO_0003763,CIRI_cerebrovascular_disorder,potassium inwardly rectifying channel subfamily J member 5
+CIRI,SLC44A2,0.3102053061765743,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 44 member 2 (CTL2 blood group)
+CIRI,ATG7,0.31003617018003266,EFO_0003763,CIRI_cerebrovascular_disorder,autophagy related 7
+CIRI,MARCHF1,0.31001887208574164,EFO_0000712,CIRI_stroke,membrane associated ring-CH-type finger 1
+CIRI,CCNE1,0.3098991269568368,EFO_0003763,CIRI_cerebrovascular_disorder,cyclin E1
+CIRI,SRP72,0.3096661344094587,EFO_0003763,CIRI_cerebrovascular_disorder,signal recognition particle 72
+CIRI,PIAS2,0.30930567442661927,EFO_0003763,CIRI_cerebrovascular_disorder,protein inhibitor of activated STAT 2
+CIRI,TNFSF12,0.3085212274662918,EFO_0003763,CIRI_cerebrovascular_disorder,TNF superfamily member 12
+CIRI,GSG1,0.3083596088803961,EFO_0003763,CIRI_cerebrovascular_disorder,germ cell associated 1
+CIRI,RETREG1,0.3081547790009006,EFO_0003763,CIRI_cerebrovascular_disorder,reticulophagy regulator 1
+CIRI,DHODH,0.307923035768857,EFO_0003763,CIRI_cerebrovascular_disorder,dihydroorotate dehydrogenase (quinone)
+CIRI,PLCB2,0.3078790494373991,EFO_0000712,CIRI_stroke,phospholipase C beta 2
+CIRI,SCN8A,0.30755803022479,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 8
+CIRI,ANO2,0.3075461339347438,EFO_0003763,CIRI_cerebrovascular_disorder,anoctamin 2
+CIRI,ARL5B,0.3075461339347438,EFO_0003763,CIRI_cerebrovascular_disorder,ARF like GTPase 5B
+CIRI,NXPH1,0.3075461339347438,EFO_0003763,CIRI_cerebrovascular_disorder,neurexophilin 1
+CIRI,R3HCC1L,0.30739586256813495,EFO_0003763,CIRI_cerebrovascular_disorder,R3H domain and coiled-coil containing 1 like
+CIRI,BGLAP,0.3067961732086419,EFO_0003763,CIRI_cerebrovascular_disorder,bone gamma-carboxyglutamate protein
+CIRI,RPH3A,0.30641984160839236,EFO_0003763,CIRI_cerebrovascular_disorder,rabphilin 3A
+CIRI,SCN3A,0.3058006361479404,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 3
+CIRI,MIPEP,0.30575954222879614,EFO_0003763,CIRI_cerebrovascular_disorder,mitochondrial intermediate peptidase
+CIRI,HS3ST1,0.30552771244304966,EFO_0003763,CIRI_cerebrovascular_disorder,heparan sulfate-glucosamine 3-sulfotransferase 1
+CIRI,PLPP3,0.30543924904922987,EFO_0003763,CIRI_cerebrovascular_disorder,phospholipid phosphatase 3
+CIRI,PLEKHM3,0.30538701528972745,EFO_0003763,CIRI_cerebrovascular_disorder,pleckstrin homology domain containing M3
+CIRI,CAMK1D,0.3052324510848919,EFO_0003763,CIRI_cerebrovascular_disorder,calcium/calmodulin dependent protein kinase ID
+CIRI,SMPDL3B,0.3047831431957835,EFO_0003763,CIRI_cerebrovascular_disorder,sphingomyelin phosphodiesterase acid like 3B
+CIRI,TM4SF4,0.30476922107258014,EFO_0000712,CIRI_stroke,transmembrane 4 L six family member 4
+CIRI,AOPEP,0.304142368562667,EFO_0003763,CIRI_cerebrovascular_disorder,aminopeptidase O (putative)
+CIRI,SLC24A2,0.30412621976040344,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 24 member 2
+CIRI,CWC27,0.3038812892022012,EFO_0003763,CIRI_cerebrovascular_disorder,CWC27 spliceosome associated cyclophilin
+CIRI,CHRNA1,0.3033164511755213,EFO_0003763,CIRI_cerebrovascular_disorder,cholinergic receptor nicotinic alpha 1 subunit
+CIRI,CDKAL1,0.3032696850429971,EFO_0000712,CIRI_stroke,CDKAL1 threonylcarbamoyladenosine tRNA methylthiotransferase
+CIRI,SLC22A3,0.3032657783038215,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 22 member 3
+CIRI,PCYOX1L,0.3030096585520287,EFO_0003763,CIRI_cerebrovascular_disorder,prenylcysteine oxidase 1 like
+CIRI,HDAC4,0.3026535342477627,EFO_0003763,CIRI_cerebrovascular_disorder,histone deacetylase 4
+CIRI,SCN2A,0.30227860808105994,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 2
+CIRI,SDK2,0.3017350353039424,EFO_0003763,CIRI_cerebrovascular_disorder,sidekick cell adhesion molecule 2
+CIRI,MSH6,0.30148531717594435,EFO_0003763,CIRI_cerebrovascular_disorder,mutS homolog 6
+CIRI,PSEN1,0.30133264453935016,EFO_0003763,CIRI_cerebrovascular_disorder,presenilin 1
+CIRI,SCN5A,0.30130960506696375,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 5
+CIRI,HMMR,0.30124272118322654,EFO_0003763,CIRI_cerebrovascular_disorder,hyaluronan mediated motility receptor
+CIRI,CLASP1,0.30109763625359154,EFO_0003763,CIRI_cerebrovascular_disorder,cytoplasmic linker associated protein 1
+CIRI,CNTN4,0.3005261621464116,EFO_0003763,CIRI_cerebrovascular_disorder,contactin 4
+CIRI,FOXI2,0.30010791394142416,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box I2
+CIRI,SCN1A,0.3000747536522342,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 1
+CIRI,VIT,0.29928503350011426,EFO_0003763,CIRI_cerebrovascular_disorder,vitrin
+CIRI,NACAD,0.299260399933228,EFO_0003763,CIRI_cerebrovascular_disorder,NAC alpha domain containing
+CIRI,ARHGAP5,0.2988620719074475,EFO_0003763,CIRI_cerebrovascular_disorder,Rho GTPase activating protein 5
+CIRI,ACTBL2,0.29821622416249927,EFO_0003763,CIRI_cerebrovascular_disorder,actin beta like 2
+CIRI,SCN7A,0.2977695024513242,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 7
+CIRI,GJA5,0.29755379756064326,EFO_0003763,CIRI_cerebrovascular_disorder,gap junction protein alpha 5
+CIRI,SCN4A,0.2974906414611964,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 4
+CIRI,SCN9A,0.29726646320467004,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 9
+CIRI,FAT2,0.2971643714161457,EFO_0003763,CIRI_cerebrovascular_disorder,FAT atypical cadherin 2
+CIRI,SCN10A,0.2968968833499853,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 10
+CIRI,SCN11A,0.2968968833499853,EFO_0003763,CIRI_cerebrovascular_disorder,sodium voltage-gated channel alpha subunit 11
+CIRI,SLC6A3,0.2968628428124469,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 6 member 3
+CIRI,POTEC,0.29621742472288437,EFO_0003763,CIRI_cerebrovascular_disorder,POTE ankyrin domain family member C
+CIRI,XKR8,0.2961553699427202,EFO_0003763,CIRI_cerebrovascular_disorder,XK related 8
+CIRI,SPMIP7,0.29609838175802555,EFO_0003763,CIRI_cerebrovascular_disorder,sperm microtubule inner protein 7
+CIRI,ARLN,0.29606858205053077,EFO_0003763,CIRI_cerebrovascular_disorder,allregulin
+CIRI,DNAH10,0.29581661296389,EFO_0003763,CIRI_cerebrovascular_disorder,dynein axonemal heavy chain 10
+CIRI,CPS1,0.29532184291014935,EFO_0000712,CIRI_stroke,carbamoyl-phosphate synthase 1
+CIRI,SCAPER,0.29526386942683663,EFO_0003763,CIRI_cerebrovascular_disorder,S-phase cyclin A associated protein in the ER
+CIRI,HCN4,0.295132363165811,EFO_0000712,CIRI_stroke,hyperpolarization activated cyclic nucleotide gated potassium channel 4
+CIRI,VIL1,0.2950759648209437,EFO_0003763,CIRI_cerebrovascular_disorder,villin 1
+CIRI,MBD5,0.2942356148906268,EFO_0003763,CIRI_cerebrovascular_disorder,methyl-CpG binding domain protein 5
+CIRI,EFCAB11,0.2942356148906268,EFO_0003763,CIRI_cerebrovascular_disorder,EF-hand calcium binding domain 11
+CIRI,SLC6A2,0.2941123987550188,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 6 member 2
+CIRI,SLC8A1,0.29351086680411687,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 8 member A1
+CIRI,CYTH3,0.2930008635460183,EFO_0003763,CIRI_cerebrovascular_disorder,cytohesin 3
+CIRI,FOXA2,0.2927755877319419,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box A2
+CIRI,SEMA3C,0.292630628470396,EFO_0003763,CIRI_cerebrovascular_disorder,semaphorin 3C
+CIRI,PRELID2,0.29244631365753665,EFO_0003763,CIRI_cerebrovascular_disorder,PRELI domain containing 2
+CIRI,OPN5,0.29170667883368423,EFO_0003763,CIRI_cerebrovascular_disorder,opsin 5
+CIRI,HTR1A,0.2916129768143858,EFO_0003763,CIRI_cerebrovascular_disorder,5-hydroxytryptamine receptor 1A
+CIRI,REEP1,0.2908243422469978,EFO_0003763,CIRI_cerebrovascular_disorder,receptor accessory protein 1
+CIRI,FTO,0.2907529578034596,EFO_0003763,CIRI_cerebrovascular_disorder,FTO alpha-ketoglutarate dependent dioxygenase
+CIRI,DIPK1A,0.2907201245810565,EFO_0003763,CIRI_cerebrovascular_disorder,divergent protein kinase domain 1A
+CIRI,TNFRSF10C,0.2905334611588815,EFO_0003763,CIRI_cerebrovascular_disorder,TNF receptor superfamily member 10c
+CIRI,NMNAT2,0.29018912565773364,EFO_0003763,CIRI_cerebrovascular_disorder,nicotinamide nucleotide adenylyltransferase 2
+CIRI,GUCY1B1,0.29001752485674515,EFO_0000712,CIRI_stroke,guanylate cyclase 1 soluble subunit beta 1
+CIRI,GUCY1A2,0.29001752485674515,EFO_0003763,CIRI_cerebrovascular_disorder,guanylate cyclase 1 soluble subunit alpha 2
+CIRI,SLC24A3,0.28960316753574333,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 24 member 3
+CIRI,TREX1,0.289389266780609,EFO_0003763,CIRI_cerebrovascular_disorder,three prime repair exonuclease 1
+CIRI,SHH,0.28935053899425683,EFO_0003763,CIRI_cerebrovascular_disorder,sonic hedgehog signaling molecule
+CIRI,FHAD1,0.2889094313619376,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead associated phosphopeptide binding domain 1
+CIRI,PDGFRB,0.28863739262559956,EFO_0003763,CIRI_cerebrovascular_disorder,platelet derived growth factor receptor beta
+CIRI,DNTT,0.2883328116259358,EFO_0003763,CIRI_cerebrovascular_disorder,DNA nucleotidylexotransferase
+CIRI,SLCO6A1,0.28828815962302523,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier organic anion transporter family member 6A1
+CIRI,LRP1,0.2881549996106159,EFO_0003763,CIRI_cerebrovascular_disorder,LDL receptor related protein 1
+CIRI,PRDM5,0.2881342003394194,EFO_0003763,CIRI_cerebrovascular_disorder,PR/SET domain 5
+CIRI,WNT9A,0.28798002163641295,EFO_0003763,CIRI_cerebrovascular_disorder,Wnt family member 9A
+CIRI,SMAD4,0.2877986685324673,EFO_0003763,CIRI_cerebrovascular_disorder,SMAD family member 4
+CIRI,GAS7,0.287783393674842,EFO_0003763,CIRI_cerebrovascular_disorder,growth arrest specific 7
+CIRI,IL1RL2,0.28698382983805504,EFO_0003763,CIRI_cerebrovascular_disorder,interleukin 1 receptor like 2
+CIRI,ATRIP,0.2867939672353286,EFO_0003763,CIRI_cerebrovascular_disorder,ATR interacting protein
+CIRI,CHD9,0.28674227527302165,EFO_0003763,CIRI_cerebrovascular_disorder,chromodomain helicase DNA binding protein 9
+CIRI,ZNF831,0.2866716504567641,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 831
+CIRI,RIPK4,0.2862900896458012,EFO_0003763,CIRI_cerebrovascular_disorder,receptor interacting serine/threonine kinase 4
+CIRI,ZFP36L1,0.28602724559906356,EFO_0003763,CIRI_cerebrovascular_disorder,ZFP36 like 1 zinc finger CCCH-type
+CIRI,SH3GL2,0.28544412451786877,EFO_0003763,CIRI_cerebrovascular_disorder,"SH3 domain containing GRB2 like 2, endophilin A1"
+CIRI,TMPRSS7,0.28506743364993753,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane serine protease 7
+CIRI,DCLK1,0.28504554329448684,EFO_0003763,CIRI_cerebrovascular_disorder,doublecortin like kinase 1
+CIRI,MTNR1B,0.28465547538373764,EFO_0003763,CIRI_cerebrovascular_disorder,melatonin receptor 1B
+CIRI,VWDE,0.28464816325074743,EFO_0003763,CIRI_cerebrovascular_disorder,von Willebrand factor D and EGF domains
+CIRI,NELL1,0.2844986227680708,EFO_0003763,CIRI_cerebrovascular_disorder,neural EGFL like 1
+CIRI,FRMD4B,0.2843150447318146,EFO_0003763,CIRI_cerebrovascular_disorder,FERM domain containing 4B
+CIRI,FLT1,0.28420280132752723,EFO_0003763,CIRI_cerebrovascular_disorder,fms related receptor tyrosine kinase 1
+CIRI,ADH4,0.28415935010344373,EFO_0003763,CIRI_cerebrovascular_disorder,"alcohol dehydrogenase 4 (class II), pi polypeptide"
+CIRI,GP6,0.28411568946207394,EFO_0003763,CIRI_cerebrovascular_disorder,glycoprotein VI platelet
+CIRI,HDLBP,0.28277742394117655,EFO_0000712,CIRI_stroke,high density lipoprotein binding protein
+CIRI,EPS15,0.282505080600679,EFO_0003763,CIRI_cerebrovascular_disorder,epidermal growth factor receptor pathway substrate 15
+CIRI,PLXNC1,0.28141201769981067,EFO_0003763,CIRI_cerebrovascular_disorder,plexin C1
+CIRI,ARHGAP32,0.281057994848544,EFO_0003763,CIRI_cerebrovascular_disorder,Rho GTPase activating protein 32
+CIRI,ZNF438,0.28090328745731463,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 438
+CIRI,C8ORF76,0.2808784170821619,EFO_0003763,CIRI_cerebrovascular_disorder,chromosome 8 open reading frame 76
+CIRI,CNTNAP2,0.280835273927266,EFO_0003763,CIRI_cerebrovascular_disorder,contactin associated protein 2
+CIRI,FSTL5,0.28082863227450444,EFO_0003763,CIRI_cerebrovascular_disorder,follistatin like 5
+CIRI,GCKR,0.2807936114211018,EFO_0003763,CIRI_cerebrovascular_disorder,glucokinase regulator
+CIRI,IL17D,0.28069850888564046,EFO_0003763,CIRI_cerebrovascular_disorder,interleukin 17D
+CIRI,FOXQ1,0.2803458390617039,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box Q1
+CIRI,ESR2,0.28028086265328367,EFO_0003763,CIRI_cerebrovascular_disorder,estrogen receptor 2
+CIRI,KIF21B,0.28021156500366357,EFO_0003763,CIRI_cerebrovascular_disorder,kinesin family member 21B
+CIRI,SORL1,0.280180552229412,EFO_0003763,CIRI_cerebrovascular_disorder,sortilin related receptor 1
+CIRI,NETO1,0.2801155860625293,EFO_0003763,CIRI_cerebrovascular_disorder,neuropilin and tolloid like 1
+CIRI,FAM135A,0.2800573863006572,EFO_0003763,CIRI_cerebrovascular_disorder,family with sequence similarity 135 member A
+CIRI,SOD3,0.2787843163184113,EFO_0003763,CIRI_cerebrovascular_disorder,superoxide dismutase 3
+CIRI,GRM7,0.2787453558935882,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate metabotropic receptor 7
+CIRI,CDH9,0.27866606552489825,EFO_0003763,CIRI_cerebrovascular_disorder,cadherin 9
+CIRI,AK3,0.27834056029260473,EFO_0003763,CIRI_cerebrovascular_disorder,adenylate kinase 3
+CIRI,CSMD1,0.27823718359339666,EFO_0003763,CIRI_cerebrovascular_disorder,CUB and Sushi multiple domains 1
+CIRI,RIMBP2,0.27811547603989445,EFO_0003763,CIRI_cerebrovascular_disorder,RIMS binding protein 2
+CIRI,CBLN4,0.2778742370136154,EFO_0003763,CIRI_cerebrovascular_disorder,cerebellin 4 precursor
+CIRI,DSCAM,0.277867603738712,EFO_0003763,CIRI_cerebrovascular_disorder,DS cell adhesion molecule
+CIRI,LRMDA,0.277867603738712,EFO_0003763,CIRI_cerebrovascular_disorder,leucine rich melanocyte differentiation associated
+CIRI,SNCB,0.2774748724119917,EFO_0003763,CIRI_cerebrovascular_disorder,synuclein beta
+CIRI,PIK3CD,0.27745718061420366,EFO_0003763,CIRI_cerebrovascular_disorder,"phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic subunit delta"
+CIRI,ESR1,0.27743015708822943,EFO_0003763,CIRI_cerebrovascular_disorder,estrogen receptor 1
+CIRI,TMEM266,0.277416610655893,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane protein 266
+CIRI,LGI1,0.27729747884306283,EFO_0003763,CIRI_cerebrovascular_disorder,leucine rich glioma inactivated 1
+CIRI,CHRNE,0.2770277514606611,EFO_0003763,CIRI_cerebrovascular_disorder,cholinergic receptor nicotinic epsilon subunit
+CIRI,MYL12A,0.2768599460145197,EFO_0003763,CIRI_cerebrovascular_disorder,myosin light chain 12A
+CIRI,TMPRSS2,0.2766185268763034,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane serine protease 2
+CIRI,NACA2,0.2765283924127267,EFO_0003763,CIRI_cerebrovascular_disorder,nascent polypeptide associated complex subunit alpha 2
+CIRI,DISC1,0.27652586666622625,EFO_0003763,CIRI_cerebrovascular_disorder,DISC1 scaffold protein
+CIRI,CCND2,0.2765099015421304,EFO_0000712,CIRI_stroke,cyclin D2
+CIRI,NFIB,0.2764865647152829,EFO_0003763,CIRI_cerebrovascular_disorder,nuclear factor I B
+CIRI,CLEC4M,0.27638870857849845,EFO_0000712,CIRI_stroke,C-type lectin domain family 4 member M
+CIRI,MS4A4E,0.2763536921256311,EFO_0003763,CIRI_cerebrovascular_disorder,membrane spanning 4-domains A4E
+CIRI,TP63,0.276096095491778,EFO_0003763,CIRI_cerebrovascular_disorder,tumor protein p63
+CIRI,F13A1,0.2757507539124593,EFO_0003763,CIRI_cerebrovascular_disorder,coagulation factor XIII A chain
+CIRI,ATG10,0.2752865122361205,EFO_0003763,CIRI_cerebrovascular_disorder,autophagy related 10
+CIRI,MAP3K1,0.275265646992716,EFO_0003763,CIRI_cerebrovascular_disorder,mitogen-activated protein kinase kinase kinase 1
+CIRI,BICDL1,0.274866527070034,EFO_0003763,CIRI_cerebrovascular_disorder,BICD family like cargo adaptor 1
+CIRI,PRKCE,0.2746258327024042,EFO_0003763,CIRI_cerebrovascular_disorder,protein kinase C epsilon
+CIRI,TRPM6,0.2744824778747716,EFO_0003763,CIRI_cerebrovascular_disorder,transient receptor potential cation channel subfamily M member 6
+CIRI,CCSER1,0.2744663109664375,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil serine rich protein 1
+CIRI,ZBTB2,0.27419319856080504,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger and BTB domain containing 2
+CIRI,GYS2,0.27416205089415224,EFO_0003763,CIRI_cerebrovascular_disorder,glycogen synthase 2
+CIRI,MGMT,0.2740967311117528,EFO_0003763,CIRI_cerebrovascular_disorder,O-6-methylguanine-DNA methyltransferase
+CIRI,ANKRD33,0.2738420394374124,EFO_0000712,CIRI_stroke,ankyrin repeat domain 33
+CIRI,GATA2,0.27370006821613385,EFO_0003763,CIRI_cerebrovascular_disorder,GATA binding protein 2
+CIRI,RAB11FIP1,0.27360842532891366,EFO_0003763,CIRI_cerebrovascular_disorder,RAB11 family interacting protein 1
+CIRI,NAV2,0.2733302031516068,EFO_0003763,CIRI_cerebrovascular_disorder,neuron navigator 2
+CIRI,DDC,0.27325297200396403,EFO_0003763,CIRI_cerebrovascular_disorder,dopa decarboxylase
+CIRI,TRIM47,0.2732149076212945,EFO_0003763,CIRI_cerebrovascular_disorder,tripartite motif containing 47
+CIRI,RNF144A,0.2731977667517676,EFO_0003763,CIRI_cerebrovascular_disorder,ring finger protein 144A
+CIRI,SMARCA4,0.27316266949683576,EFO_0003763,CIRI_cerebrovascular_disorder,SWI/SNF related BAF chromatin remodeling complex subunit ATPase 4
+CIRI,DPH1,0.2730673569901162,EFO_0003763,CIRI_cerebrovascular_disorder,diphthamide biosynthesis 1
+CIRI,SUSD1,0.2726887060791322,EFO_0003763,CIRI_cerebrovascular_disorder,sushi domain containing 1
+CIRI,MAP3K9,0.2726758193036988,EFO_0003763,CIRI_cerebrovascular_disorder,mitogen-activated protein kinase kinase kinase 9
+CIRI,AGAP1,0.2725469515493642,EFO_0003763,CIRI_cerebrovascular_disorder,"ArfGAP with GTPase domain, ankyrin repeat and PH domain 1"
+CIRI,CDKN2C,0.2724237066145671,EFO_0000712,CIRI_stroke,cyclin dependent kinase inhibitor 2C
+CIRI,ERBB4,0.27217532516829696,EFO_0003763,CIRI_cerebrovascular_disorder,erb-b2 receptor tyrosine kinase 4
+CIRI,MTNR1A,0.27206838843121073,EFO_0003763,CIRI_cerebrovascular_disorder,melatonin receptor 1A
+CIRI,ZNF879,0.27201295441554824,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 879
+CIRI,TCF24,0.2713083011291118,EFO_0003763,CIRI_cerebrovascular_disorder,transcription factor 24
+CIRI,SLC24A1,0.2709085635434287,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 24 member 1
+CIRI,FGD6,0.2703930169126603,EFO_0003763,CIRI_cerebrovascular_disorder,"FYVE, RhoGEF and PH domain containing 6"
+CIRI,SLC2A12,0.2700778894336664,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 2 member 12
+CIRI,TMBIM1,0.26947360734553,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane BAX inhibitor motif containing 1
+CIRI,HAUS6,0.26944553426171297,EFO_0003763,CIRI_cerebrovascular_disorder,HAUS augmin like complex subunit 6
+CIRI,CELF4,0.2687963271526543,EFO_0003763,CIRI_cerebrovascular_disorder,CUGBP Elav-like family member 4
+CIRI,ABI3BP,0.2687963271526543,EFO_0003763,CIRI_cerebrovascular_disorder,ABI family member 3 binding protein
+CIRI,EXOC4,0.2686693381604535,EFO_0003763,CIRI_cerebrovascular_disorder,exocyst complex component 4
+CIRI,PCNX3,0.26808804009843995,EFO_0003763,CIRI_cerebrovascular_disorder,pecanex 3
+CIRI,MAP2K1,0.2677098653742514,EFO_0003763,CIRI_cerebrovascular_disorder,mitogen-activated protein kinase kinase 1
+CIRI,CCDC71L,0.2675824357755521,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil domain containing 71 like
+CIRI,FERD3L,0.2673351691598711,EFO_0003763,CIRI_cerebrovascular_disorder,Fer3 like bHLH transcription factor
+CIRI,SERPINA1,0.2671094875030131,EFO_0003763,CIRI_cerebrovascular_disorder,serpin family A member 1
+CIRI,KIT,0.2670599106945305,EFO_0003763,CIRI_cerebrovascular_disorder,"KIT proto-oncogene, receptor tyrosine kinase"
+CIRI,CD44,0.26681439998915757,EFO_0003763,CIRI_cerebrovascular_disorder,CD44 molecule (IN blood group)
+CIRI,ARL15,0.2664684908785015,EFO_0003763,CIRI_cerebrovascular_disorder,ARF like GTPase 15
+CIRI,MAST4,0.2663414180770772,EFO_0003763,CIRI_cerebrovascular_disorder,microtubule associated serine/threonine kinase family member 4
+CIRI,LCORL,0.2659888384882656,EFO_0003763,CIRI_cerebrovascular_disorder,ligand dependent nuclear receptor corepressor like
+CIRI,KIF2B,0.26546998912870673,EFO_0003763,CIRI_cerebrovascular_disorder,kinesin family member 2B
+CIRI,RAP1A,0.26510148791347155,EFO_0003763,CIRI_cerebrovascular_disorder,"RAP1A, member of RAS oncogene family"
+CIRI,ZNF804A,0.2650476412794284,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 804A
+CIRI,MYRIP,0.2650476412794284,EFO_0003763,CIRI_cerebrovascular_disorder,myosin VIIA and Rab interacting protein
+CIRI,ITPR2,0.2644662638752169,EFO_0003763,CIRI_cerebrovascular_disorder,"inositol 1,4,5-trisphosphate receptor type 2"
+CIRI,DTNB,0.26435997210215295,EFO_0003763,CIRI_cerebrovascular_disorder,dystrobrevin beta
+CIRI,MAP3K11,0.26374579942478305,EFO_0003763,CIRI_cerebrovascular_disorder,mitogen-activated protein kinase kinase kinase 11
+CIRI,FGFR1,0.2632643958354996,EFO_0003763,CIRI_cerebrovascular_disorder,fibroblast growth factor receptor 1
+CIRI,TRMT9B,0.263261402032296,EFO_0003763,CIRI_cerebrovascular_disorder,tRNA methyltransferase 9B (putative)
+CIRI,TRIM36,0.26264445635974637,EFO_0003763,CIRI_cerebrovascular_disorder,tripartite motif containing 36
+CIRI,BCR,0.26263105447907975,EFO_0003763,CIRI_cerebrovascular_disorder,BCR activator of RhoGEF and GTPase
+CIRI,INHBA,0.2620271683615724,EFO_0003763,CIRI_cerebrovascular_disorder,inhibin subunit beta A
+CIRI,PLCB1,0.26188916715045507,EFO_0003763,CIRI_cerebrovascular_disorder,phospholipase C beta 1
+CIRI,NDN,0.2614306648597352,EFO_0003763,CIRI_cerebrovascular_disorder,"necdin, MAGE family member"
+CIRI,RAB4A,0.2614306648597352,EFO_0003763,CIRI_cerebrovascular_disorder,"RAB4A, member RAS oncogene family"
+CIRI,MPHOSPH6,0.2614306648597352,EFO_0003763,CIRI_cerebrovascular_disorder,M-phase phosphoprotein 6
+CIRI,DNM2,0.26122426837178625,EFO_0003763,CIRI_cerebrovascular_disorder,dynamin 2
+CIRI,CDK6,0.26116937010665925,EFO_0003763,CIRI_cerebrovascular_disorder,cyclin dependent kinase 6
+CIRI,ENSG00000289766,0.26116389759392467,EFO_0003763,CIRI_cerebrovascular_disorder,novel protein
+CIRI,DST,0.26101577237107065,EFO_0003763,CIRI_cerebrovascular_disorder,dystonin
+CIRI,STAB2,0.26084362743241446,EFO_0000712,CIRI_stroke,stabilin 2
+CIRI,SPOCK1,0.26064901553526687,EFO_0003763,CIRI_cerebrovascular_disorder,"SPARC (osteonectin), cwcv and kazal like domains proteoglycan 1"
+CIRI,CHRNB1,0.26004049219898595,EFO_0003763,CIRI_cerebrovascular_disorder,cholinergic receptor nicotinic beta 1 subunit
+CIRI,CHRNG,0.26004049219898595,EFO_0003763,CIRI_cerebrovascular_disorder,cholinergic receptor nicotinic gamma subunit
+CIRI,CHRND,0.26004049219898595,EFO_0003763,CIRI_cerebrovascular_disorder,cholinergic receptor nicotinic delta subunit
+CIRI,PID1,0.25962984791600296,EFO_0003763,CIRI_cerebrovascular_disorder,phosphotyrosine interaction domain containing 1
+CIRI,KAZN,0.25961693933218033,EFO_0003763,CIRI_cerebrovascular_disorder,"kazrin, periplakin interacting protein"
+CIRI,PNKD,0.25907547813397597,EFO_0003763,CIRI_cerebrovascular_disorder,PNKD metallo-beta-lactamase domain containing
+CIRI,ABHD2,0.25886108342844466,EFO_0003763,CIRI_cerebrovascular_disorder,"abhydrolase domain containing 2, acylglycerol lipase"
+CIRI,VRK2,0.2588220338113828,EFO_0000712,CIRI_stroke,VRK serine/threonine kinase 2
+CIRI,EEF1D,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,eukaryotic translation elongation factor 1 delta
+CIRI,CEP78,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,centrosomal protein 78
+CIRI,XKR7,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,XK related 7
+CIRI,TECPR1,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,tectonin beta-propeller repeat containing 1
+CIRI,ARHGEF25,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,Rho guanine nucleotide exchange factor 25
+CIRI,SRGAP3,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,SLIT-ROBO Rho GTPase activating protein 3
+CIRI,CUL2,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,cullin 2
+CIRI,AGMAT,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,agmatinase (putative)
+CIRI,LORICRIN,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,loricrin cornified envelope precursor protein
+CIRI,SLFN11,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,schlafen family member 11
+CIRI,ZNF418,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 418
+CIRI,SCEL,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,sciellin
+CIRI,CAPRIN1,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,cell cycle associated protein 1
+CIRI,ILDR2,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,immunoglobulin like domain containing receptor 2
+CIRI,FBXL4,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,F-box and leucine rich repeat protein 4
+CIRI,FBRSL1,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,fibrosin like 1
+CIRI,TENM1,0.25870589827929125,EFO_0003763,CIRI_cerebrovascular_disorder,teneurin transmembrane protein 1
+CIRI,CCBE1,0.25839868195869287,EFO_0003763,CIRI_cerebrovascular_disorder,collagen and calcium binding EGF domains 1
+CIRI,HECTD2,0.2582173639269104,EFO_0003763,CIRI_cerebrovascular_disorder,HECT domain E3 ubiquitin protein ligase 2
+CIRI,DGKI,0.2578354087145332,EFO_0003763,CIRI_cerebrovascular_disorder,diacylglycerol kinase iota
+CIRI,STOX2,0.2576511828975247,EFO_0003763,CIRI_cerebrovascular_disorder,storkhead box 2
+CIRI,CTSH,0.25740835020913144,EFO_0003763,CIRI_cerebrovascular_disorder,cathepsin H
+CIRI,ARRDC4,0.2570718121984112,EFO_0003763,CIRI_cerebrovascular_disorder,arrestin domain containing 4
+CIRI,AUTS2,0.2569744932798425,EFO_0003763,CIRI_cerebrovascular_disorder,activator of transcription and developmental regulator AUTS2
+CIRI,KYNU,0.25662695573196753,EFO_0003763,CIRI_cerebrovascular_disorder,kynureninase
+CIRI,ELMOD3,0.2566088740660558,EFO_0003763,CIRI_cerebrovascular_disorder,ELMO domain containing 3
+CIRI,PGM2,0.2566006793986007,EFO_0003763,CIRI_cerebrovascular_disorder,phosphoglucomutase 2
+CIRI,BTBD9,0.2562622308212339,EFO_0003763,CIRI_cerebrovascular_disorder,BTB domain containing 9
+CIRI,STX2,0.256091533430932,EFO_0003763,CIRI_cerebrovascular_disorder,syntaxin 2
+CIRI,PRKG1,0.2559695111288306,EFO_0003763,CIRI_cerebrovascular_disorder,protein kinase cGMP-dependent 1
+CIRI,MAGI2,0.25579985508097564,EFO_0003763,CIRI_cerebrovascular_disorder,"membrane associated guanylate kinase, WW and PDZ domain containing 2"
+CIRI,GSG1L,0.2553390578275216,EFO_0003763,CIRI_cerebrovascular_disorder,GSG1 like
+CIRI,SLC47A1,0.25471189666489946,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 47 member 1
+CIRI,FERMT2,0.2546405112425186,EFO_0003763,CIRI_cerebrovascular_disorder,FERM domain containing kindlin 2
+CIRI,CRYBG1,0.2546254248107811,EFO_0003763,CIRI_cerebrovascular_disorder,crystallin beta-gamma domain containing 1
+CIRI,KNG1,0.25444087460382153,EFO_0003763,CIRI_cerebrovascular_disorder,kininogen 1
+CIRI,BMP2K,0.2542767422000919,EFO_0003763,CIRI_cerebrovascular_disorder,BMP2 inducible kinase
+CIRI,HNRNPA1L3,0.25396538338698027,EFO_0003763,CIRI_cerebrovascular_disorder,heterogeneous nuclear ribonucleoprotein A1 like 3
+CIRI,CTNND2,0.2538174692135276,EFO_0003763,CIRI_cerebrovascular_disorder,catenin delta 2
+CIRI,SYNE3,0.25346439071691323,EFO_0003763,CIRI_cerebrovascular_disorder,spectrin repeat containing nuclear envelope family member 3
+CIRI,GRN,0.25314577170584235,EFO_0003763,CIRI_cerebrovascular_disorder,granulin precursor
+CIRI,TBC1D15,0.25253374524385835,EFO_0003763,CIRI_cerebrovascular_disorder,TBC1 domain family member 15
+CIRI,ATP8A2,0.2521556890008653,EFO_0003763,CIRI_cerebrovascular_disorder,ATPase phospholipid transporting 8A2
+CIRI,DLGAP2,0.2519541707794922,EFO_0003763,CIRI_cerebrovascular_disorder,DLG associated protein 2
+CIRI,NLGN1,0.25192121201184553,EFO_0003763,CIRI_cerebrovascular_disorder,neuroligin 1
+CIRI,CHN2,0.25170130642787963,EFO_0003763,CIRI_cerebrovascular_disorder,chimerin 2
+CIRI,ICA1L,0.2510589017821423,EFO_0003763,CIRI_cerebrovascular_disorder,islet cell autoantigen 1 like
+CIRI,PKD2,0.25090819049635016,EFO_0003763,CIRI_cerebrovascular_disorder,"polycystin 2, transient receptor potential cation channel"
+CIRI,HHAT,0.25072626700474687,EFO_0003763,CIRI_cerebrovascular_disorder,hedgehog acyltransferase
+CIRI,APOC1,0.2502802058730283,EFO_0003763,CIRI_cerebrovascular_disorder,apolipoprotein C1
+CIRI,RAD23B,0.25027855954300393,EFO_0003763,CIRI_cerebrovascular_disorder,RAD23 nucleotide excision repair protein B
+CIRI,FHL5,0.24992786483139715,EFO_0003763,CIRI_cerebrovascular_disorder,four and a half LIM domains 5
+CIRI,NUF2,0.24956463306513757,EFO_0003763,CIRI_cerebrovascular_disorder,NUF2 component of NDC80 kinetochore complex
+CIRI,TMOD4,0.24955643751653542,EFO_0000712,CIRI_stroke,tropomodulin 4
+CIRI,MORF4L1,0.24921924457369804,EFO_0003763,CIRI_cerebrovascular_disorder,mortality factor 4 like 1
+CIRI,CDC123,0.24915386346346471,EFO_0003763,CIRI_cerebrovascular_disorder,cell division cycle 123
+CIRI,APOB,0.24903762720682904,EFO_0003763,CIRI_cerebrovascular_disorder,apolipoprotein B
+CIRI,RSU1,0.24895468017548303,EFO_0003763,CIRI_cerebrovascular_disorder,Ras suppressor protein 1
+CIRI,POM121L12,0.24879748079028635,EFO_0003763,CIRI_cerebrovascular_disorder,POM121 transmembrane nucleoporin like 12
+CIRI,MYRF,0.24871659497332366,EFO_0003763,CIRI_cerebrovascular_disorder,myelin regulatory factor
+CIRI,ARHGAP10,0.24847946208887714,EFO_0003763,CIRI_cerebrovascular_disorder,Rho GTPase activating protein 10
+CIRI,TOX2,0.24825597463155433,EFO_0003763,CIRI_cerebrovascular_disorder,TOX high mobility group box family member 2
+CIRI,FGD5,0.24812931068470542,EFO_0003763,CIRI_cerebrovascular_disorder,"FYVE, RhoGEF and PH domain containing 5"
+CIRI,GLRA3,0.2477533070331398,EFO_0003763,CIRI_cerebrovascular_disorder,glycine receptor alpha 3
+CIRI,FUNDC2,0.24756571558690427,EFO_0003763,CIRI_cerebrovascular_disorder,FUN14 domain containing 2
+CIRI,RAPGEF6,0.2473837271784551,EFO_0000712,CIRI_stroke,Rap guanine nucleotide exchange factor 6
+CIRI,CACNG3,0.24706398094697377,EFO_0003763,CIRI_cerebrovascular_disorder,calcium voltage-gated channel auxiliary subunit gamma 3
+CIRI,ARMS2,0.2469352363222294,EFO_0003763,CIRI_cerebrovascular_disorder,age-related maculopathy susceptibility 2
+CIRI,MDFIC2,0.246894932887698,EFO_0003763,CIRI_cerebrovascular_disorder,MyoD family inhibitor domain containing 2
+CIRI,TAPT1,0.24680485763171955,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane anterior posterior transformation 1
+CIRI,NDUFAF2,0.24614575964715724,EFO_0003763,CIRI_cerebrovascular_disorder,NADH:ubiquinone oxidoreductase complex assembly factor 2
+CIRI,PLEKHH2,0.24505857840276876,EFO_0003763,CIRI_cerebrovascular_disorder,"pleckstrin homology, MyTH4 and FERM domain containing H2"
+CIRI,B3GALT1,0.24499777925713404,EFO_0003763,CIRI_cerebrovascular_disorder,"beta-1,3-galactosyltransferase 1"
+CIRI,MAML2,0.2448770141785038,EFO_0003763,CIRI_cerebrovascular_disorder,mastermind like transcriptional coactivator 2
+CIRI,CRADD,0.2448148751606828,EFO_0003763,CIRI_cerebrovascular_disorder,CARD and death domain containing adaptor protein
+CIRI,KPTN,0.24478923378187162,EFO_0003763,CIRI_cerebrovascular_disorder,"kaptin, actin binding protein"
+CIRI,KLHL26,0.24437223094605062,EFO_0003763,CIRI_cerebrovascular_disorder,kelch like family member 26
+CIRI,AOAH,0.24425161748345411,EFO_0003763,CIRI_cerebrovascular_disorder,acyloxyacyl hydrolase
+CIRI,MMP16,0.24417941394541984,EFO_0003763,CIRI_cerebrovascular_disorder,matrix metallopeptidase 16
+CIRI,CADPS,0.24384302055540485,EFO_0003763,CIRI_cerebrovascular_disorder,calcium dependent secretion activator
+CIRI,HS3ST2,0.24297525079416657,EFO_0003763,CIRI_cerebrovascular_disorder,heparan sulfate-glucosamine 3-sulfotransferase 2
+CIRI,DCAF4L2,0.24285134086871407,EFO_0003763,CIRI_cerebrovascular_disorder,DDB1 and CUL4 associated factor 4 like 2
+CIRI,TRPM8,0.24284658392518607,EFO_0003763,CIRI_cerebrovascular_disorder,transient receptor potential cation channel subfamily M member 8
+CIRI,ADGRV1,0.24282885785131786,EFO_0003763,CIRI_cerebrovascular_disorder,adhesion G protein-coupled receptor V1
+CIRI,XKR4,0.2428145392119474,EFO_0003763,CIRI_cerebrovascular_disorder,XK related 4
+CIRI,TMEM163,0.24132713597398395,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane protein 163
+CIRI,RBBP8,0.24111668564985206,EFO_0003763,CIRI_cerebrovascular_disorder,"RB binding protein 8, endonuclease"
+CIRI,VPS13D,0.24092154900113882,EFO_0003763,CIRI_cerebrovascular_disorder,vacuolar protein sorting 13 homolog D
+CIRI,RASEF,0.24021058811646706,EFO_0003763,CIRI_cerebrovascular_disorder,RAS and EF-hand domain containing
+CIRI,CXCL12,0.23913196125522224,EFO_0003763,CIRI_cerebrovascular_disorder,C-X-C motif chemokine ligand 12
+CIRI,PRDM16,0.23906176133201726,EFO_0003763,CIRI_cerebrovascular_disorder,PR/SET domain 16
+CIRI,KDM2B,0.23874066003247948,EFO_0003763,CIRI_cerebrovascular_disorder,lysine demethylase 2B
+CIRI,ATE1,0.23800327812537428,EFO_0003763,CIRI_cerebrovascular_disorder,arginyltransferase 1
+CIRI,ADCY5,0.23779123291030566,EFO_0003763,CIRI_cerebrovascular_disorder,adenylate cyclase 5
+CIRI,CACNG2,0.23751751357059328,EFO_0000712,CIRI_stroke,calcium voltage-gated channel auxiliary subunit gamma 2
+CIRI,HHEX,0.23727087932016158,EFO_0003763,CIRI_cerebrovascular_disorder,hematopoietically expressed homeobox
+CIRI,GYPC,0.2368397453138977,EFO_0000712,CIRI_stroke,glycophorin C (Gerbich blood group)
+CIRI,BAZ2B,0.23635670068379416,EFO_0003763,CIRI_cerebrovascular_disorder,bromodomain adjacent to zinc finger domain 2B
+CIRI,LDLRAD3,0.23576393280482533,EFO_0003763,CIRI_cerebrovascular_disorder,low density lipoprotein receptor class A domain containing 3
+CIRI,PTPRD,0.23563446410821073,EFO_0003763,CIRI_cerebrovascular_disorder,protein tyrosine phosphatase receptor type D
+CIRI,THEMIS,0.2354512457947257,EFO_0003763,CIRI_cerebrovascular_disorder,thymocyte selection associated
+CIRI,CBL,0.2351937070369489,EFO_0003763,CIRI_cerebrovascular_disorder,Cbl proto-oncogene
+CIRI,NLRP3,0.23505418773263304,EFO_0003763,CIRI_cerebrovascular_disorder,NLR family pyrin domain containing 3
+CIRI,CLDN18,0.23502272777695088,EFO_0003763,CIRI_cerebrovascular_disorder,claudin 18
+CIRI,FOXP1,0.23450171503007913,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box P1
+CIRI,CCDC178,0.23447952706232106,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil domain containing 178
+CIRI,ACER3,0.23433325665398236,EFO_0003763,CIRI_cerebrovascular_disorder,alkaline ceramidase 3
+CIRI,DEFB128,0.2342578524961897,EFO_0003763,CIRI_cerebrovascular_disorder,defensin beta 128
+CIRI,FGFR2,0.23415124749882826,EFO_0003763,CIRI_cerebrovascular_disorder,fibroblast growth factor receptor 2
+CIRI,CMTM8,0.2338677907310612,EFO_0003763,CIRI_cerebrovascular_disorder,CKLF like MARVEL transmembrane domain containing 8
+CIRI,LRRC52,0.2338677907310612,EFO_0003763,CIRI_cerebrovascular_disorder,leucine rich repeat containing 52
+CIRI,KBTBD8,0.2333954078038903,EFO_0003763,CIRI_cerebrovascular_disorder,kelch repeat and BTB domain containing 8
+CIRI,FAM13B,0.23324123839423155,EFO_0003763,CIRI_cerebrovascular_disorder,family with sequence similarity 13 member B
+CIRI,EPHA5,0.23289578685947498,EFO_0003763,CIRI_cerebrovascular_disorder,EPH receptor A5
+CIRI,TAC3,0.2326999147458334,EFO_0003763,CIRI_cerebrovascular_disorder,tachykinin precursor 3
+CIRI,CYFIP2,0.23166523153706234,EFO_0003763,CIRI_cerebrovascular_disorder,cytoplasmic FMR1 interacting protein 2
+CIRI,NOCT,0.2315878377614956,EFO_0003763,CIRI_cerebrovascular_disorder,nocturnin
+CIRI,KCNK13,0.2305601217701173,EFO_0003763,CIRI_cerebrovascular_disorder,potassium two pore domain channel subfamily K member 13
+CIRI,ANKS1B,0.23048964972517513,EFO_0003763,CIRI_cerebrovascular_disorder,ankyrin repeat and sterile alpha motif domain containing 1B
+CIRI,SGPL1,0.23031866545297872,EFO_0003763,CIRI_cerebrovascular_disorder,sphingosine-1-phosphate lyase 1
+CIRI,CCR5,0.23014033608523662,EFO_0003763,CIRI_cerebrovascular_disorder,C-C motif chemokine receptor 5
+CIRI,ITIH5,0.2295907290896641,EFO_0003763,CIRI_cerebrovascular_disorder,inter-alpha-trypsin inhibitor heavy chain 5
+CIRI,TSC22D2,0.22804283606308426,EFO_0003763,CIRI_cerebrovascular_disorder,TSC22 domain family member 2
+CIRI,CCN6,0.22783980628866354,EFO_0003763,CIRI_cerebrovascular_disorder,cellular communication network factor 6
+CIRI,WWOX,0.2277929579187841,EFO_0003763,CIRI_cerebrovascular_disorder,WW domain containing oxidoreductase
+CIRI,SORCS3,0.22738732099860864,EFO_0003763,CIRI_cerebrovascular_disorder,sortilin related VPS10 domain containing receptor 3
+CIRI,UNC13C,0.22730339949731548,EFO_0003763,CIRI_cerebrovascular_disorder,unc-13 homolog C
+CIRI,PLTP,0.22684426139109648,EFO_0003763,CIRI_cerebrovascular_disorder,phospholipid transfer protein
+CIRI,PPP2R2A,0.22639868265700616,EFO_0003763,CIRI_cerebrovascular_disorder,protein phosphatase 2 regulatory subunit Balpha
+CIRI,FBXO28,0.22625972488793739,EFO_0003763,CIRI_cerebrovascular_disorder,F-box protein 28
+CIRI,PSME4,0.22583468158539294,EFO_0003763,CIRI_cerebrovascular_disorder,proteasome activator subunit 4
+CIRI,DNMBP,0.22491518461415497,EFO_0003763,CIRI_cerebrovascular_disorder,dynamin binding protein
+CIRI,JMJD1C,0.22392083867746698,EFO_0003763,CIRI_cerebrovascular_disorder,jumonji domain containing 1C
+CIRI,CDKN2A,0.2239069169089547,EFO_0003763,CIRI_cerebrovascular_disorder,cyclin dependent kinase inhibitor 2A
+CIRI,FREM1,0.2238745699989507,EFO_0003763,CIRI_cerebrovascular_disorder,FRAS1 related extracellular matrix 1
+CIRI,BFAR,0.2237144457978879,EFO_0003763,CIRI_cerebrovascular_disorder,bifunctional apoptosis regulator
+CIRI,DCLK3,0.223584878336367,EFO_0003763,CIRI_cerebrovascular_disorder,doublecortin like kinase 3
+CIRI,SPTLC1,0.22295615044105058,EFO_0003763,CIRI_cerebrovascular_disorder,serine palmitoyltransferase long chain base subunit 1
+CIRI,ANKRD17,0.22249145164474082,EFO_0003763,CIRI_cerebrovascular_disorder,ankyrin repeat domain 17
+CIRI,TRPS1,0.22222874752415284,EFO_0003763,CIRI_cerebrovascular_disorder,transcriptional repressor GATA binding 1
+CIRI,ACACA,0.22197382640470262,EFO_0003763,CIRI_cerebrovascular_disorder,acetyl-CoA carboxylase alpha
+CIRI,COLEC12,0.22182955214128536,EFO_0003763,CIRI_cerebrovascular_disorder,collectin subfamily member 12
+CIRI,MFHAS1,0.22005345383918595,EFO_0003763,CIRI_cerebrovascular_disorder,multifunctional ROCO family signaling regulator 1
+CIRI,COL27A1,0.2197483616985287,EFO_0003763,CIRI_cerebrovascular_disorder,collagen type XXVII alpha 1 chain
+CIRI,PPP2R5C,0.21966255498437118,EFO_0003763,CIRI_cerebrovascular_disorder,protein phosphatase 2 regulatory subunit B'gamma
+CIRI,DENND4A,0.21950586501230596,EFO_0003763,CIRI_cerebrovascular_disorder,DENN domain containing 4A
+CIRI,PALMD,0.2188308138606173,EFO_0003763,CIRI_cerebrovascular_disorder,palmdelphin
+CIRI,PELI2,0.21881365792778387,EFO_0003763,CIRI_cerebrovascular_disorder,pellino E3 ubiquitin protein ligase family member 2
+CIRI,RCN2,0.21814700997463354,EFO_0003763,CIRI_cerebrovascular_disorder,reticulocalbin 2
+CIRI,CEP350,0.21806860404964665,EFO_0003763,CIRI_cerebrovascular_disorder,centrosomal protein 350
+CIRI,RPTOR,0.21728080809251085,EFO_0003763,CIRI_cerebrovascular_disorder,regulatory associated protein of MTOR complex 1
+CIRI,GBA1,0.21701909471407155,EFO_0003763,CIRI_cerebrovascular_disorder,glucosylceramidase beta 1
+CIRI,AHR,0.21698969626465447,EFO_0003763,CIRI_cerebrovascular_disorder,aryl hydrocarbon receptor
+CIRI,FOXL1,0.2163260917242841,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box L1
+CIRI,PHTF2,0.21532129772796593,EFO_0003763,CIRI_cerebrovascular_disorder,putative homeodomain transcription factor 2
+CIRI,NF1,0.2148297973368137,EFO_0003763,CIRI_cerebrovascular_disorder,neurofibromin 1
+CIRI,DPPA4,0.21464490998636376,EFO_0003763,CIRI_cerebrovascular_disorder,developmental pluripotency associated 4
+CIRI,CDKN2AIP,0.21448588222106285,EFO_0003763,CIRI_cerebrovascular_disorder,CDKN2A interacting protein
+CIRI,SPCS3,0.214348423283106,EFO_0003763,CIRI_cerebrovascular_disorder,signal peptidase complex subunit 3
+CIRI,CCDC7,0.21422510675511203,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil domain containing 7
+CIRI,KIF5B,0.21404462669416283,EFO_0003763,CIRI_cerebrovascular_disorder,kinesin family member 5B
+CIRI,SLC9A2,0.2138956065783768,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 9 member A2
+CIRI,PCNT,0.21346902748945717,EFO_0003763,CIRI_cerebrovascular_disorder,pericentrin
+CIRI,TNC,0.21346001960442065,EFO_0003763,CIRI_cerebrovascular_disorder,tenascin C
+CIRI,PAWR,0.21321119833729116,EFO_0003763,CIRI_cerebrovascular_disorder,pro-apoptotic WT1 regulator
+CIRI,MYC,0.21266324094718309,EFO_0003763,CIRI_cerebrovascular_disorder,"MYC proto-oncogene, bHLH transcription factor"
+CIRI,SORCS1,0.21075720908223927,EFO_0003763,CIRI_cerebrovascular_disorder,sortilin related VPS10 domain containing receptor 1
+CIRI,ZNF518A,0.21043646086370443,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 518A
+CIRI,BARHL1,0.21024859343120217,HP_0002140,CIRI_ischemic_stroke,BarH like homeobox 1
+CIRI,FANCL,0.20993467309611474,EFO_0000712,CIRI_stroke,FA complementation group L
+CIRI,TG,0.20986081371304047,EFO_0003763,CIRI_cerebrovascular_disorder,thyroglobulin
+CIRI,HSF2,0.20976355070899083,EFO_0003763,CIRI_cerebrovascular_disorder,heat shock transcription factor 2
+CIRI,PRKCQ,0.20957003196285884,EFO_0003763,CIRI_cerebrovascular_disorder,protein kinase C theta
+CIRI,ASXL1,0.2091876171634871,EFO_0003763,CIRI_cerebrovascular_disorder,ASXL transcriptional regulator 1
+CIRI,ZUP1,0.2087864266822935,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger containing ubiquitin peptidase 1
+CIRI,LRP12,0.20858131591818596,EFO_0003763,CIRI_cerebrovascular_disorder,LDL receptor related protein 12
+CIRI,CCDC34,0.20793487341148414,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil domain containing 34
+CIRI,ST6GALNAC5,0.20730307996724304,EFO_0003763,CIRI_cerebrovascular_disorder,"ST6 N-acetylgalactosaminide alpha-2,6-sialyltransferase 5"
+CIRI,CDH4,0.20711268612096723,EFO_0003763,CIRI_cerebrovascular_disorder,cadherin 4
+CIRI,HTR4,0.20696989624342937,EFO_0003763,CIRI_cerebrovascular_disorder,5-hydroxytryptamine receptor 4
+CIRI,JAML,0.20647956170764953,EFO_0003763,CIRI_cerebrovascular_disorder,junction adhesion molecule like
+CIRI,ZRANB3,0.2057097017780933,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger RANBP2-type containing 3
+CIRI,CFAP77,0.2041896570511965,HP_0002140,CIRI_ischemic_stroke,cilia and flagella associated protein 77
+CIRI,TM4SF18,0.20387160702776366,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane 4 L six family member 18
+CIRI,CIT,0.20364235459710392,EFO_0003763,CIRI_cerebrovascular_disorder,citron rho-interacting serine/threonine kinase
+CIRI,PUM3,0.20360655799867766,EFO_0003763,CIRI_cerebrovascular_disorder,pumilio RNA binding family member 3
+CIRI,NT5C2,0.2035716942192205,EFO_0003763,CIRI_cerebrovascular_disorder,"5'-nucleotidase, cytosolic II"
+CIRI,MEOX2,0.2029343309232464,EFO_0003763,CIRI_cerebrovascular_disorder,mesenchyme homeobox 2
+CIRI,RBM20,0.2026922357745051,EFO_0000712,CIRI_stroke,RNA binding motif protein 20
+CIRI,LSP1,0.2026414945111093,EFO_0003763,CIRI_cerebrovascular_disorder,lymphocyte specific protein 1
+CIRI,ANKRD10,0.20260478193096526,EFO_0003763,CIRI_cerebrovascular_disorder,ankyrin repeat domain 10
+CIRI,ZEB2,0.20232205374564347,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger E-box binding homeobox 2
+CIRI,CALCRL,0.202014607776837,EFO_0000712,CIRI_stroke,calcitonin receptor like receptor
+CIRI,MIA2,0.2019596797279915,EFO_0003763,CIRI_cerebrovascular_disorder,MIA SH3 domain ER export factor 2
+CIRI,RAB12,0.20170485544652908,EFO_0000712,CIRI_stroke,"RAB12, member RAS oncogene family"
+CIRI,GRID1,0.20077261167065208,EFO_0003763,CIRI_cerebrovascular_disorder,glutamate ionotropic receptor delta type subunit 1
+CIRI,ARHGEF16,0.2004076662675579,EFO_0000712,CIRI_stroke,Rho guanine nucleotide exchange factor 16
+CIRI,SPRY2,0.20027105375944593,EFO_0003763,CIRI_cerebrovascular_disorder,sprouty RTK signaling antagonist 2
+CIRI,MBOAT1,0.20000859232633328,EFO_0000712,CIRI_stroke,membrane bound glycerophospholipid O-acyltransferase 1
+CIRI,RPL3L,0.19984035932806785,EFO_0000712,CIRI_stroke,ribosomal protein L3 like
+CIRI,DIS3L2,0.19980592850755077,EFO_0003763,CIRI_cerebrovascular_disorder,DIS3 like 3'-5' exoribonuclease 2
+CIRI,SPTLC3,0.19960282887344313,EFO_0003763,CIRI_cerebrovascular_disorder,serine palmitoyltransferase long chain base subunit 3
+CIRI,OR7A17,0.19900818203653006,EFO_0003763,CIRI_cerebrovascular_disorder,olfactory receptor family 7 subfamily A member 17
+CIRI,TLL1,0.19846823509501796,EFO_0003763,CIRI_cerebrovascular_disorder,tolloid like 1
+CIRI,STX16,0.19794025385492595,EFO_0003763,CIRI_cerebrovascular_disorder,syntaxin 16
+CIRI,TBX3,0.1976259767268812,EFO_0003763,CIRI_cerebrovascular_disorder,T-box transcription factor 3
+CIRI,TUSC3,0.19612487066950554,EFO_0003763,CIRI_cerebrovascular_disorder,tumor suppressor candidate 3
+CIRI,PPP1R3B,0.19609017617621144,EFO_0003763,CIRI_cerebrovascular_disorder,protein phosphatase 1 regulatory subunit 3B
+CIRI,CFDP1,0.1956374775320669,EFO_0003763,CIRI_cerebrovascular_disorder,chromatin stabilizing protein CFDP1
+CIRI,USP34,0.19520488707561265,EFO_0000712,CIRI_stroke,ubiquitin specific peptidase 34
+CIRI,PTPRM,0.1945398774180029,EFO_0003763,CIRI_cerebrovascular_disorder,protein tyrosine phosphatase receptor type M
+CIRI,DYNLRB2,0.19425787429632344,EFO_0003763,CIRI_cerebrovascular_disorder,dynein light chain roadblock-type 2
+CIRI,VSTM2A,0.19401073458078855,EFO_0003763,CIRI_cerebrovascular_disorder,V-set and transmembrane domain containing 2A
+CIRI,ZBBX,0.19388669110648804,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger B-box domain containing
+CIRI,MAP2,0.19311038627852195,EFO_0003763,CIRI_cerebrovascular_disorder,microtubule associated protein 2
+CIRI,NPSR1,0.19267214481592398,EFO_0003763,CIRI_cerebrovascular_disorder,neuropeptide S receptor 1
+CIRI,DIP2B,0.1924418743079763,EFO_0003763,CIRI_cerebrovascular_disorder,DIP2 acetate--CoA ligase B (putative)
+CIRI,UBE2E3,0.19230256496123926,EFO_0003763,CIRI_cerebrovascular_disorder,ubiquitin conjugating enzyme E2 E3
+CIRI,ADAM22,0.1921971739599019,EFO_0003763,CIRI_cerebrovascular_disorder,ADAM metallopeptidase domain 22
+CIRI,CDH6,0.19212845030649395,EFO_0003763,CIRI_cerebrovascular_disorder,cadherin 6
+CIRI,SLC39A13,0.19184810324310445,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 39 member 13
+CIRI,PRR16,0.1917910811342489,EFO_0003763,CIRI_cerebrovascular_disorder,proline rich 16
+CIRI,SVIL,0.19176398192781788,EFO_0003763,CIRI_cerebrovascular_disorder,supervillin
+CIRI,ZNF611,0.19149502399017226,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 611
+CIRI,BRAP,0.19078096265427025,EFO_0003763,CIRI_cerebrovascular_disorder,BRCA1 associated protein
+CIRI,PPARGC1A,0.1902614294891853,EFO_0003763,CIRI_cerebrovascular_disorder,PPARG coactivator 1 alpha
+CIRI,CYLC2,0.19008469583745194,EFO_0003763,CIRI_cerebrovascular_disorder,cylicin 2
+CIRI,DAOA,0.19008469583745194,EFO_0003763,CIRI_cerebrovascular_disorder,D-amino acid oxidase activator
+CIRI,TBC1D5,0.18924599805783163,EFO_0003763,CIRI_cerebrovascular_disorder,TBC1 domain family member 5
+CIRI,PIRT,0.188700656155899,EFO_0003763,CIRI_cerebrovascular_disorder,phosphoinositide interacting regulator of transient receptor potential channels
+CIRI,ZNF469,0.18860093233985242,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 469
+CIRI,FOXM1,0.18825797230374847,EFO_0003763,CIRI_cerebrovascular_disorder,forkhead box M1
+CIRI,CEP120,0.18744251861818018,EFO_0000712,CIRI_stroke,centrosomal protein 120
+CIRI,SETD5,0.1873949520125243,EFO_0003763,CIRI_cerebrovascular_disorder,SET domain containing 5
+CIRI,PSPH,0.18732677257510816,EFO_0003763,CIRI_cerebrovascular_disorder,phosphoserine phosphatase
+CIRI,JPH3,0.18722147385480242,EFO_0000712,CIRI_stroke,junctophilin 3
+CIRI,UQCC1,0.1870869702811036,EFO_0003763,CIRI_cerebrovascular_disorder,ubiquinol-cytochrome c reductase complex assembly factor 1
+CIRI,RACGAP1,0.18695719272042347,EFO_0003763,CIRI_cerebrovascular_disorder,Rac GTPase activating protein 1
+CIRI,NCOR2,0.18677479640698166,EFO_0000712,CIRI_stroke,nuclear receptor corepressor 2
+CIRI,CCER2,0.1866378266157744,EFO_0003763,CIRI_cerebrovascular_disorder,coiled-coil glutamate rich protein 2
+CIRI,NEDD1,0.18634841210878852,EFO_0003763,CIRI_cerebrovascular_disorder,NEDD1 gamma-tubulin ring complex targeting factor
+CIRI,AJAP1,0.1861742754253672,EFO_0003763,CIRI_cerebrovascular_disorder,adherens junctions associated protein 1
+CIRI,VEGFC,0.18571198460044114,EFO_0003763,CIRI_cerebrovascular_disorder,vascular endothelial growth factor C
+CIRI,SHANK3,0.18557905449178722,EFO_0003763,CIRI_cerebrovascular_disorder,SH3 and multiple ankyrin repeat domains 3
+CIRI,DDIT4L,0.1852499301536353,EFO_0003763,CIRI_cerebrovascular_disorder,DNA damage inducible transcript 4 like
+CIRI,CHD4,0.18515950719703558,EFO_0003763,CIRI_cerebrovascular_disorder,chromodomain helicase DNA binding protein 4
+CIRI,SLC7A11,0.18482699991007495,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 7 member 11
+CIRI,CNOT3,0.1847899273423509,EFO_0003763,CIRI_cerebrovascular_disorder,CCR4-NOT transcription complex subunit 3
+CIRI,SNRPN,0.18473797083767443,EFO_0003763,CIRI_cerebrovascular_disorder,small nuclear ribonucleoprotein polypeptide N
+CIRI,NMT1,0.18469084286701418,EFO_0003763,CIRI_cerebrovascular_disorder,N-myristoyltransferase 1
+CIRI,NLRP1,0.1846034049436316,EFO_0003763,CIRI_cerebrovascular_disorder,NLR family pyrin domain containing 1
+CIRI,PPP1R13L,0.18420014252605052,EFO_0003763,CIRI_cerebrovascular_disorder,protein phosphatase 1 regulatory subunit 13 like
+CIRI,DPY19L2,0.18337519070085517,EFO_0003763,CIRI_cerebrovascular_disorder,dpy-19 like 2
+CIRI,DOCK9,0.18323581526809027,EFO_0003763,CIRI_cerebrovascular_disorder,dedicator of cytokinesis 9
+CIRI,TMEM258,0.18322871102009491,EFO_0000712,CIRI_stroke,transmembrane protein 258
+CIRI,DEFB1,0.1828464683775539,EFO_0003763,CIRI_cerebrovascular_disorder,defensin beta 1
+CIRI,SREK1IP1,0.1824573328741919,EFO_0003763,CIRI_cerebrovascular_disorder,SREK1 interacting protein 1
+CIRI,LRRC7,0.18222218777271432,EFO_0003763,CIRI_cerebrovascular_disorder,leucine rich repeat containing 7
+CIRI,MC4R,0.18191223845456292,EFO_0003763,CIRI_cerebrovascular_disorder,melanocortin 4 receptor
+CIRI,SLC22A4,0.1815668348703848,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 22 member 4
+CIRI,GATA3,0.17974722593953005,EFO_0003763,CIRI_cerebrovascular_disorder,GATA binding protein 3
+CIRI,MMUT,0.1797196320290525,EFO_0003763,CIRI_cerebrovascular_disorder,methylmalonyl-CoA mutase
+CIRI,NPVF,0.17902494574466044,EFO_0003763,CIRI_cerebrovascular_disorder,neuropeptide VF precursor
+CIRI,PENK,0.17860168150483172,EFO_0003763,CIRI_cerebrovascular_disorder,proenkephalin
+CIRI,EBF3,0.17835134118858592,EFO_0003763,CIRI_cerebrovascular_disorder,EBF transcription factor 3
+CIRI,RPL38,0.17812617576571185,EFO_0003763,CIRI_cerebrovascular_disorder,ribosomal protein L38
+CIRI,CLIC6,0.17759401802633806,EFO_0000712,CIRI_stroke,chloride intracellular channel 6
+CIRI,KCNE2,0.17713130568791124,EFO_0003763,CIRI_cerebrovascular_disorder,potassium voltage-gated channel subfamily E regulatory subunit 2
+CIRI,NRXN1,0.1764638442124291,EFO_0003763,CIRI_cerebrovascular_disorder,neurexin 1
+CIRI,ANO5,0.1762638715005081,EFO_0003763,CIRI_cerebrovascular_disorder,anoctamin 5
+CIRI,XRCC4,0.17621003341647498,EFO_0003763,CIRI_cerebrovascular_disorder,X-ray repair cross complementing 4
+CIRI,TOMM40,0.17605054782224125,EFO_0003763,CIRI_cerebrovascular_disorder,translocase of outer mitochondrial membrane 40
+CIRI,ZNF385D,0.17603721513893167,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 385D
+CIRI,IZUMO3,0.17588801823137035,EFO_0003763,CIRI_cerebrovascular_disorder,IZUMO family member 3
+CIRI,CHSY3,0.17583139351982896,EFO_0003763,CIRI_cerebrovascular_disorder,chondroitin sulfate synthase 3
+CIRI,CXADR,0.17569776630851083,EFO_0003763,CIRI_cerebrovascular_disorder,CXADR cell adhesion molecule
+CIRI,FNDC3A,0.17444953467719554,EFO_0003763,CIRI_cerebrovascular_disorder,fibronectin type III domain containing 3A
+CIRI,METTL25,0.1741490084654846,EFO_0003763,CIRI_cerebrovascular_disorder,methyltransferase like 25
+CIRI,AXDND1,0.17371282966724508,EFO_0003763,CIRI_cerebrovascular_disorder,axonemal dynein light chain domain containing 1
+CIRI,FAS,0.17346091380616757,EFO_0003763,CIRI_cerebrovascular_disorder,Fas cell surface death receptor
+CIRI,HTR1E,0.17297981446051708,EFO_0003763,CIRI_cerebrovascular_disorder,5-hydroxytryptamine receptor 1E
+CIRI,MMADHC,0.17297981446051708,EFO_0003763,CIRI_cerebrovascular_disorder,metabolism of cobalamin associated D
+CIRI,LINC03051,0.17297981446051708,EFO_0003763,CIRI_cerebrovascular_disorder,long intergenic non-protein coding RNA 3051
+CIRI,SLC10A2,0.17297981446051708,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 10 member 2
+CIRI,ANKH,0.17297981446051708,EFO_0003763,CIRI_cerebrovascular_disorder,ANKH inorganic pyrophosphate transport regulator
+CIRI,PAPPA,0.17270871248147002,EFO_0003763,CIRI_cerebrovascular_disorder,pappalysin 1
+CIRI,PRSS35,0.17246469590199417,EFO_0003763,CIRI_cerebrovascular_disorder,serine protease 35
+CIRI,CD209,0.17226456659497127,EFO_0003763,CIRI_cerebrovascular_disorder,CD209 molecule
+CIRI,ATIC,0.1722131394369304,EFO_0003763,CIRI_cerebrovascular_disorder,5-aminoimidazole-4-carboxamide ribonucleotide formyltransferase/IMP cyclohydrolase
+CIRI,OR1B1,0.17214446503964184,EFO_0003763,CIRI_cerebrovascular_disorder,olfactory receptor family 1 subfamily B member 1
+CIRI,ATP11B,0.1720522595225839,EFO_0003763,CIRI_cerebrovascular_disorder,ATPase phospholipid transporting 11B (putative)
+CIRI,HTRA3,0.1719305115244326,EFO_0003763,CIRI_cerebrovascular_disorder,HtrA serine peptidase 3
+CIRI,SYT1,0.17182893422989934,EFO_0003763,CIRI_cerebrovascular_disorder,synaptotagmin 1
+CIRI,CDIN1,0.1717347757242378,EFO_0003763,CIRI_cerebrovascular_disorder,CDAN1 interacting nuclease 1
+CIRI,MAMSTR,0.17158076223630103,EFO_0003763,CIRI_cerebrovascular_disorder,MEF2 activating motif and SAP domain containing transcriptional regulator
+CIRI,RAB3GAP2,0.17129473089336827,EFO_0003763,CIRI_cerebrovascular_disorder,RAB3 GTPase activating non-catalytic protein subunit 2
+CIRI,WIPF1,0.16974517875503026,EFO_0003763,CIRI_cerebrovascular_disorder,WAS/WASL interacting protein family member 1
+CIRI,SLC45A1,0.16859941224694047,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 45 member 1
+CIRI,CYP4F3,0.16826588334601272,EFO_0003763,CIRI_cerebrovascular_disorder,cytochrome P450 family 4 subfamily F member 3
+CIRI,NUDCD2,0.16761479651779673,EFO_0003763,CIRI_cerebrovascular_disorder,NudC domain containing 2
+CIRI,DPH6,0.16758433174009849,EFO_0003763,CIRI_cerebrovascular_disorder,diphthamine biosynthesis 6
+CIRI,MX1,0.16749295873076223,EFO_0003763,CIRI_cerebrovascular_disorder,MX dynamin like GTPase 1
+CIRI,KCNJ15,0.16741102976726652,EFO_0003763,CIRI_cerebrovascular_disorder,potassium inwardly rectifying channel subfamily J member 15
+CIRI,RUNX1T1,0.16719552437589355,EFO_0003763,CIRI_cerebrovascular_disorder,RUNX1 partner transcriptional co-repressor 1
+CIRI,TTYH2,0.16685637123335503,EFO_0003763,CIRI_cerebrovascular_disorder,tweety family member 2
+CIRI,FADS2,0.16667457560177537,EFO_0003763,CIRI_cerebrovascular_disorder,fatty acid desaturase 2
+CIRI,ST6GAL2,0.16666038210338677,EFO_0003763,CIRI_cerebrovascular_disorder,"ST6 beta-galactoside alpha-2,6-sialyltransferase 2"
+CIRI,LRRC3B,0.16666038210338677,EFO_0003763,CIRI_cerebrovascular_disorder,leucine rich repeat containing 3B
+CIRI,SPPL2A,0.16647417370554232,EFO_0000712,CIRI_stroke,signal peptide peptidase like 2A
+CIRI,ZNF77,0.16584037565531395,EFO_0000712,CIRI_stroke,zinc finger protein 77
+CIRI,SNURF,0.1657118699973404,EFO_0003763,CIRI_cerebrovascular_disorder,SNRPN upstream open reading frame
+CIRI,NOVA1,0.16562934093966863,EFO_0003763,CIRI_cerebrovascular_disorder,NOVA alternative splicing regulator 1
+CIRI,KLHL1,0.16535671404605423,EFO_0003763,CIRI_cerebrovascular_disorder,kelch like family member 1
+CIRI,TAB1,0.16518709981456053,EFO_0003763,CIRI_cerebrovascular_disorder,TGF-beta activated kinase 1 (MAP3K7) binding protein 1
+CIRI,SPOCK3,0.16491312697471963,EFO_0003763,CIRI_cerebrovascular_disorder,"SPARC (osteonectin), cwcv and kazal like domains proteoglycan 3"
+CIRI,ADAMTS7,0.16481450775495682,EFO_0003763,CIRI_cerebrovascular_disorder,ADAM metallopeptidase with thrombospondin type 1 motif 7
+CIRI,SYNPO2L,0.16465703924038355,EFO_0000712,CIRI_stroke,synaptopodin 2 like
+CIRI,FKBP1C,0.16462249827648667,EFO_0003763,CIRI_cerebrovascular_disorder,FKBP prolyl isomerase family member 1C
+CIRI,PPFIA4,0.16453202650434104,EFO_0000712,CIRI_stroke,PPFI scaffold protein A4
+CIRI,PLOD3,0.16450494357413842,EFO_0003763,CIRI_cerebrovascular_disorder,"procollagen-lysine,2-oxoglutarate 5-dioxygenase 3"
+CIRI,ZNF618,0.16394702197135214,EFO_0003763,CIRI_cerebrovascular_disorder,zinc finger protein 618
+CIRI,BRWD1,0.16342815853791698,EFO_0003763,CIRI_cerebrovascular_disorder,bromodomain and WD repeat domain containing 1
+CIRI,SCMH1,0.16297333679235562,EFO_0003763,CIRI_cerebrovascular_disorder,Scm polycomb group protein homolog 1
+CIRI,CWC22,0.16294535604701949,EFO_0003763,CIRI_cerebrovascular_disorder,CWC22 spliceosome associated protein
+CIRI,KIAA1217,0.16294535604701949,EFO_0003763,CIRI_cerebrovascular_disorder,KIAA1217
+CIRI,ABCA12,0.16247262392127737,EFO_0003763,CIRI_cerebrovascular_disorder,ATP binding cassette subfamily A member 12
+CIRI,MMP13,0.16239413740284178,EFO_0003763,CIRI_cerebrovascular_disorder,matrix metallopeptidase 13
+CIRI,KLF4,0.16147138725713658,EFO_0003763,CIRI_cerebrovascular_disorder,KLF transcription factor 4
+CIRI,GAREM1,0.16136388435722326,EFO_0003763,CIRI_cerebrovascular_disorder,GRB2 associated regulator of MAPK1 subtype 1
+CIRI,PI15,0.16130705037326032,EFO_0003763,CIRI_cerebrovascular_disorder,peptidase inhibitor 15
+CIRI,KIRREL3,0.1607437000287348,HP_0002140,CIRI_ischemic_stroke,kirre like nephrin family adhesion molecule 3
+CIRI,CCM2,0.1600064810027441,EFO_0003763,CIRI_cerebrovascular_disorder,CCM2 scaffold protein
+CIRI,EPHA3,0.1596696919325672,EFO_0003763,CIRI_cerebrovascular_disorder,EPH receptor A3
+CIRI,RSBN1L,0.15960717455020798,EFO_0000712,CIRI_stroke,round spermatid basic protein 1 like
+CIRI,FOXE1,0.15936001280599713,EFO_0000712,CIRI_stroke,forkhead box E1
+CIRI,MAP3K19,0.15913305223878368,EFO_0003763,CIRI_cerebrovascular_disorder,mitogen-activated protein kinase kinase kinase 19
+CIRI,SYNE2,0.1591320490528807,EFO_0000712,CIRI_stroke,spectrin repeat containing nuclear envelope protein 2
+CIRI,TRPM7,0.1587224338732321,EFO_0003763,CIRI_cerebrovascular_disorder,transient receptor potential cation channel subfamily M member 7
+CIRI,SLC39A14,0.15868485873633442,EFO_0003763,CIRI_cerebrovascular_disorder,solute carrier family 39 member 14
+CIRI,SEPTIN2,0.15815254397655845,EFO_0000712,CIRI_stroke,septin 2
+CIRI,NAA25,0.15720727599812925,EFO_0003763,CIRI_cerebrovascular_disorder,"N-alpha-acetyltransferase 25, NatB auxiliary subunit"
+CIRI,RTN4RL1,0.1565953478876642,EFO_0003763,CIRI_cerebrovascular_disorder,reticulon 4 receptor like 1
+CIRI,TMCO5A,0.15650900649226004,EFO_0003763,CIRI_cerebrovascular_disorder,transmembrane and coiled-coil domains 5A
+CIRI,C7ORF33,0.15642296248398127,EFO_0003763,CIRI_cerebrovascular_disorder,chromosome 7 open reading frame 33
+CIRI,DCAKD,0.15609808632458702,EFO_0003763,CIRI_cerebrovascular_disorder,dephospho-CoA kinase domain containing
+CIRI,TVP23A,0.15603404621000241,EFO_0003763,CIRI_cerebrovascular_disorder,trans-golgi network vesicle protein 23 homolog A
+CIRI,BTBD3,0.15570565372320888,EFO_0003763,CIRI_cerebrovascular_disorder,BTB domain containing 3
+CIRI,PPP2R3A,0.15494209575726978,HP_0002140,CIRI_ischemic_stroke,protein phosphatase 2 regulatory subunit B''alpha
+CIRI,PLRG1,0.154264540495842,EFO_0003763,CIRI_cerebrovascular_disorder,pleiotropic regulator 1
+CIRI,PSMD7,0.15381660168160124,EFO_0003763,CIRI_cerebrovascular_disorder,"proteasome 26S subunit, non-ATPase 7"
+CIRI,OR1S2,0.15345839834569813,EFO_0003763,CIRI_cerebrovascular_disorder,olfactory receptor family 1 subfamily S member 2
+CIRI,HSF5,0.15319123731730497,HP_0002140,CIRI_ischemic_stroke,heat shock transcription factor 5
+CIRI,ADI1,0.1531359089272575,EFO_0003763,CIRI_cerebrovascular_disorder,acireductone dioxygenase 1
+CIRI,RCVRN,0.1530683082957497,EFO_0003763,CIRI_cerebrovascular_disorder,recoverin
+CIRI,LPL,0.1527474100698195,EFO_0003763,CIRI_cerebrovascular_disorder,lipoprotein lipase
+CIRI,PEG3,0.15273098948595318,EFO_0003763,CIRI_cerebrovascular_disorder,paternally expressed 3
+CIRI,SGCG,0.15244107699211035,EFO_0003763,CIRI_cerebrovascular_disorder,sarcoglycan gamma
+CIRI,HOXC5,0.1514006515370482,EFO_0003763,CIRI_cerebrovascular_disorder,homeobox C5
+CIRI,RIN2,0.15011617458684892,EFO_0003763,CIRI_cerebrovascular_disorder,Ras and Rab interactor 2
+CIRI,SLURP1,0.15002406115796663,EFO_0003763,CIRI_cerebrovascular_disorder,secreted LY6/PLAUR domain containing 1
+CIRI,NTMT2,0.14852557224033486,EFO_0000712,CIRI_stroke,N-terminal Xaa-Pro-Lys N-methyltransferase 2
+CIRI,SLFNL1,0.1459527217884114,EFO_0000712,CIRI_stroke,schlafen like 1
+CIRI,MT-CYB,0.13987314236431642,EFO_0000712,CIRI_stroke,mitochondrially encoded cytochrome b
+CIRI,RPRML,0.13968389480711785,EFO_0000712,CIRI_stroke,reprimo like
+CIRI,TTN,0.13952008962328855,EFO_0000712,CIRI_stroke,titin
+CIRI,NBEAL1,0.13757386842544134,EFO_0000712,CIRI_stroke,neurobeachin like 1
+CIRI,PLEC,0.13741964981327706,EFO_0000712,CIRI_stroke,plectin
+CIRI,MCF2L,0.13571072020440736,EFO_0000712,CIRI_stroke,MCF.2 cell line derived transforming sequence like
+CIRI,AREL1,0.13542853762362267,EFO_0000712,CIRI_stroke,apoptosis resistant E3 ubiquitin protein ligase 1
+CIRI,CPNE1,0.13519220096903398,EFO_0000712,CIRI_stroke,copine 1
+CIRI,ITPK1,0.13472755999799865,EFO_0000712,CIRI_stroke,inositol-tetrakisphosphate 1-kinase
+CIRI,RWDD3,0.1332861119567859,EFO_0000712,CIRI_stroke,RWD domain containing 3
+CIRI,ADH5,0.13083475172283585,EFO_0000712,CIRI_stroke,"alcohol dehydrogenase 5 (class III), chi polypeptide"
+CIRI,SPX,0.1290754186627637,HP_0002140,CIRI_ischemic_stroke,spexin hormone
+CIRI,TMEM51,0.12785323467778736,EFO_0000712,CIRI_stroke,transmembrane protein 51
+CIRI,COL17A1,0.12676111186438208,EFO_0000712,CIRI_stroke,collagen type XVII alpha 1 chain
+CIRI,IL1F10,0.1238977712819778,EFO_0000712,CIRI_stroke,interleukin 1 family member 10
+CIRI,MAU2,0.12356917487849828,EFO_0000712,CIRI_stroke,MAU2 sister chromatid cohesion factor
+CIRI,SLC25A44,0.1207940727878636,EFO_0000712,CIRI_stroke,solute carrier family 25 member 44
+CIRI,TGFB1,0.12004530711458873,EFO_0000712,CIRI_stroke,transforming growth factor beta 1
+CIRI,LEPR,0.11991626001741383,EFO_0000712,CIRI_stroke,leptin receptor
+CIRI,BDNF,0.1192812657802951,EFO_0000712,CIRI_stroke,brain derived neurotrophic factor
+CIRI,PRKAG2,0.1189123182448028,EFO_0000712,CIRI_stroke,protein kinase AMP-activated non-catalytic subunit gamma 2
+CIRI,ATF1,0.11866081138831723,HP_0002140,CIRI_ischemic_stroke,activating transcription factor 1
+CIRI,PCCB,0.1186341787190881,HP_0002140,CIRI_ischemic_stroke,propionyl-CoA carboxylase subunit beta
+CIRI,EIF3H,0.11845362067662603,EFO_0000712,CIRI_stroke,eukaryotic translation initiation factor 3 subunit H
+CIRI,CRP,0.11844956969619613,EFO_0000712,CIRI_stroke,C-reactive protein
+CIRI,TNF,0.11832083627747739,EFO_0000712,CIRI_stroke,tumor necrosis factor
+CIRI,NPPB,0.11789048463827773,EFO_0000712,CIRI_stroke,natriuretic peptide B
+CIRI,AVP,0.11662278267411093,EFO_0000712,CIRI_stroke,arginine vasopressin
+CIRI,IL6,0.11646670884592601,EFO_0000712,CIRI_stroke,interleukin 6
+CIRI,GFAP,0.1164620739668289,EFO_0000712,CIRI_stroke,glial fibrillary acidic protein
+CIRI,IGF1,0.11618463689291458,EFO_0000712,CIRI_stroke,insulin like growth factor 1
+CIRI,VEGFA,0.11616218086426847,EFO_0000712,CIRI_stroke,vascular endothelial growth factor A
+CIRI,GGT1,0.11455920297791114,EFO_0000712,CIRI_stroke,gamma-glutamyltransferase 1
+CIRI,GGTLC5P,0.11454473276133195,EFO_0000712,CIRI_stroke,gamma-glutamyltransferase light chain 5 pseudogene
+CIRI,GGTLC3,0.11454473276133195,EFO_0000712,CIRI_stroke,gamma-glutamyltransferase light chain family member 3
+CIRI,GGTLC4P,0.11454473276133195,EFO_0000712,CIRI_stroke,gamma-glutamyltransferase light chain 4 pseudogene
+CIRI,GDF5,0.11440801503840177,EFO_0000712,CIRI_stroke,growth differentiation factor 5
+CIRI,CLMP,0.1144029895043842,EFO_0000712,CIRI_stroke,CXADR like cell adhesion molecule
+CIRI,S1PR2,0.114330854641234,EFO_0000712,CIRI_stroke,sphingosine-1-phosphate receptor 2
+CIRI,IL10,0.1137133203771671,EFO_0000712,CIRI_stroke,interleukin 10
+CIRI,CHI3L1,0.11363284121748868,EFO_0000712,CIRI_stroke,chitinase 3 like 1
+CIRI,PHETA1,0.11326831546638697,EFO_0000712,CIRI_stroke,PH domain containing endocytic trafficking adaptor 1
+CIRI,CSF3R,0.11267670418760191,EFO_0000712,CIRI_stroke,colony stimulating factor 3 receptor
+CIRI,BUD13,0.11177400233728257,EFO_0000712,CIRI_stroke,BUD13 spliceosome associated protein
+CIRI,PARP1,0.11172789585515658,EFO_0000712,CIRI_stroke,poly(ADP-ribose) polymerase 1
+CIRI,NAT10,0.11143319737583439,EFO_0000712,CIRI_stroke,N-acetyltransferase 10
+CIRI,LAMB2,0.11139797378446299,EFO_0000712,CIRI_stroke,laminin subunit beta 2
+CIRI,CD8A,0.11110171311763695,EFO_0000712,CIRI_stroke,CD8 subunit alpha
+CIRI,HMGB1,0.11058354535208904,EFO_0000712,CIRI_stroke,high mobility group box 1
+CIRI,CSF3,0.11025886222342472,EFO_0000712,CIRI_stroke,colony stimulating factor 3
+CIRI,LGALS3,0.10998856275684411,EFO_0000712,CIRI_stroke,galectin 3
+CIRI,SPP1,0.10991787347276027,EFO_0000712,CIRI_stroke,secreted phosphoprotein 1
+CIRI,GCG,0.10940438008841089,EFO_0000712,CIRI_stroke,glucagon
+CIRI,EHMT1,0.10926204349380397,EFO_0000712,CIRI_stroke,euchromatic histone lysine methyltransferase 1
+CIRI,ZGLP1,0.109189260153666,EFO_0000712,CIRI_stroke,zinc finger GATA like protein 1
+CIRI,IL17A,0.10904415976769669,EFO_0000712,CIRI_stroke,interleukin 17A
+CIRI,SLPI,0.10886044209952497,EFO_0000712,CIRI_stroke,secretory leukocyte peptidase inhibitor
+CIRI,CCL27,0.10884465111902918,EFO_0000712,CIRI_stroke,C-C motif chemokine ligand 27
+CIRI,ASRGL1,0.1088390516619789,EFO_0000712,CIRI_stroke,asparaginase and isoaspartyl peptidase 1
+CIRI,PDLIM3,0.10883235375102113,EFO_0000712,CIRI_stroke,PDZ and LIM domain 3
+CIRI,ATRNL1,0.1088315575442993,EFO_0000712,CIRI_stroke,attractin like 1
+CIRI,ALPP,0.1088315575442993,EFO_0000712,CIRI_stroke,"alkaline phosphatase, placental"
+CIRI,MAPT,0.10809927853619747,EFO_0000712,CIRI_stroke,microtubule associated protein tau
+CIRI,APOA1,0.10753809604629773,EFO_0000712,CIRI_stroke,apolipoprotein A1
+CIRI,NFE2L2,0.10750882929286815,EFO_0000712,CIRI_stroke,NFE2 like bZIP transcription factor 2
+CIRI,OCLN,0.10742259025211456,EFO_0000712,CIRI_stroke,occludin
+CIRI,ALB,0.107407594598551,EFO_0000712,CIRI_stroke,albumin
+CIRI,GABPA,0.10738976100599343,EFO_0000712,CIRI_stroke,GA binding protein transcription factor subunit alpha
+CIRI,PLA2G7,0.10729147713979828,EFO_0000712,CIRI_stroke,phospholipase A2 group VII
+CIRI,ICAM1,0.10697114901284632,EFO_0000712,CIRI_stroke,intercellular adhesion molecule 1
+CIRI,FGF2,0.10682588152804483,EFO_0000712,CIRI_stroke,fibroblast growth factor 2
+CIRI,IL18,0.10612700823022299,EFO_0000712,CIRI_stroke,interleukin 18
+CIRI,GIMAP6,0.10523840869902666,EFO_0000712,CIRI_stroke,"GTPase, IMAP family member 6"
+CIRI,S100B,0.10515421411840793,EFO_0000712,CIRI_stroke,S100 calcium binding protein B
+CIRI,CORIN,0.10506413105833859,EFO_0000712,CIRI_stroke,"corin, serine peptidase"
+CIRI,CYP2C19,0.10481708669213675,EFO_0000712,CIRI_stroke,cytochrome P450 family 2 subfamily C member 19
+CIRI,ACE2,0.10461478803503726,EFO_0000712,CIRI_stroke,angiotensin converting enzyme 2
+CIRI,TBL2,0.1042869618997266,EFO_0000712,CIRI_stroke,transducin beta like 2
+CIRI,GDF15,0.10364285583445787,EFO_0000712,CIRI_stroke,growth differentiation factor 15
+CIRI,NEUROD1,0.10344777039323814,EFO_0000712,CIRI_stroke,neuronal differentiation 1
+CIRI,PEMT,0.10292137167485915,EFO_0000712,CIRI_stroke,phosphatidylethanolamine N-methyltransferase
+CIRI,HDAC1,0.10285984284356536,EFO_0000712,CIRI_stroke,histone deacetylase 1
+CIRI,LCN2,0.1026613176314634,EFO_0000712,CIRI_stroke,lipocalin 2
+CIRI,CCL2,0.10265340528821333,EFO_0000712,CIRI_stroke,C-C motif chemokine ligand 2
+CIRI,CD4,0.10257526346496772,EFO_0000712,CIRI_stroke,CD4 molecule
+CIRI,SMIM31,0.10249595970039395,EFO_0000712,CIRI_stroke,small integral membrane protein 31
+CIRI,CD68,0.10247828850501096,EFO_0000712,CIRI_stroke,CD68 molecule
+CIRI,APLN,0.10222638670288112,EFO_0000712,CIRI_stroke,apelin
+CIRI,CD200R1,0.10220353232301148,EFO_0000712,CIRI_stroke,CD200 receptor 1
+CIRI,CD40LG,0.10196634840587138,EFO_0000712,CIRI_stroke,CD40 ligand
+CIRI,GH1,0.10189642801347085,EFO_0000712,CIRI_stroke,growth hormone 1
+CIRI,MMP9,0.10183403551784795,EFO_0000712,CIRI_stroke,matrix metallopeptidase 9
+CIRI,MANF,0.10180698107910496,EFO_0000712,CIRI_stroke,mesencephalic astrocyte derived neurotrophic factor
+CIRI,S1PR4,0.10175508679641923,EFO_0000712,CIRI_stroke,sphingosine-1-phosphate receptor 4
+CIRI,SIRT1,0.10165200149711535,EFO_0000712,CIRI_stroke,sirtuin 1
+CIRI,VCAM1,0.10115031867873628,EFO_0000712,CIRI_stroke,vascular cell adhesion molecule 1
+CIRI,PTX3,0.1010020490732189,EFO_0000712,CIRI_stroke,pentraxin 3
+CIRI,SHBG,0.10083370711143705,EFO_0000712,CIRI_stroke,sex hormone binding globulin
+CIRI,SLC4A4,0.10068092154323292,EFO_0000712,CIRI_stroke,solute carrier family 4 member 4
+CIRI,RAI1,0.10067916667971244,EFO_0000712,CIRI_stroke,retinoic acid induced 1
+CIRI,ITGA4,0.10067736399518731,EFO_0000712,CIRI_stroke,integrin subunit alpha 4
+CIRI,ADAMTS13,0.10063511531305788,EFO_0000712,CIRI_stroke,ADAM metallopeptidase with thrombospondin type 1 motif 13
+CIRI,COL18A1,0.10062984209758193,EFO_0000712,CIRI_stroke,collagen type XVIII alpha 1 chain
+CIRI,ATF3,0.10051389064958172,EFO_0000712,CIRI_stroke,activating transcription factor 3
+CIRI,UCP2,0.10048969170279269,EFO_0000712,CIRI_stroke,uncoupling protein 2
+CIRI,CLEC7A,0.10025647413015192,EFO_0000712,CIRI_stroke,C-type lectin domain containing 7A
+CIRI,S1PR1,0.10008079407544723,EFO_0000712,CIRI_stroke,sphingosine-1-phosphate receptor 1

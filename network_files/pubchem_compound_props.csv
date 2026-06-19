@@ -1,0 +1,64 @@
+compound,cid,MW,LogP,HBD,HBA,TPSA,RotB,SMILES,IUPACName,MolecularFormula,source,molecular_weight,xlogp,hbd,hba,tpsa,rotbonds
+BCP,5281515,204.35,4.4,0,0,0.0,0,C/C/1=C\CCC(=C)[C@H]2CC([C@@H]2CC1)(C)C,"(1R,4E,9S)-4,11,11-trimethyl-8-methylidenebicyclo[7.2.0]undec-4-ene",C15H24,Cannabis sativa / synthetic,204.35,4.4,0,0,0.0,0
+VC,54670067,176.12,-1.6,4,6,107.0,2,C([C@@H]([C@H]1[C@@H]([C@H]([C@@H](O1)O)O)O)O)O,"(2R)-2-[(1S)-1,2-dihydroxyethyl]-3,4-dihydroxy-2H-furan-5-one",C6H8O6,Camellia sinensis / dietary,176.12,-1.6,4,6,107.0,2
+Fer-1,4063092,708.6,4.1,2,14,252.0,11,CCOC(=O)C1=CC(=C(C=C1)NC2CCCCC2)N,2-[3-methyl-4-[morpholin-4-yl-(4-nitroanilino)phosphoryl]-5-[(4-nitrobenzoyl)amino]pyrazol-1-yl]ethyl 4-nitrobenzoate,C30H29N8O11P,Synthetic,708.6,4.1,2,14,252.0,11
+DFO,2973,560.7,-2.1,6,9,206.0,23,CC(=O)N(O)CCCCCNC(=O)CCC(=O)N(O)CCCCCNC(=O)CCC(=O)N(O)CCCCCN.CS(=O)(O)=O,N-[5-[[4-[5-[acetyl(hydroxy)amino]pentylamino]-4-oxobutanoyl]-hydroxyamino]pentyl]-N'-(5-aminopentyl)-N'-hydroxybutanediamide,C25H48N6O8,Synthetic,560.7,-2.1,6,9,206.0,23
+Lip-1,42608917,291.41,-1.3,1,4,79.3,4,ClC1=CC(CNC(C23CCNCC2)=NC4=C(N3)C=CC=C4)=CC=C1,"3-(6-methoxy-1,2,3,4,4a,5,6,7,8,8a-decahydroquinolin-1-ium-1-yl)propane-1-sulfonate",C13H25NO4S,Synthetic,291.41,-1.3,1,4,79.3,4
+Erastin,11294402,472.5,5.2,0,6,102.0,3,CCOC1=CC=CC=C1N2C(=O)C3=CC=CC=C3N=C2C(C)N4CCN(CC4)C(=O)COC5=CC=C(C=C5)Cl,"3,4,14-triphenyl-8-thia-5,6,11,12,14,16-hexazatetracyclo[7.7.0.02,7.011,15]hexadeca-1(9),2,4,6,12,15-hexaen-10-one",C27H16N6OS,Synthetic,472.5,5.2,0,6,102.0,3
+RSL3,25195377,566.7,4.8,2,9,129.0,27,COC(=O)C1CC2=C(C(N1C(=O)CCl)C3=CC=C(C=C3)C(=O)OC)NC4=CC=CC=C24,"2-[[(2R)-3-formyloxy-2-[(Z,12S)-12-hydroxyoctadec-9-enoyl]oxypropoxy]-hydroxyphosphoryl]oxyethyl-trimethylazanium",C27H53NO9P+,Synthetic,566.7,4.8,2,9,129.0,27
+ML162,609375,332.4,7.4,0,0,0.0,4,COC1=C(C=C(C=C1)N(C(C2=CC=CS2)C(=O)NCCC3=CC=CC=C3)C(=O)CCl)Cl,"1-(6-azulen-6-ylhexa-1,3,5-trienyl)azulene",C26H20,Synthetic,332.4,7.4,0,0,0.0,4
+Cinnamaldehyde,637511,132.16,1.9,0,1,17.1,2,C1=CC=C(C=C1)/C=C/C=O,(E)-3-phenylprop-2-enal,C9H8O,Cinnamomum cassia (Guizhi),132.16,1.9,0,1,17.1,2
+Cinnamic_acid,444539,148.16,2.1,1,2,37.3,2,C1=CC=C(C=C1)/C=C/C(=O)O,(E)-3-phenylprop-2-enoic acid,C9H8O2,Cinnamomum cassia (Guizhi),148.16,2.1,1,2,37.3,2
+Quercetin,5280343,302.23,1.5,5,7,127.0,1,C1=CC(=C(C=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O)O,"2-(3,4-dihydroxyphenyl)-3,5,7-trihydroxychromen-4-one",C15H10O7,Artemisia argyi (Aiye),302.23,1.5,5,7,127.0,1
+Naringenin,439246,272.25,2.4,3,5,87.0,1,C1[C@H](OC2=CC(=CC(=C2C1=O)O)O)C3=CC=C(C=C3)O,"(2S)-5,7-dihydroxy-2-(4-hydroxyphenyl)-2,3-dihydrochromen-4-one",C15H12O5,Artemisia argyi (Aiye),272.25,2.4,3,5,87.0,1
+Eucalyptol,2758,154.25,2.5,0,1,9.2,0,CC1(C2CCC(O1)(CC2)C)C,"1,3,3-trimethyl-2-oxabicyclo[2.2.2]octane",C10H18O,Artemisia argyi (Aiye) essential oil,154.25,2.5,0,1,9.2,0
+Borneol,64685,154.25,2.7,1,1,20.2,0,CC1(C2CCC1(C(C2)O)C)C,"1,7,7-trimethylbicyclo[2.2.1]heptan-2-ol",C10H18O,Artemisia argyi (Aiye),154.25,2.7,1,1,20.2,0
+Baicalein,5281605,270.24,1.7,3,5,87.0,1,C1=CC=C(C=C1)C2=CC(=O)C3=C(O2)C=C(C(=C3O)O)O,"5,6,7-trihydroxy-2-phenylchromen-4-one",C15H10O5,Scutellaria baicalensis (Huangqin),270.24,1.7,3,5,87.0,1
+Wogonin,5281703,284.26,3.0,2,5,76.0,2,COC1=C(C=C(C2=C1OC(=CC2=O)C3=CC=CC=C3)O)O,"5,7-dihydroxy-8-methoxy-2-phenylchromen-4-one",C16H12O5,Scutellaria baicalensis (Huangqin),284.26,3.0,2,5,76.0,2
+Luteolin,5280445,286.24,1.4,4,6,107.0,1,C1=CC(=C(C=C1C2=CC(=O)C3=C(C=C(C=C3O2)O)O)O)O,"2-(3,4-dihydroxyphenyl)-5,7-dihydroxychromen-4-one",C15H10O6,Artemisia argyi (Aiye) / multiple herbs,286.24,1.4,4,6,107.0,1
+Kaempferol,5280863,286.24,1.9,4,6,107.0,1,C1=CC(=CC=C1C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O)O,"3,5,7-trihydroxy-2-(4-hydroxyphenyl)chromen-4-one",C15H10O6,Artemisia argyi (Aiye) / multiple herbs,286.24,1.9,4,6,107.0,1
+Hesperetin,72281,302.28,2.4,3,6,96.2,2,COC1=C(C=C(C=C1)C2CC(=O)C3=C(C=C(C=C3O2)O)O)O,"(2S)-5,7-dihydroxy-2-(3-hydroxy-4-methoxyphenyl)-2,3-dihydrochromen-4-one",C16H14O6,Citrus reticulata (Chenpi),302.28,2.4,3,6,96.2,2
+Resveratrol,445154,228.24,3.1,3,3,60.7,2,C1=CC(=CC=C1C=CC2=CC(=CC(=C2)O)O)O,"5-[(E)-2-(4-hydroxyphenyl)ethenyl]benzene-1,3-diol",C14H12O3,Polygonum cuspidatum (Huzhang),228.24,3.1,3,3,60.7,2
+Curcumin,969516,368.4,3.2,2,6,93.1,8,COC1=C(C=CC(=C1)/C=C/C(=O)CC(=O)/C=C/C2=CC(=C(C=C2)O)OC)O,"(1E,6E)-1,7-bis(4-hydroxy-3-methoxyphenyl)hepta-1,6-diene-3,5-dione",C21H20O6,Curcuma longa (Jianghuang),368.4,3.2,2,6,93.1,8
+Ferulic acid,445858,194.18,1.5,2,4,66.8,3,COC1=C(C=CC(=C1)/C=C/C(=O)O)O,(E)-3-(4-hydroxy-3-methoxyphenyl)prop-2-enoic acid,C10H10O4,Angelica sinensis / Cinnamomum,194.18,1.5,2,4,66.8,3
+Pinocembrin,68071,256.25,2.7,2,4,66.8,1,C1[C@H](OC2=CC(=CC(=C2C1=O)O)O)C3=CC=CC=C3,"(2S)-5,7-dihydroxy-2-phenyl-2,3-dihydrochromen-4-one",C15H12O4,Pinus / Propolis,256.25,2.7,2,4,66.8,1
+Chrysin,5281607,254.24,2.1,2,4,66.8,1,C1=CC=C(C=C1)C2=CC(=O)C3=C(C=C(C=C3O2)O)O,"5,7-dihydroxy-2-phenylchromen-4-one",C15H10O4,Passiflora / Oroxylum,254.24,2.1,2,4,66.8,1
+Apigenin,5280443,270.24,1.7,3,5,87.0,1,C1=CC(=CC=C1C2=CC(=O)C3=C(C=C(C=C3O2)O)O)O,"5,7-dihydroxy-2-(4-hydroxyphenyl)chromen-4-one",C15H10O5,Apium / Artemisia,270.24,1.7,3,5,87.0,1
+Genistein,5280961,270.24,2.7,3,5,87.0,1,C1=CC(=CC=C1C2=COC3=CC(=CC(=C3C2=O)O)O)O,"5,7-dihydroxy-3-(4-hydroxyphenyl)chromen-4-one",C15H10O5,Glycine max / Pueraria,270.24,2.7,3,5,87.0,1
+Daidzein,5281708,254.24,2.5,2,4,66.8,1,C1=CC(=CC=C1C2=COC3=C(C2=O)C=CC(=C3)O)O,7-hydroxy-3-(4-hydroxyphenyl)chromen-4-one,C15H10O4,Glycine max / Pueraria,254.24,2.5,2,4,66.8,1
+Formononetin,5280378,268.26,2.8,1,4,55.8,2,COC1=CC=C(C=C1)C2=COC3=C(C2=O)C=CC(=C3)O,7-hydroxy-3-(4-methoxyphenyl)chromen-4-one,C16H12O4,Astragalus / Trifolium,268.26,2.8,1,4,55.8,2
+Oroxylin A,5320315,284.26,2.1,2,5,76.0,2,COC1=C(C2=C(C=C1O)OC(=CC2=O)C3=CC=CC=C3)O,"5,7-dihydroxy-6-methoxy-2-phenylchromen-4-one",C16H12O5,Scutellaria baicalensis,284.26,2.1,2,5,76.0,2
+Scutellarein,5281697,286.24,1.4,4,6,107.0,1,C1=CC(=CC=C1C2=CC(=O)C3=C(O2)C=C(C(=C3O)O)O)O,"5,6,7-trihydroxy-2-(4-hydroxyphenyl)chromen-4-one",C15H10O6,Scutellaria baicalensis,286.24,1.4,4,6,107.0,1
+Tangeretin,68077,372.4,3.0,0,7,72.5,6,COC1=CC=C(C=C1)C2=CC(=O)C3=C(O2)C(=C(C(=C3OC)OC)OC)OC,"5,6,7,8-tetramethoxy-2-(4-methoxyphenyl)chromen-4-one",C20H20O7,Citrus reticulata (Chenpi),372.4,3.0,0,7,72.5,6
+Nobiletin,72344,402.4,3.0,0,8,81.7,7,COC1=C(C=C(C=C1)C2=CC(=O)C3=C(O2)C(=C(C(=C3OC)OC)OC)OC)OC,"2-(3,4-dimethoxyphenyl)-5,6,7,8-tetramethoxychromen-4-one",C21H22O8,Citrus reticulata (Chenpi),402.4,3.0,0,8,81.7,7
+Fisetin,5281614,286.24,2.0,4,6,107.0,1,C1=CC(=C(C=C1C2=C(C(=O)C3=C(O2)C=C(C=C3)O)O)O)O,"2-(3,4-dihydroxyphenyl)-3,7-dihydroxychromen-4-one",C15H10O6,Rhus / Cotinus,286.24,2.0,4,6,107.0,1
+Galangin,5281616,270.24,2.3,3,5,87.0,1,C1=CC=C(C=C1)C2=C(C(=O)C3=C(C=C(C=C3O2)O)O)O,"3,5,7-trihydroxy-2-phenylchromen-4-one",C15H10O5,Alpinia officinarum (Gaoliangjiang),270.24,2.3,3,5,87.0,1
+Phloretin,4788,274.27,2.6,4,5,98.0,4,C1=CC(=CC=C1CCC(=O)C2=C(C=C(C=C2O)O)O)O,"3-(4-hydroxyphenyl)-1-(2,4,6-trihydroxyphenyl)propan-1-one",C15H14O5,Malus pumila (Pingguo),274.27,2.6,4,5,98.0,4
+Catechin,9064,290.27,0.4,5,6,110.0,1,C1[C@@H]([C@H](OC2=CC(=CC(=C21)O)O)C3=CC(=C(C=C3)O)O)O,"(2R,3S)-2-(3,4-dihydroxyphenyl)-3,4-dihydro-2H-chromene-3,5,7-triol",C15H14O6,Camellia sinensis (Cha),290.27,0.4,5,6,110.0,1
+Epicatechin,72276,290.27,0.4,5,6,110.0,1,C1[C@H]([C@H](OC2=CC(=CC(=C21)O)O)C3=CC(=C(C=C3)O)O)O,"(2R,3R)-2-(3,4-dihydroxyphenyl)-3,4-dihydro-2H-chromene-3,5,7-triol",C15H14O6,Camellia sinensis (Cha),290.27,0.4,5,6,110.0,1
+Tetramethylpyrazine,14296,136.19,1.3,0,2,25.8,0,CC1=C(N=C(C(=N1)C)C)C,"2,3,5,6-tetramethylpyrazine",C8H12N2,Ligusticum chuanxiong (Chuanxiong),136.19,1.3,0,2,25.8,0
+Tanshinone IIA,164676,294.3,4.3,0,3,47.3,0,CC1=COC2=C1C(=O)C(=O)C3=C2C=CC4=C3CCCC4(C)C,"1,6,6-trimethyl-8,9-dihydro-7H-naphtho[1,2-g][1]benzofuran-10,11-dione",C19H18O3,Salvia miltiorrhiza (Danshen),294.3,4.3,0,3,47.3,0
+Danshensu,11600642,198.17,-0.2,4,5,98.0,3,C1=CC(=C(C=C1C[C@H](C(=O)O)O)O)O,"(2R)-3-(3,4-dihydroxyphenyl)-2-hydroxypropanoic acid",C9H10O5,Salvia miltiorrhiza (Danshen),198.17,-0.2,4,5,98.0,3
+Honokiol,72303,266.3,5.0,2,2,40.5,5,C=CCC1=CC(=C(C=C1)O)C2=CC(=C(C=C2)O)CC=C,2-(4-hydroxy-3-prop-2-enylphenyl)-4-prop-2-enylphenol,C18H18O2,Magnolia officinalis (Houpo),266.3,5.0,2,2,40.5,5
+Magnolol,72300,266.3,5.0,2,2,40.5,5,C=CCC1=CC(=C(C=C1)O)C2=C(C=CC(=C2)CC=C)O,2-(2-hydroxy-5-prop-2-enylphenyl)-4-prop-2-enylphenol,C18H18O2,Magnolia officinalis (Houpo),266.3,5.0,2,2,40.5,5
+Schisandrin,3001664,432.5,4.0,1,7,75.6,6,C[C@H]1CC2=CC(=C(C(=C2C3=C(C(=C(C=C3C[C@]1(C)O)OC)OC)OC)OC)OC)OC,"(9S,10S)-3,4,5,14,15,16-hexamethoxy-9,10-dimethyltricyclo[10.4.0.02,7]hexadeca-1(16),2,4,6,12,14-hexaen-9-ol",C24H32O7,Schisandra chinensis (Wuweizi),432.5,4.0,1,7,75.6,6
+Schisandrin B,108130,400.5,5.1,0,6,55.4,4,CC1CC2=CC3=C(C(=C2C4=C(C(=C(C=C4CC1C)OC)OC)OC)OC)OCO3,"3,4,5,19-tetramethoxy-9,10-dimethyl-15,17-dioxatetracyclo[10.7.0.02,7.014,18]nonadeca-1(19),2,4,6,12,14(18)-hexaene",C23H28O6,Schisandra chinensis (Wuweizi),400.5,5.1,0,6,55.4,4
+Dihydroartemisinin,3000518,284.35,2.5,1,5,57.2,0,C[C@@H]1CC[C@H]2[C@H]([C@H](O[C@H]3[C@@]24[C@H]1CC[C@](O3)(OO4)C)O)C,"(1R,4S,5R,8S,9R,10S,12R,13R)-1,5,9-trimethyl-11,14,15,16-tetraoxatetracyclo[10.3.1.04,13.08,13]hexadecan-10-ol",C15H24O5,Artemisia annua (Qinghao),284.35,2.5,1,5,57.2,0
+Artemisinin,68827,282.33,2.8,0,5,54.0,0,C[C@@H]1CC[C@H]2[C@H](C(=O)O[C@H]3[C@@]24[C@H]1CC[C@](O3)(OO4)C)C,"(1R,4S,5R,8S,9R,12S,13R)-1,5,9-trimethyl-11,14,15,16-tetraoxatetracyclo[10.3.1.04,13.08,13]hexadecan-10-one",C15H22O5,Artemisia annua (Qinghao),282.33,2.8,0,5,54.0,0
+Shikonin,479503,288.29,3.0,3,5,94.8,3,CC(=CC[C@H](C1=CC(=O)C2=C(C=CC(=C2C1=O)O)O)O)C,"5,8-dihydroxy-2-[(1R)-1-hydroxy-4-methylpent-3-enyl]naphthalene-1,4-dione",C16H16O5,Lithospermum erythrorhizon (Zicao),288.29,3.0,3,5,94.8,3
+Plumbagin,10205,188.18,2.3,1,3,54.4,0,CC1=CC(=O)C2=C(C1=O)C=CC=C2O,"5-hydroxy-2-methylnaphthalene-1,4-dione",C11H8O3,Plumbago zeylanica (Baihua Dan),188.18,2.3,1,3,54.4,0
+Emodin,3220,270.24,2.7,3,5,94.8,0,CC1=CC2=C(C(=C1)O)C(=O)C3=C(C2=O)C=C(C=C3O)O,"1,3,8-trihydroxy-6-methylanthracene-9,10-dione",C15H10O5,Rheum palmatum (Dahuang),270.24,2.7,3,5,94.8,0
+Aloe emodin,10207,270.24,1.8,3,5,94.8,1,C1=CC2=C(C(=C1)O)C(=O)C3=C(C2=O)C=C(C=C3O)CO,"1,8-dihydroxy-3-(hydroxymethyl)anthracene-9,10-dione",C15H10O5,Aloe vera / Rheum,270.24,1.8,3,5,94.8,1
+Physcion,10639,284.26,3.0,2,5,83.8,1,CC1=CC2=C(C(=C1)O)C(=O)C3=C(C2=O)C=C(C=C3O)OC,"1,8-dihydroxy-3-methoxy-6-methylanthracene-9,10-dione",C16H12O5,Rheum palmatum,284.26,3.0,2,5,83.8,1
+Chrysophanol,10208,254.24,3.5,2,4,74.6,0,CC1=CC2=C(C(=C1)O)C(=O)C3=C(C2=O)C=CC=C3O,"1,8-dihydroxy-3-methylanthracene-9,10-dione",C15H10O4,Rheum palmatum,254.24,3.5,2,4,74.6,0
+Salidroside,159278,300.30,-0.6,5,7,120.0,5,C1=CC(=CC=C1CCO[C@H]2[C@@H]([C@H]([C@@H]([C@H](O2)CO)O)O)O)O,"(2R,3S,4S,5R,6R)-2-(hydroxymethyl)-6-[2-(4-hydroxyphenyl)ethoxy]oxane-3,4,5-triol",C14H20O7,Rhodiola rosea (Hongjingtian),300.30,-0.6,5,7,120.0,5
+Tyrosol,10393,138.16,0.4,2,2,40.5,2,C1=CC(=CC=C1CCO)O,4-(2-hydroxyethyl)phenol,C8H10O2,Olea europaea / Rhodiola,138.16,0.4,2,2,40.5,2
+Hydroxytyrosol,82755,154.16,-0.7,3,3,60.7,2,C1=CC(=C(C=C1CCO)O)O,"4-(2-hydroxyethyl)benzene-1,2-diol",C8H10O3,Olea europaea (Ganlan),154.16,-0.7,3,3,60.7,2
+Sulforaphane,5350,177.3,1.4,0,4,80.7,5,CS(=O)CCCCN=C=S,1-isothiocyanato-4-methylsulfinylbutane,C6H11NOS2,Brassica oleracea / Wasabia,177.3,1.4,0,4,80.7,5
+Dimethyl fumarate,637568,144.12,0.7,0,4,52.6,4,COC(=O)/C=C/C(=O)OC,dimethyl (E)-but-2-enedioate,C6H8O4,Synthetic / Fumaria,144.12,0.7,0,4,52.6,4
+Edaravone,4021,174.20,1.3,0,2,32.7,1,CC1=NN(C(=O)C1)C2=CC=CC=C2,5-methyl-2-phenyl-4H-pyrazol-3-one,C10H10N2O,Synthetic,174.20,1.3,0,2,32.7,1
+Idebenone,3686,338.4,4.3,1,5,72.8,12,CC1=C(C(=O)C(=C(C1=O)OC)OC)CCCCCCCCCCO,"2-(10-hydroxydecyl)-5,6-dimethoxy-3-methylcyclohexa-2,5-diene-1,4-dione",C19H30O5,Synthetic (CoQ10 analog),338.4,4.3,1,5,72.8,12
+Alpha-lipoic acid,864,206.3,1.7,1,4,87.9,5,C1CSSC1CCCCC(=O)O,5-(dithiolan-3-yl)pentanoic acid,C8H14O2S2,Synthetic / endogenous,206.3,1.7,1,4,87.9,5
+Melatonin,896,232.28,0.8,2,2,54.1,4,CC(=O)NCCC1=CNC2=C1C=C(C=C2)OC,N-[2-(5-methoxy-1H-indol-3-yl)ethyl]acetamide,C13H16N2O2,Pineal / endogenous,232.28,0.8,2,2,54.1,4
+Huperzine A,854026,242.32,0.0,2,2,55.1,0,C/C=C/1\[C@@H]2CC3=C([C@]1(CC(=C2)C)N)C=CC(=O)N3,"(1R,9R,13E)-1-amino-13-ethylidene-11-methyl-6-azatricyclo[7.3.1.02,7]trideca-2(7),3,10-trien-5-one",C15H18N2O,Huperzia serrata (QianCengTa),242.32,0.0,2,2,55.1,0
+N-acetylcysteine,12035,163.20,0.4,3,4,67.4,3,CC(=O)N[C@@H](CS)C(=O)O,(2R)-2-acetamido-3-sulfanylpropanoic acid,C5H9NO3S,Synthetic / precursor,163.20,0.4,3,4,67.4,3

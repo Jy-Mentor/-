@@ -1,0 +1,2 @@
+n_pocket_residues,pocket_volume,avg_hydropathy,n_hbd,n_hba,n_aromatic,n_pos_charged,n_neg_charged,n_unique_residues,avg_bfactor_plddt,backbone_ratio,n_backbone_atoms,n_sidechain_atoms,has_Q302,has_A329,has_Q464,n_literature_hotspots,source,cutoff_angstrom
+42,40569.51,-0.245,20,11,3,9,0,11,22.25,0.52,168,155,0,0,0,0,PDB_5W8I_ligand_9YD,5.0
