@@ -149,6 +149,16 @@ l2:
     isp_core: ["ACSL4", "PTGS2", "HMOX1", "TFRC", "ALOX15", "HMGB1", "TLR4", "NLRP3", "HIF1A", "KEAP1", "SOD1", "MPO", "CDO1", "DPP4", "NOX4"]
     discriminator: ["GPX4", "ACSL4", "PTGS2", "HMOX1", "TFRC", "CDKN1A", "IL6"]
 
+# ---- 数据库配置 (v4.0) ----
+database:
+  # 主数据库 URL, 支持 PostgreSQL / SQLite
+  # 示例: postgresql+psycopg2://user:pass@localhost:5432/iron_aging
+  # 示例: sqlite:///./iron_aging.db
+  url: "${IRON_DATABASE_URL:-sqlite:///./iron_aging.db}"
+  echo: false
+  pool_size: 10
+  max_overflow: 20
+
 # ---- 数据层配置 (Phase 2) ----
 data:
   compound_features:

@@ -13,7 +13,7 @@ IDSP 基因集定义 (V2 精修版)
     - 有丝分裂机器: BUB1/BUB1B/BUB3/CDC20/MAD2L1/PLK1/AURKA/AURKB/MKI67/TOP2A
     - 通用DNA连接酶: LIG1 (LIG3/LIG4保留，涉及线粒体修复)
     - 非CNS免疫标记: CD4, CD8A, CSF2, CSF3
-    - 铁衰老列表清洗: ICA1(胰腺), DPEP1(肾脏), SLAMF8(免疫), 
+    - 铁衰老列表清洗: ICA1(胰腺), DPEP1(肾脏), SLAMF8(免疫),
       MEN1(内分泌肿瘤), COX7A1(心脏/骨骼肌), EMP1(上皮), SPATA2(精子发生)
 
   【新增 - 真实靶点(CIRI脑缺血文献支持)】

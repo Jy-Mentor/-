@@ -197,11 +197,15 @@ def compute_tanimoto_similarity(mol_dict, fp_type="morgan"):
 
     if fp_type == "morgan":
         gen = rdFingerprintGenerator.GetMorganGenerator(radius=2, fpSize=2048)
-        fp_func = lambda m: gen.GetFingerprint(m)
+
+        def fp_func(m):
+            return gen.GetFingerprint(m)
     elif fp_type == "maccs":
         fp_func = MACCSkeys.GenMACCSKeys
     elif fp_type == "rdkit":
-        fp_func = lambda m: Chem.RDKFingerprint(m, fpSize=2048)
+
+        def fp_func(m):
+            return Chem.RDKFingerprint(m, fpSize=2048)
     else:
         raise ValueError(f"未知指纹类型: {fp_type}")
 

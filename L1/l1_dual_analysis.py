@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# ruff: noqa
 r"""
 =====================================================================
 L1: 双评分分析 — 在CIRI中识别铁驱动的衰老程序 (IDSP)
@@ -18,7 +19,7 @@ L1: 双评分分析 — 在CIRI中识别铁驱动的衰老程序 (IDSP)
   - L1_temporal_dual_scores.csv        — GSE104036时间动态
   - L1_gpx4_validation.csv             — GPX4验证
   - L1_idsp_index_all.csv              — IDSP Index
-  
+
 数据依赖 (D:盘):
   D:\反向网络药理...
   D盘已确认可读
@@ -32,6 +33,7 @@ import json
 import logging
 import os
 import re
+import traceback
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -166,16 +168,16 @@ def parse_gpl6883_annotation(annot_path: str) -> Dict[str, str]:
     with gzip.open(annot_path, 'rt', encoding='latin-1') as f:
         in_table = False
         for line in f:
-            l = line.strip()
-            if l == '!platform_table_begin':
+            stripped = line.strip()
+            if stripped == '!platform_table_begin':
                 in_table = True
                 header = f.readline().strip().split('\t')
                 gs_idx = next((i for i, h in enumerate(header)
                                 if 'gene symbol' in h.lower()), 2)
                 continue
-            if not in_table or l == '':
+            if not in_table or stripped == '':
                 continue
-            fields = l.split('\t')
+            fields = stripped.split('\t')
             if len(fields) > gs_idx:
                 probe = fields[0].strip('"').strip()
                 gene = fields[gs_idx].strip('"').strip().upper()
@@ -194,19 +196,19 @@ def parse_gpl1355_annotation(filepath: str) -> Dict[str, str]:
     with open(filepath, 'r', encoding='utf-8', errors='replace') as f:
         in_table = False
         for line in f:
-            l = line.strip()
-            if l.startswith('ID'):
+            stripped = line.strip()
+            if stripped.startswith('ID'):
                 in_table = True
-                header = l.split('\t')
+                header = stripped.split('\t')
                 try:
                     gene_col = next(i for i, h in enumerate(header)
                                     if 'gene symbol' in h.lower() or 'symbol' in h.lower())
                 except StopIteration:
                     gene_col = 5
                 continue
-            if not in_table or not l:
+            if not in_table or not stripped:
                 continue
-            fields = l.split('\t')
+            fields = stripped.split('\t')
             if len(fields) <= max(gene_col, 0):
                 continue
             probe = fields[0]
@@ -248,19 +250,19 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
                               sample_groups: Dict[str, Tuple[List[str], List[str]]] = None) -> Dict[str, pd.DataFrame]:
     """
     ComBat 跨平台批次校正 — 消除 Illumina / Affymetrix / RNA-seq 技术偏差
-    
+
     5 个数据集来自三种平台，表达量分布差异大。
     评分前用 ComBat 做批次校正，减少技术偏差对富集评分的影响。
-    
+
     来源: Johnson 2007 *Biostatistics*; Leek 2012 *Bioinformatics* (sva最佳实践);
          Zhang 2020 *NAR* (多平台ComBat基准)
-    
+
     Parameters:
         expr_dict:     {dataset_name: expr_df} 各数据集的基因表达矩阵 (行=基因, 列=样本)
         sample_groups: {dataset_name: (case_cols, control_cols)} 样本生物学分组,
                        传入后用于构建 design 矩阵, 防止 ComBat 消除生物信号.
                        来源: Leek 2012; Johnson 2007 第 4.2 节.
-        
+
     Returns:
         校正后的 {dataset_name: expr_df_corrected}
     """
@@ -351,7 +353,6 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
                     f"disease={sum(group_array)} case / {len(group_array) - sum(group_array)} control")
 
     # 5. 运行 neuroCombat (Fortin 2018, Jupyter/Python port)
-    combat_applied = False
     try:
         from neuroCombat import neuroCombat
         # neuroCombat 需要 (n_features, n_samples) 输入
@@ -371,7 +372,6 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
             index=merged_centered.index,
             columns=merged_centered.columns
         )
-        combat_applied = True
         logger.info(f"  neuroCombat 校正完成: {corrected.shape}"
                     f"{' (含生物学协变量保护: disease)' if has_covariate else ''}")
     except ImportError:
@@ -383,7 +383,6 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
             batch_mask = np.array(batch_labels) == batch_name
             batch_med = np.median(corrected.values[:, batch_mask])
             corrected.values[:, batch_mask] = corrected.values[:, batch_mask] - batch_med + global_med
-        combat_applied = True
         logger.info("  中位数对齐完成 (ComBat 替代)")
     except Exception as e:
         logger.warning(f"  neuroCombat 失败 ({e}), 使用 pycombat 降级方案")
@@ -398,7 +397,6 @@ def combat_harmonize_datasets(expr_dict: Dict[str, pd.DataFrame],
                 index=merged_centered.index,
                 columns=merged_centered.columns
             )
-            combat_applied = True
             logger.info(f"  pycombat (降级) 校正完成: {corrected.shape}")
         except Exception as e2:
             logger.warning(f"  pycombat 降级也失败 ({e2}), 返回原始数据")
@@ -923,7 +921,6 @@ def gene_set_sensitivity_analysis(expr_dict: Dict[str, pd.DataFrame],
             if ds_name not in sample_info:
                 continue
             case_cols, ctrl_cols = sample_info[ds_name]
-            is_paired = (ds_name == 'GSE37587')
 
             ferr_score = compute_enrichment_score_matrix(expr_df, perturbed_ferr)
             sene_score = compute_enrichment_score_matrix(expr_df, perturbed_sene)
@@ -1378,25 +1375,25 @@ def bayesian_meta_analysis(effect_sizes: List[float],
                              seed: int = 42) -> dict:
     """
     Bayesian 随机效应 Meta-Analysis (新增 🔧)
-    
+
     正态-正态层次模型，MCMC 采样 (NUTS):
       y_i ~ N(θ_i, σ_i²)    # 观测层: 各研究效应量
       θ_i ~ N(μ, τ²)         # 研究层: 真实效应量来自共同分布
       μ ~ N(0, 10)           # 先验: 总体均值
       τ ~ HalfCauchy(2.5)    # 先验: 异质性标准差
-    
+
     输出 τ² 后验分布，比 DerSimonian-Laird 点估计更稳健。
     同时计算 Bayes Factor 和 95% HDI。
-    
+
     来源: Gelman 2013 *Bayesian Data Analysis*; PyMC 官方示例
-    
+
     Parameters:
         effect_sizes: Cohen's d 列表
         variances:    对应方差列表
         draws:        MCMC 后验采样数
         tune:         预热步数
         seed:         随机种子
-        
+
     Returns:
         dict with posterior summary: μ_mean, μ_hdi, τ_mean, τ_hdi, τ²_mean, ...
     """
@@ -1419,7 +1416,7 @@ def bayesian_meta_analysis(effect_sizes: List[float],
         import arviz as az
         import pymc as pm
 
-        with pm.Model() as model:
+        with pm.Model():
             # 总体均值先验 (弱信息)
             mu = pm.Normal('mu', mu=0, sigma=10)
             # 异质性标准差先验 (HalfCauchy 厚尾, 对离群研究不敏感)
@@ -1427,7 +1424,7 @@ def bayesian_meta_analysis(effect_sizes: List[float],
             # 随机效应: 各研究真实效应量
             theta = pm.Normal('theta', mu=mu, sigma=tau, shape=k)
             # 观测似然
-            y_like = pm.Normal('y_like', mu=theta, sigma=sigma_obs, observed=y_obs)
+            pm.Normal('y_like', mu=theta, sigma=sigma_obs, observed=y_obs)
 
             # MCMC 采样 (NUTS) — 提高 target_accept 减少发散
             trace = pm.sample(
@@ -1554,11 +1551,11 @@ def _load_expr_gse37587() -> Tuple[pd.DataFrame, List[str], List[str]]:
     with gzip.open(sm_file, 'rt', encoding='latin-1') as f:
         lines = f.readlines()
     sample_line = desc_line = None
-    for l in lines:
-        if l.startswith('!Sample_geo_accession'):
-            sample_line = [x.strip('"').strip() for x in l.strip().split('\t')]
-        if l.startswith('!Sample_description'):
-            desc_line = [x.strip('"').strip() for x in l.strip().split('\t')]
+    for line in lines:
+        if line.startswith('!Sample_geo_accession'):
+            sample_line = [x.strip('"').strip() for x in line.strip().split('\t')]
+        if line.startswith('!Sample_description'):
+            desc_line = [x.strip('"').strip() for x in line.strip().split('\t')]
     case_cols, control_cols = [], []
     for i, gsm in enumerate(sample_line[1:], 1):
         desc = desc_line[i] if i < len(desc_line) else ''
@@ -1586,11 +1583,11 @@ def _load_expr_gse61616() -> Tuple[pd.DataFrame, List[str], List[str]]:
     with gzip.open(sm_file, 'rt', encoding='latin-1') as f:
         lines = f.readlines()
     sample_acc = sample_title = None
-    for l in lines:
-        if l.startswith('!Sample_geo_accession'):
-            sample_acc = [x.strip('"').strip() for x in l.strip().split('\t')]
-        if l.startswith('!Sample_title'):
-            sample_title = [x.strip('"').strip() for x in l.strip().split('\t')]
+    for line in lines:
+        if line.startswith('!Sample_geo_accession'):
+            sample_acc = [x.strip('"').strip() for x in line.strip().split('\t')]
+        if line.startswith('!Sample_title'):
+            sample_title = [x.strip('"').strip() for x in line.strip().split('\t')]
     sham_cols, model_cols = [], []
     for i, gsm in enumerate(sample_acc[1:], 1):
         title = sample_title[i].lower() if i < len(sample_title) else ''
@@ -1619,11 +1616,11 @@ def _load_expr_gse97537() -> Tuple[pd.DataFrame, List[str], List[str]]:
     with gzip.open(sm_file, 'rt', encoding='latin-1') as f:
         lines = f.readlines()
     sample_acc = sample_title = None
-    for l in lines:
-        if l.startswith('!Sample_geo_accession'):
-            sample_acc = [x.strip('"').strip() for x in l.strip().split('\t')]
-        if l.startswith('!Sample_title'):
-            sample_title = [x.strip('"').strip() for x in l.strip().split('\t')]
+    for line in lines:
+        if line.startswith('!Sample_geo_accession'):
+            sample_acc = [x.strip('"').strip() for x in line.strip().split('\t')]
+        if line.startswith('!Sample_title'):
+            sample_title = [x.strip('"').strip() for x in line.strip().split('\t')]
     sham_cols, mcao_cols = [], []
     for i, gsm in enumerate(sample_acc[1:], 1):
         title = sample_title[i].lower() if i < len(sample_title) else ''
@@ -1844,11 +1841,13 @@ def temporal_dual_analysis(expr_df: pd.DataFrame, timepoint_dict: dict,
     ferr_deltas = non_sham['ferr_delta_per_hr'].dropna()
     sene_deltas = non_sham['sene_delta_per_hr'].dropna()
     if len(ferr_deltas) >= 2:
-        df.attrs['ferr_late_rate_ratio'] = ferr_deltas.iloc[-1] / ferr_deltas.iloc[0] if ferr_deltas.iloc[0] != 0 else np.nan
+        df.attrs['ferr_late_rate_ratio'] = (
+            ferr_deltas.iloc[-1] / ferr_deltas.iloc[0] if ferr_deltas.iloc[0] != 0 else np.nan)
     else:
         df.attrs['ferr_late_rate_ratio'] = np.nan
     if len(sene_deltas) >= 2:
-        df.attrs['sene_late_rate_ratio'] = sene_deltas.iloc[-1] / sene_deltas.iloc[0] if sene_deltas.iloc[0] != 0 else np.nan
+        df.attrs['sene_late_rate_ratio'] = (
+            sene_deltas.iloc[-1] / sene_deltas.iloc[0] if sene_deltas.iloc[0] != 0 else np.nan)
     else:
         df.attrs['sene_late_rate_ratio'] = np.nan
 
@@ -1857,7 +1856,8 @@ def temporal_dual_analysis(expr_df: pd.DataFrame, timepoint_dict: dict,
     if not late_tp.empty:
         sene_fc = late_tp['sene_fc_vs_sham'].values[0]
         ferr_fc = late_tp['ferr_fc_vs_sham'].values[0]
-        df.attrs['sene_fc_dominance'] = sene_fc / ferr_fc if (pd.notna(sene_fc) and pd.notna(ferr_fc) and ferr_fc != 0) else np.nan
+        df.attrs['sene_fc_dominance'] = (
+            sene_fc / ferr_fc if (pd.notna(sene_fc) and pd.notna(ferr_fc) and ferr_fc != 0) else np.nan)
     else:
         df.attrs['sene_fc_dominance'] = np.nan
 
@@ -2137,7 +2137,7 @@ def robust_rank_aggregation(rank_matrix: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame()
 
     n_genes = len(rank_matrix)
-    n_datasets = rank_matrix.shape[1]
+    rank_matrix.shape[1]
 
     # 将表达量转换为秩 (每个数据集内升序排列: 低秩=低表达, 高秩=高表达)
     # 但我们更关注差异方向, 所以对 case vs control 用 fold-change 排序
@@ -2550,7 +2550,7 @@ def main():
             logger.info(f"  [ComBat-pre] {ds_name}: {expr_gene.shape}")
         except Exception as e:
             logger.error(f"  ✗ {ds_name} 加载失败: {e}")
-            import traceback; traceback.print_exc()
+            traceback.print_exc()
 
     # 运行 ComBat 批次校正 (仅对有效数据集)
     # 过滤掉空矩阵
@@ -2621,7 +2621,7 @@ def main():
 
         except Exception as e:
             logger.error(f"  ✗ {ds_name} 失败: {e}")
-            import traceback; traceback.print_exc()
+            traceback.print_exc()
             continue
 
     # ============================================================
@@ -2656,7 +2656,7 @@ def main():
 
     except Exception as e:
         logger.error(f"  ✗ GSE104036 失败: {e}")
-        import traceback; traceback.print_exc()
+        traceback.print_exc()
 
     # ============================================================
     # 3. Meta分析
@@ -3094,14 +3094,18 @@ def main():
         combined_genes = pd.concat(all_gene_dfs, ignore_index=True)
         combined_genes.to_csv(OUTPUT_DIR / 'L1_gene_level_analysis.csv', index=False)
         logger.info(f"  genes: {OUTPUT_DIR / 'L1_gene_level_analysis.csv'}")
-        logger.info(f"    核心基因集: {combined_genes['gene'].nunique()} 基因 × {combined_genes['dataset'].nunique()} 数据集")
+        n_genes_core = combined_genes['gene'].nunique()
+        n_datasets_core = combined_genes['dataset'].nunique()
+        logger.info(f"    核心基因集: {n_genes_core} 基因 × {n_datasets_core} 数据集")
 
     # 4e2. 全基因组差异分析 (模块三节点特征)
     if all_full_de_dfs:
         combined_full_de = pd.concat(all_full_de_dfs, ignore_index=True)
         combined_full_de.to_csv(OUTPUT_DIR / 'L1_genome_wide_de.csv', index=False)
         logger.info(f"  genome-wide DE: {OUTPUT_DIR / 'L1_genome_wide_de.csv'}")
-        logger.info(f"    全基因组: {combined_full_de['gene'].nunique()} 基因 × {combined_full_de['dataset'].nunique()} 数据集")
+        n_genes_gw = combined_full_de['gene'].nunique()
+        n_datasets_gw = combined_full_de['dataset'].nunique()
+        logger.info(f"    全基因组: {n_genes_gw} 基因 × {n_datasets_gw} 数据集")
 
     # ============================================================
     # 5. 可视化
@@ -3226,20 +3230,34 @@ def main():
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write("L1: IDSP 双评分分析 — 验证报告\n")
         f.write("=" * 60 + "\n\n")
-        f.write(f"基因集: 纯铁死亡={len(PURE_FERROPTOSIS)}, 纯衰老={len(PURE_SENESCENCE)}, 共享={len(SHARED_GENES)}\n\n")
+        gene_set_line = (
+            f"基因集: 纯铁死亡={len(PURE_FERROPTOSIS)}, "
+            f"纯衰老={len(PURE_SENESCENCE)}, 共享={len(SHARED_GENES)}\n\n")
+        f.write(gene_set_line)
         f.write("各数据集统计:\n")
         for _, row in comp_df.iterrows():
             f.write(f"  {row['dataset']}: r={safe_fmt(row['r_ferr_sene'])}, "
                     f"d_ferr={safe_fmt(row['d_ferroptosis'])}, d_sene={safe_fmt(row['d_senescence'])}, "
                     f"p_ferr={safe_fmt(row['p_ferroptosis'], '.3e')}, p_sene={safe_fmt(row['p_senescence'], '.3e')}\n")
-        f.write(f"\nMeta分析 (Fisher): 铁死亡 p={safe_fmt(meta_p_f, '.4e')}, 衰老 p={safe_fmt(meta_p_s, '.4e')}\n")
+        fisher_line = (
+            f"\nMeta分析 (Fisher): 铁死亡 p={safe_fmt(meta_p_f, '.4e')}, "
+            f"衰老 p={safe_fmt(meta_p_s, '.4e')}\n")
+        f.write(fisher_line)
         f.write(f"Meta分析 (Stouffer加权): 铁死亡 p={safe_fmt(meta_p_stouffer_f, '.4e')}, 衰老 p={safe_fmt(meta_p_stouffer_s, '.4e')}\n")
         if re_ferr:
             f.write(f"随机效应Meta (铁死亡): d={safe_fmt(re_ferr['summary_effect'])}, p={safe_fmt(re_ferr['p_value'], '.4e')}, I²={safe_fmt(re_ferr['I2'], '.0f')}%, τ²={safe_fmt(re_ferr['tau2'], '.4f')}\n")
             if pd.notna(re_ferr.get('pi_lower')):
-                f.write(f"  95%预测区间: [{safe_fmt(re_ferr['pi_lower'])}, {safe_fmt(re_ferr['pi_upper'])}] (新研究预期效应量范围)\n")
+                pi_ferr_line = (
+                    f"  95%预测区间: [{safe_fmt(re_ferr['pi_lower'])}, "
+                    f"{safe_fmt(re_ferr['pi_upper'])}] (新研究预期效应量范围)\n")
+                f.write(pi_ferr_line)
         if re_sene:
-            f.write(f"随机效应Meta (衰老): d={safe_fmt(re_sene['summary_effect'])}, p={safe_fmt(re_sene['p_value'], '.4e')}, I²={safe_fmt(re_sene['I2'], '.0f')}%, τ²={safe_fmt(re_sene['tau2'], '.4f')}\n")
+            re_sene_line = (
+                f"随机效应Meta (衰老): d={safe_fmt(re_sene['summary_effect'])}, "
+                f"p={safe_fmt(re_sene['p_value'], '.4e')}, "
+                f"I²={safe_fmt(re_sene['I2'], '.0f')}%, "
+                f"τ²={safe_fmt(re_sene['tau2'], '.4f')}\n")
+            f.write(re_sene_line)
             if pd.notna(re_sene.get('pi_lower')):
                 f.write(f"  95%预测区间: [{safe_fmt(re_sene['pi_lower'])}, {safe_fmt(re_sene['pi_upper'])}] (新研究预期效应量范围)\n")
         if bayes_ferr and bayes_ferr.get('converged'):

@@ -275,7 +275,7 @@ def fetch_disgenet(session, disease_name, cache_path, api_key=None):
         try:
             resp = session.get(
                 f"{DISGENET_API}/gda/disease/{disease_name}",
-                params={"format": "tsv"},
+                params=params,
                 headers=headers_api,
                 timeout=60,
             )

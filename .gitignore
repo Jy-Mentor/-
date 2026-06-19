@@ -20,8 +20,14 @@ to_delete.json
 .annotation_cache/
 .cache/
 cache/
+.graph_cache/
 L3/disease_cache/
 results/figs/
+
+# 本地 SQLite 数据库（生产使用 PostgreSQL）
+iron_aging.db
+iron_aging_test.db
+*.db
 
 # 例外: 允许 src/iron_aging/data/ Python 包被跟踪
 !src/iron_aging/data/
@@ -29,7 +35,7 @@ results/figs/
 # 大型数据输出（可复现生成）
 checkpoints/
 external_data/
-data/
+/data/
 L1/l1_results/
 L2_WGCNA_input/
 L2_WGCNA_output/
@@ -55,6 +61,13 @@ paper_extracted.txt
 
 # 生成报告目录
 dry_lab_report/
+htmlcov/
+
+# 测试与覆盖率输出
+.coverage
+test_module3_output.log
+ruff_report*.json
+ruff_report*.txt
 
 # Trae IDE 配置（可选）
 .trae/

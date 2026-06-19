@@ -1,0 +1,50 @@
+# 铁衰老 × CIRI 项目本地开发数据库栈
+# 包含 PostgreSQL (结构化主存储)、MongoDB (原始 API 响应缓存)、Redis (任务队列/缓存)
+#
+# 使用方法:
+#   docker compose up -d
+#   设置环境变量: IRON_DATABASE_URL=postgresql+psycopg2://iron:iron@localhost:5432/iron_aging
+#   python scripts/init_db.py
+#   python scripts/migrate_csv_to_db.py --init
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: iron-postgres
+    environment:
+      POSTGRES_USER: iron
+      POSTGRES_PASSWORD: iron
+      POSTGRES_DB: iron_aging
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iron -d iron_aging"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mongo:
+    image: mongo:6
+    container_name: iron-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: iron
+      MONGO_INITDB_ROOT_PASSWORD: iron
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: iron-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:

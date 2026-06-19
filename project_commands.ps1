@@ -1,4 +1,4 @@
-﻿# 铁衰老项目 - PowerShell 命令集
+﻿﻿# 铁衰老项目 - PowerShell 命令集
 # 用法：在项目根目录的 PowerShell 中执行
 #   . ./project_commands.ps1
 #   Show-IronAgingHelp

@@ -6,7 +6,7 @@
 整合来源：
   1. IDSP 基因集 (idsp_gene_sets.py)
      - PURE_FERROPTOSIS (72)  — FerrDb V2 铁死亡核心
-     - PURE_SENESCENCE  (140) — CellAge + SenMayo 衰老核心  
+     - PURE_SENESCENCE  (140) — CellAge + SenMayo 衰老核心
      - SHARED_GENES     (12)  — 铁死亡 ∩ 衰老 桥接基因
   2. 铁衰老基因.txt (96)      — 铁衰老候选基因列表
   3. L1 跨数据集分析

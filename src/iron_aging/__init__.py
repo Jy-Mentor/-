@@ -11,4 +11,4 @@ NETWORK_DIR = PROJECT_ROOT / "network_files"
 L3_DIR = PROJECT_ROOT / "L3"
 L3_RESULTS_DIR = PROJECT_ROOT / "L3_results"
 
-__version__ = "3.0.0-dev"
+__version__ = "4.0.0-dev"
