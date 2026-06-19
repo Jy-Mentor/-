@@ -148,3 +148,35 @@ l2:
   gene_sets:
     isp_core: ["ACSL4", "PTGS2", "HMOX1", "TFRC", "ALOX15", "HMGB1", "TLR4", "NLRP3", "HIF1A", "KEAP1", "SOD1", "MPO", "CDO1", "DPP4", "NOX4"]
     discriminator: ["GPX4", "ACSL4", "PTGS2", "HMOX1", "TFRC", "CDKN1A", "IL6"]
+
+# ---- 数据层配置 (Phase 2) ----
+data:
+  compound_features:
+    # 是否对合并指纹做 PCA 降维
+    use_pca: true
+    # 目标主成分数 (实际会受样本量和特征数限制)
+    # 63 个化合物时, n_components=10 使得样本/特征比 ≈ 6:1, 降低小样本 PCA 过拟合风险
+    n_components: 10
+    # 保守策略: 主成分数不超过化合物数 × 该比例, 避免小样本过拟合
+    max_components_ratio: 0.25
+    # 分子指纹类型与原始维度
+    fp_types:
+      morgan: 2048
+      atompair: 2048
+      maccs: 167
+      rdkit: 2048
+
+  acsl4_pocket:
+    # 标准化策略: auto|raw|zscore|demean
+    # auto: 多样本用 zscore, 单样本或 std≈0 用 raw
+    standardization: auto
+    feature_file: "network_files/acsl4_pocket_features.csv"
+
+  ciri:
+    # CIRI 差异表达基因提取参数
+    de_file: "L3/L1_genome_wide_de.csv"
+    min_datasets: 2
+    padj_thresh: 0.05
+    log2fc_thresh: 0.5
+    # DE 文件缺失/无效时, 是否尝试从 disease_gene_associations.csv 中过滤 CIRI 关联作为回退
+    fallback_to_disease_csv: true

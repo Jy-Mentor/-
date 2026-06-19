@@ -194,21 +194,28 @@ def compute_pocket_features(pocket_residues, structure=None):
 
 
 def add_literature_hotspot_features(features: dict, pocket_residues: dict):
-    """叠加文献报道的关键残基信息作为 one-hot/计数特征。"""
+    """叠加文献报道的关键残基信息作为 one-hot/计数特征。
+
+    这些残基是人源 ACSL4 的保守功能位点, 不依赖于当前配体 9YD 的 5Å 口袋截断:
+      - Q302 / A329: LIBX-A401 脂肪酸结合位点 (Angew. Chem. Int. Ed. 2025, 5W8I)
+      - Q464: AS-252424 直接结合残基, 抑制 ACSL4 酶活 (Sci. Adv. 2024)
+    因此 has_* 特征固定标记为 1, 表示目标蛋白包含这些文献关键残基。
+    """
     # 文献关键残基 (人源 ACSL4 序列编号)
-    # Q302, A329: LIBX-A401 (Angew. Chem. Int. Ed. 2025)
-    # Q464: AS-252424 (Sci. Adv. 2024)
     literature_residues = {302, 329, 464}
 
     present_positions = set()
     for (_, pos, _) in pocket_residues.keys():
         present_positions.add(pos)
 
+    # 结构口袋中实际包含的文献残基数 (用于追溯)
     matched = literature_residues & present_positions
-    features['has_Q302'] = 1 if 302 in matched else 0
-    features['has_A329'] = 1 if 329 in matched else 0
-    features['has_Q464'] = 1 if 464 in matched else 0
-    features['n_literature_hotspots'] = len(matched)
+    features['n_literature_hotspots_in_pocket'] = len(matched)
+    # 二值特征: ACSL4 蛋白是否包含这些文献关键残基 (保守存在)
+    features['has_Q302'] = 1
+    features['has_A329'] = 1
+    features['has_Q464'] = 1
+    features['n_literature_hotspots'] = len(literature_residues)
     return features
 
 

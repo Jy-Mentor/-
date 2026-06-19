@@ -19,8 +19,12 @@ to_delete.json
 # 缓存与临时文件
 .annotation_cache/
 .cache/
+cache/
 L3/disease_cache/
 results/figs/
+
+# 例外: 允许 src/iron_aging/data/ Python 包被跟踪
+!src/iron_aging/data/
 
 # 大型数据输出（可复现生成）
 checkpoints/

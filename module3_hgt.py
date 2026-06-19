@@ -100,6 +100,7 @@ import copy
 import logging
 import os
 import sys
+import traceback
 import warnings
 from collections import defaultdict
 from pathlib import Path
@@ -927,11 +928,21 @@ def _load_acsl4_pocket_features() -> np.ndarray:
         Mazhari Dorooee et al., Angew. Chem. Int. Ed. 2025, 64, e202500518
       - 回退: AlphaFold DB (UniProt Q6P1M0) + 文献热点残基 (Q302/A329/Q464)
 
+    配置项 (config.yaml -> data.acsl4_pocket):
+      - standardization: auto|raw|zscore|demean
+      - feature_file: 口袋特征 CSV 路径
+
     输出:
       - 返回标准化后的口袋特征向量 (float32 np.ndarray)
       - 若数据缺失, 返回1维占位符 [1.0] 以保持兼容性
     """
-    pocket_file = BASE_DIR / "network_files" / "acsl4_pocket_features.csv"
+    data_cfg = PROJECT_CONFIG.get("data", {})
+    pocket_cfg = data_cfg.get("acsl4_pocket", {})
+    standardization = str(pocket_cfg.get("standardization", "auto")).lower()
+    pocket_file = BASE_DIR / pocket_cfg.get(
+        "feature_file", "network_files/acsl4_pocket_features.csv"
+    )
+
     if not pocket_file.exists():
         logger.warning("  acsl4_pocket_features.csv 不存在, ACSL4_Pocket 使用1维占位符")
         return np.array([1.0], dtype=np.float32)
@@ -948,34 +959,52 @@ def _load_acsl4_pocket_features() -> np.ndarray:
         feature_cols = [c for c in numeric_cols if c not in exclude_cols]
         raw = df[feature_cols].iloc[0].values.astype(np.float32)
 
-        # 标准化策略:
-        #   - 若特征来自多个样本(多行), 使用 Z-score 标准化
-        #   - 若仅单个样本, Z-score 会退化为 0 向量, 因此直接使用原始值
-        #     (后续 HGT 的线性投影层可学习合适的缩放)
         n_rows = len(df)
-        if n_rows > 1:
+        src = df.get('source', ['unknown']).iloc[0]
+
+        # 标准化策略解析
+        if standardization == "auto":
+            # 多样本用 zscore, 单样本或 std≈0 用 raw
+            use_zscore = n_rows > 1
+        else:
+            use_zscore = standardization == "zscore"
+
+        if use_zscore and n_rows > 1:
             mean = raw.mean()
             std = raw.std()
             if std > 1e-6:
                 normed = (raw - mean) / std
-                src = df.get('source', ['unknown']).iloc[0]
                 logger.info(
                     f"  ACSL4 口袋特征: 从 {pocket_file.name} 加载 {len(feature_cols)} 维, "
                     f"Z-score 标准化 (n={n_rows}, source={src})"
                 )
             else:
-                normed = raw - mean
-                src = df.get('source', ['unknown']).iloc[0]
-                logger.info(
-                    f"  ACSL4 口袋特征: 从 {pocket_file.name} 加载 {len(feature_cols)} 维, "
-                    f"去均值 (std≈0, source={src})"
-                )
-        else:
-            normed = raw
-            src = df.get('source', ['unknown']).iloc[0]
+                # std≈0 时退化为去均值或原始值
+                if standardization == "demean":
+                    normed = raw - mean
+                    logger.info(
+                        f"  ACSL4 口袋特征: 从 {pocket_file.name} 加载 {len(feature_cols)} 维, "
+                        f"去均值 (std≈0, source={src})"
+                    )
+                else:
+                    normed = raw
+                    logger.info(
+                        f"  ACSL4 口袋特征: 从 {pocket_file.name} 加载 {len(feature_cols)} 维, "
+                        f"使用原始值 (auto回退, std≈0, source={src})"
+                    )
+        elif standardization == "demean" and n_rows > 1:
+            mean = raw.mean()
+            normed = raw - mean
             logger.info(
                 f"  ACSL4 口袋特征: 从 {pocket_file.name} 加载 {len(feature_cols)} 维, "
-                f"使用原始值 (单样本, source={src})"
+                f"去均值 (n={n_rows}, source={src})"
+            )
+        else:
+            # raw 或 auto 单样本: 直接使用原始值, 避免全零
+            normed = raw
+            logger.info(
+                f"  ACSL4 口袋特征: 从 {pocket_file.name} 加载 {len(feature_cols)} 维, "
+                f"使用原始值 (n={n_rows}, std≈0或显式raw, source={src})"
             )
 
         return normed.astype(np.float32)
@@ -1146,11 +1175,21 @@ def _load_single_fingerprint(
 def _merge_fingerprints_pca(
     fp_raw: dict, descriptors: dict, compounds: list, n_components: int
 ) -> dict:
-    """合并所有指纹矩阵并做 PCA (numpy SVD)."""
+    """合并所有指纹矩阵并做 PCA (numpy SVD).
+
+    配置项 (config.yaml -> data.compound_features):
+      - use_pca: 是否启用 PCA 降维
+      - max_components_ratio: 主成分数上限比例, 避免小样本过拟合
+    """
     fingerprints = {}
     available_comps = [c for c in compounds if c in descriptors]
     if len(available_comps) < 2 or not fp_raw:
         return fingerprints
+
+    data_cfg = PROJECT_CONFIG.get("data", {})
+    compound_cfg = data_cfg.get("compound_features", {})
+    use_pca = compound_cfg.get("use_pca", True)
+    max_ratio = float(compound_cfg.get("max_components_ratio", 0.25))
 
     try:
         matrices = []
@@ -1164,16 +1203,28 @@ def _merge_fingerprints_pca(
             matrices.append(np.array(mat, dtype=np.float32))
         combined = np.hstack(matrices)
 
-        n_comp = min(n_components, len(available_comps) - 1, combined.shape[1])
-        if n_comp > 0:
-            X = combined - combined.mean(axis=0, keepdims=True)
-            U, S, _ = np.linalg.svd(X, full_matrices=False)
-            proj = (U[:, :n_comp] * S[:n_comp]).astype(np.float32)
+        # 保守策略: 主成分数不超过化合物数 × max_ratio, 避免小样本过拟合
+        max_components = max(1, int(len(available_comps) * max_ratio))
+        n_comp = min(n_components, max_components, len(available_comps) - 1, combined.shape[1])
+
+        if not use_pca or n_comp <= 0:
+            # 禁用 PCA: 返回原始合并指纹 (维度高, 但无信息损失)
             for i, comp in enumerate(available_comps):
-                fingerprints[comp] = proj[i]
+                fingerprints[comp] = combined[i].astype(np.float32)
             logger.info(
-                f"  合并指纹 PCA: {combined.shape[1]} bits -> {n_comp} components"
+                f"  合并指纹: {combined.shape[1]} bits (PCA 已禁用或 n_comp<=0)"
             )
+            return fingerprints
+
+        X = combined - combined.mean(axis=0, keepdims=True)
+        U, S, _ = np.linalg.svd(X, full_matrices=False)
+        proj = (U[:, :n_comp] * S[:n_comp]).astype(np.float32)
+        for i, comp in enumerate(available_comps):
+            fingerprints[comp] = proj[i]
+        logger.info(
+            f"  合并指纹 PCA: {combined.shape[1]} bits -> {n_comp} components "
+            f"(max_ratio={max_ratio})"
+        )
     except Exception as e:
         logger.warning(f"  指纹 PCA 失败: {e}")
     return fingerprints
@@ -1638,9 +1689,14 @@ def _load_ciri_genes_from_de(
 ) -> list:
     """从 L1 全基因组差异表达结果提取 CIRI 相关基因 (真实 DE 数据)
 
-    数据来源: L3/L1_genome_wide_de.csv
+    数据来源: L3/L1_genome_wide_de.csv (默认, 可通过 config.yaml 覆盖)
       - GSE16561, GSE37587, GSE61616, GSE97537, GSE104036
       - 均为脑缺血/卒中/再灌注损伤相关 GEO 数据集
+
+    配置项 (config.yaml -> data.ciri):
+      - de_file: DE 文件路径
+      - min_datasets, padj_thresh, log2fc_thresh: 筛选阈值
+      - fallback_to_disease_csv: DE 文件缺失时是否从 disease_gene_associations.csv 回退
 
     筛选标准:
       - padj < padj_thresh
@@ -1650,16 +1706,29 @@ def _load_ciri_genes_from_de(
     返回:
       - 与 gene_to_idx 有交集的 CIRI 相关基因列表
     """
-    de_file = BASE_DIR / "L3" / "L1_genome_wide_de.csv"
+    data_cfg = PROJECT_CONFIG.get("data", {})
+    ciri_cfg = data_cfg.get("ciri", {})
+    de_file = BASE_DIR / ciri_cfg.get("de_file", "L3/L1_genome_wide_de.csv")
+    min_datasets = int(ciri_cfg.get("min_datasets", min_datasets))
+    padj_thresh = float(ciri_cfg.get("padj_thresh", padj_thresh))
+    log2fc_thresh = float(ciri_cfg.get("log2fc_thresh", log2fc_thresh))
+    fallback_to_disease_csv = bool(ciri_cfg.get("fallback_to_disease_csv", True))
+
     if not de_file.exists():
-        logger.warning(f"  L1 DE 文件不存在: {de_file}, 跳过 CIRI-gene 提取")
+        logger.warning(f"  L1 DE 文件不存在: {de_file}")
+        if fallback_to_disease_csv:
+            return _load_ciri_genes_from_disease_csv(gene_to_idx)
         return []
 
     try:
         de_df = pd.read_csv(de_file)
         required_cols = {"dataset", "gene", "log2FC", "padj"}
         if not required_cols.issubset(de_df.columns):
-            logger.warning(f"  L1 DE 文件缺少列 {required_cols}, 跳过 CIRI-gene 提取")
+            logger.warning(
+                f"  L1 DE 文件缺少列 {required_cols}, 跳过 CIRI-gene 提取"
+            )
+            if fallback_to_disease_csv:
+                return _load_ciri_genes_from_disease_csv(gene_to_idx)
             return []
 
         sig = de_df[
@@ -1667,6 +1736,8 @@ def _load_ciri_genes_from_de(
         ].copy()
         if sig.empty:
             logger.warning("  L1 DE 无显著差异基因, 跳过 CIRI-gene 提取")
+            if fallback_to_disease_csv:
+                return _load_ciri_genes_from_disease_csv(gene_to_idx)
             return []
 
         gene_ds_counts = sig.groupby("gene")["dataset"].nunique()
@@ -1681,7 +1752,79 @@ def _load_ciri_genes_from_de(
         return ciri_genes
     except Exception as e:
         logger.warning(f"  CIRI DE 基因提取失败: {e}")
+        if fallback_to_disease_csv:
+            return _load_ciri_genes_from_disease_csv(gene_to_idx)
         return []
+
+
+def _load_ciri_genes_from_disease_csv(gene_to_idx: dict) -> list:
+    """从专用 CIRI 文件或 disease_gene_associations.csv 中过滤 CIRI 关联作为回退.
+
+    优先顺序:
+      1. network_files/disgenet_ciri_genes.csv (DisGeNET curated)
+      2. network_files/opentargets_ciri_genes.csv (OpenTargets, score>=0.1)
+      3. network_files/disease_gene_associations.csv (通用本地 CSV)
+    """
+    ciri_genes = set()
+    sources = []
+
+    # 来源1: DisGeNET curated CIRI 专用文件
+    dg_ciri_file = BASE_DIR / "network_files" / "disgenet_ciri_genes.csv"
+    if dg_ciri_file.exists():
+        try:
+            df = pd.read_csv(dg_ciri_file)
+            for _, row in df.iterrows():
+                gene = str(row.get("gene", "")).strip().upper()
+                score = float(row.get("score", 0.0))
+                if gene in gene_to_idx and score >= 0.0:
+                    ciri_genes.add(gene)
+            if ciri_genes:
+                sources.append(f"{dg_ciri_file.name}")
+        except Exception as e:
+            logger.warning(f"  DisGeNET CIRI 回退加载失败: {e}")
+
+    # 来源2: OpenTargets CIRI 专用文件
+    ot_file = BASE_DIR / "network_files" / "opentargets_ciri_genes.csv"
+    if ot_file.exists():
+        try:
+            df = pd.read_csv(ot_file)
+            ot_added = 0
+            for _, row in df.iterrows():
+                gene = str(row.get("gene", "")).strip().upper()
+                score = float(row.get("score", 0.0))
+                if gene in gene_to_idx and score >= 0.1 and gene not in ciri_genes:
+                    ciri_genes.add(gene)
+                    ot_added += 1
+            if ot_added:
+                sources.append(f"{ot_file.name}")
+        except Exception as e:
+            logger.warning(f"  OpenTargets CIRI 回退加载失败: {e}")
+
+    # 来源3: 通用本地 CSV
+    csv_file = BASE_DIR / "network_files" / "disease_gene_associations.csv"
+    if csv_file.exists():
+        try:
+            df = pd.read_csv(csv_file)
+            csv_added = 0
+            for _, row in df.iterrows():
+                disease = str(row.get("disease", "")).strip()
+                gene = str(row.get("gene", "")).strip().upper()
+                if disease.lower() == "ciri" and gene in gene_to_idx and gene not in ciri_genes:
+                    ciri_genes.add(gene)
+                    csv_added += 1
+            if csv_added:
+                sources.append(f"{csv_file.name}")
+        except Exception as e:
+            logger.warning(f"  通用 CSV CIRI 回退加载失败: {e}")
+
+    result = [g for g in ciri_genes if g in gene_to_idx]
+    if result:
+        logger.info(
+            f"  CIRI 疾病-基因 CSV 回退: {len(result)} 个 (来源: {' + '.join(sources)})"
+        )
+    else:
+        logger.warning("  CIRI 疾病-基因 CSV 回退未找到任何基因")
+    return result
 
 
 def _add_disease_gene(disease_genes: dict, disease: str, gene: str) -> None:
@@ -2068,7 +2211,10 @@ def _build_compound_nodes(node_config: dict) -> tuple:
         "compounds", ["BCP", "VC", "Fer-1", "DFO", "Lip-1", "Erastin", "RSL3", "ML162"]
     )
     compound_props = _load_compound_props(compounds)
-    n_fp_components = min(16, max(4, len(compounds) // 4))
+    # 从配置读取指纹 PCA 目标维度, 默认保持原行为 (≤16, ≥4)
+    data_cfg = PROJECT_CONFIG.get("data", {})
+    compound_cfg = data_cfg.get("compound_features", {})
+    n_fp_components = int(compound_cfg.get("n_components", min(16, max(4, len(compounds) // 4))))
     l4_descriptors, l4_fingerprints, l4_densities = _load_drug_fingerprints(
         compounds, n_components=n_fp_components
     )
@@ -5544,8 +5690,17 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info(f"  设备: {device}")
 
-    # 1. 构建异质图
-    graph_data = build_heterogeneous_graph()
+    # 1. 构建异质图（优先使用 iron_aging.data.graph_builder 的输入哈希缓存）
+    try:
+        from iron_aging.data.graph_builder import (  # noqa: PLC0415
+            build_heterogeneous_graph as _cached_build_graph,
+        )
+
+        graph_data = _cached_build_graph(use_cache=True)
+    except Exception:
+        logger.warning("图缓存加载失败，回退到本地构建")
+        traceback.print_exc()
+        graph_data = build_heterogeneous_graph()
 
     # 2. 训练模型 (超参数从 config.yaml 加载, 替代硬编码)
     model_cfg = PROJECT_CONFIG.get("model", {})

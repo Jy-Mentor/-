@@ -11,10 +11,12 @@ import logging
 import sys
 from pathlib import Path
 
-# 确保项目根目录中的 legacy 模块可被导入
+# 确保 src 与项目根目录可被导入
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
+_SRC_DIR = _PROJECT_ROOT / "src"
+for _path in (_SRC_DIR, _PROJECT_ROOT):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
 
 # ruff: noqa: E402
 import module3_hgt
