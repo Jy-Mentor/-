@@ -2,7 +2,7 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/) 和 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 规范.
 
-## [3.0.0-dev] - 2026-06-19
+## [3.0.0] - 2026-06-19
 
 ### 架构升级 (Modularization)
 - 新建 `src/iron_aging` 模块化包, 按 data / models / training / evaluation / utils / apps 分层.
@@ -16,12 +16,26 @@
 - 新增训练入口 `run_hgt_pipeline.py`, 支持 `--config` 与 `--clear-cache` 参数.
 - 新增测试目录 `tests/`, 包含 `test_graph_builder.py`、`test_models.py`、`test_training.py`、`test_evaluation.py`.
 
+### 数据层增强 (Phase 2)
+- 化合物集扩展至 63 个 (20 核心 + 43 BBB/神经保护扩展), 化合物 SMILES 与物化性质完整覆盖.
+- 化合物 PCA 目标维数由 15 降至 10, 降低小样本过拟合风险.
+- ACSL4 口袋特征固定标记文献关键残基 Q302/A329/Q464, 并新增 `n_literature_hotspots_in_pocket` 计数.
+- CIRI 疾病-基因关联加载增强: 优先 DisGeNET/OpenTargets 专用 CIRI 文件, 再回退通用 disease_gene_associations.csv.
+
+### TCM 单体筛选与可解释性 (Phase 4)
+- 新增 `run_phase4_tcm_screening.py`, 实现化合物-ACSL4 靶点排名、BBB 透过率对比、通路可解释性分析.
+- 生成 `L3_results/phase4_compound_target_ranking.csv` 与 `TCM_monomer_recommendation.xlsx`.
+- 支持空通路归属的鲁棒处理, 避免 KeyError 中断流程.
+
 ### 修复
 - 修复图构建缓存失效问题: 排除构建过程中会生成的输出文件 (compound_attentivefp_embeddings.csv 等), 避免每次构建后缓存立即失效.
+- 修复 `run_phase4_tcm_screening.py` 中文标点导致的 SyntaxError.
+- 修复 ACSL4 通路归属为空时的排序 KeyError.
 - 将 `test_module3.py` 的图构建调用迁移至缓存封装, 回归测试耗时从 >120s 降至 ~150s.
 
 ### 文档
 - 新增 `trae_upgrade_roadmap.md`, 定义从项目启动到部署上线的完整升级改造技术路线.
+- 新增 `DEPLOY.md`, 包含环境安装、训练推理命令与结果文件说明.
 
 ## [2.0.0] - 2026-06-19
 
