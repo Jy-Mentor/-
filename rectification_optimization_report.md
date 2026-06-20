@@ -297,8 +297,8 @@ OK:      54
 |---|---|---|
 | HGT ct val→test AUC 差距 | +0.0857 | 验证/测试 AUC 处于同一水平，无系统性偏高 |
 | GAT ct val→test AUC 差距 | +0.0393 | 验证/测试 AUC 处于同一水平，无系统性偏高 |
-| Node2Vec ct val→test AUC 差距 | +0.234（v3 5-Fold 中发现） | 已修复：预训练仅使用训练节点 |
-| 结论 | 存在泄漏风险 | 泄漏风险显著降低 |
+| Node2Vec ct val→test AUC 差距 | +0.234（v3 5-Fold 中发现） | **+0.003**（修复后重新运行 v3） |
+| 结论 | 存在泄漏风险 | 泄漏风险基本消除 |
 
 **Node2Vec 泄漏修复细节**：
 
@@ -308,6 +308,7 @@ v3 5-Fold 交叉验证中发现 Node2Vec 自实现版本 ct Test AUC（0.950）�
 2. `_build_adj` 仅保留训练节点之间的边，移除指向验证/测试节点的边。
 3. skip-gram 负采样仅在训练节点集合内执行，避免更新验证/测试节点嵌入。
 4. 临时验证脚本 `test_n2v_fix.py` 确认：训练节点 embedding 被更新，非训练节点 embedding 保持 Xavier 初始化不变。
+5. 修复后重新运行完整 `ablation_hgt_vs_gat.py`：Node2Vec ct Test AUC 降至 0.851 ± 0.020，Val AUC 0.848 ± 0.030，差距 +0.003，与 GAT/GCN 处于同一梯队。
 
 修复后 Node2Vec 不再通过全局图结构提前获取验证/测试节点信息，评估更公平。
 
