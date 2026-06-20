@@ -232,6 +232,25 @@ def test_hetero_link_prediction_model_from_data() -> None:
     assert out["gene"].shape == (10, 4)
 
 
+def test_gat_link_prediction_model_from_data() -> None:
+    """HeteroLinkPredictionModel 使用 GAT 编码器时应正确前向传播."""
+    data = HeteroData()
+    data["gene"].x = torch.randn(10, 8)
+    data["compound"].x = torch.randn(5, 6)
+    data["gene", "interacts", "gene"].edge_index = torch.tensor([[0, 1], [1, 2]])
+    data["compound", "targets", "gene"].edge_index = torch.tensor([[0, 1], [1, 2]])
+
+    model = HeteroLinkPredictionModel.from_hetero_data(
+        data, hidden_dim=8, out_dim=4, encoder_type="gat"
+    )
+    assert model.encoder_type == "gat"
+    out = model(data.x_dict, data.edge_index_dict)
+    assert "gene" in out
+    assert "compound" in out
+    assert out["gene"].shape == (10, 4)
+    assert out["compound"].shape == (5, 4)
+
+
 def test_split_edges() -> None:
     """_split_edges 应按比例划分边."""
     edge_index = torch.arange(100).unsqueeze(0).repeat(2, 1)

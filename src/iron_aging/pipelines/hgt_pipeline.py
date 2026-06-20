@@ -231,15 +231,25 @@ class HGTLinkPredictionPipeline(Pipeline):
         num_heads = _to_int(model_config.get("num_heads"), 4)
         num_layers = _to_int(model_config.get("num_layers"), 2)
         dropout = _to_float(model_config.get("dropout"), 0.3)
+        encoder_type = str(model_config.get("encoder_type", "hgt")).lower()
 
         model = HeteroLinkPredictionModel.from_hetero_data(
             train_data,
             hidden_dim=hidden_dim,
             out_dim=out_dim,
+            encoder_type=encoder_type,
             num_heads=num_heads,
             num_layers=num_layers,
             dropout=dropout,
         ).to(device)
+        logger.info(
+            "使用编码器: %s, hidden_dim=%d, out_dim=%d, heads=%d, layers=%d",
+            encoder_type,
+            hidden_dim,
+            out_dim,
+            num_heads,
+            num_layers,
+        )
 
         optimizer = torch.optim.Adam(
             model.parameters(),

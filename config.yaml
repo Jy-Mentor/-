@@ -44,6 +44,7 @@ model:
   dropout: 0.3
   gat_residual_weight: 0.3
   num_hgt_layers: 2
+  encoder_type: gat  # hgt | gat
   use_vib: true
   use_self_distill: true
 
