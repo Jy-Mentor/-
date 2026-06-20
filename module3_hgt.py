@@ -2444,6 +2444,20 @@ def _build_other_edges(
             compound_pocket_edges.append((compound_to_idx[comp], 0))
     logger.info(f"  compound_pocket 边: {len(compound_pocket_edges)}")
 
+    # ACSL4 文献 curated 高置信度相互作用边（来自 STRING v12.0 score>=600）
+    acsl4_curated_edges = []
+    acsl4_file = BASE_DIR / "network_files" / "acsl4_curated_edges.csv"
+    if acsl4_file.exists():
+        acsl4_df = pd.read_csv(acsl4_file)
+        for _, row in acsl4_df.iterrows():
+            a = str(row.get("gene_a", "")).strip()
+            b = str(row.get("gene_b", "")).strip()
+            if a in gene_to_idx and b in gene_to_idx and a != b:
+                ia, ib = gene_to_idx[a], gene_to_idx[b]
+                acsl4_curated_edges.append((ia, ib))
+                acsl4_curated_edges.append((ib, ia))
+    logger.info(f"  acsl4_curated 边: {len(acsl4_curated_edges)}")
+
     lr_to_gene_edges = []
     celltype_express_edges = []
 
@@ -2455,6 +2469,7 @@ def _build_other_edges(
         compound_pocket_edges,
         lr_to_gene_edges,
         celltype_express_edges,
+        acsl4_curated_edges,
     )
 
 
@@ -2599,6 +2614,7 @@ def build_heterogeneous_graph() -> dict:
         compound_pocket_edges,
         lr_to_gene_edges,
         celltype_express_edges,
+        acsl4_curated_edges,
     ) = _build_other_edges(
         compounds, compound_to_idx, gene_to_idx, pathway_to_idx, diseases, disease_to_idx
     )
@@ -2627,6 +2643,7 @@ def build_heterogeneous_graph() -> dict:
         "gene_to_compound": gene_to_compound_edges,
         "gene_to_celltype": gene_to_celltype_edges,
         "string_ppi": string_ppi_edges,
+        "acsl4_curated": acsl4_curated_edges,
     }
 
     graph_data = _assemble_graph_data(
@@ -3764,6 +3781,8 @@ def build_pyg_data(graph_data: dict):
         "compound_targets": ("compound", "targets", "gene"),
         "gene_disease": ("gene", "associated_with", "disease"),
         "compound_pocket": ("compound", "binds_to", "pocket"),
+        # ACSL4 文献 curated 高置信度相互作用边
+        "acsl4_curated": ("gene", "curated_interacts_with", "gene"),
         # 反向边 (基因聚合跨类型信息)
         "pathway_to_gene": ("pathway", "rev_enriched_in", "gene"),
         "disease_to_gene": ("disease", "rev_associated_with", "gene"),

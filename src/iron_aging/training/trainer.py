@@ -164,7 +164,6 @@ class HGTTrainer:
         Returns:
             如果应继续训练返回 True, 触发早停返回 False.
         """
-        self.history["val_auc"].append(val_metric)
         if val_metric > self.best_val_metric:
             self.best_val_metric = val_metric
             self.patience_counter = 0
@@ -174,3 +173,53 @@ class HGTTrainer:
             logger.info("早停触发: %d 轮未提升", self.early_stopping_patience)
             return False
         return True
+
+    def fit(
+        self,
+        data: HeteroData,
+        train_edge_label_index: torch.Tensor,
+        train_edge_labels: torch.Tensor,
+        val_edge_label_index: torch.Tensor,
+        val_edge_labels: torch.Tensor,
+        epochs: int = 200,
+    ) -> dict[str, list[float]]:
+        """端到端单任务训练循环.
+
+        Args:
+            data: 训练图 (HeteroData).
+            train_edge_label_index: 训练边索引 [2, E].
+            train_edge_labels: 训练边标签 [E].
+            val_edge_label_index: 验证边索引 [2, E].
+            val_edge_labels: 验证边标签 [E].
+            epochs: 最大训练轮数.
+
+        Returns:
+            训练历史记录 (train_loss/val_loss/val_auc/val_ap).
+        """
+        for epoch in range(1, epochs + 1):
+            train_loss = self.train_epoch(
+                data, train_edge_label_index, train_edge_labels
+            )
+            self.history["train_loss"].append(train_loss)
+
+            val_metrics = self.evaluate(data, val_edge_label_index, val_edge_labels)
+            self.history["val_loss"].append(val_metrics["loss"])
+            self.history["val_auc"].append(val_metrics["auc"])
+            self.history["val_ap"].append(val_metrics["ap"])
+
+            if epoch % 10 == 0 or epoch == 1:
+                logger.info(
+                    "[epoch %d] train_loss=%.4f val_auc=%.4f val_ap=%.4f",
+                    epoch,
+                    train_loss,
+                    val_metrics["auc"],
+                    val_metrics["ap"],
+                )
+
+            if not self.step(val_metrics["auc"]):
+                break
+
+        logger.info(
+            "训练结束, 最佳 val_auc=%.4f", self.best_val_metric
+        )
+        return self.history

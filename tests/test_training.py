@@ -90,3 +90,44 @@ def test_hgt_trainer_with_custom_edge_type():
     metrics = trainer.evaluate(data, edge_label_index, edge_labels)
     assert "auc" in metrics
     assert "ap" in metrics
+
+
+def test_hgt_trainer_fit():
+    """验证 HGTTrainer.fit 端到端训练循环."""
+    from torch_geometric.data import HeteroData
+
+    from iron_aging.models.link_predictor import LinkPredictor
+    from iron_aging.training.trainer import HGTTrainer
+
+    data = HeteroData()
+    data["compound"].x = torch.randn(4, 8)
+    data["gene"].x = torch.randn(5, 8)
+    data["compound", "targets", "gene"].edge_index = torch.tensor([[0, 1], [0, 1]])
+
+    class DummyModel(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.predictor = LinkPredictor(8, 16)
+
+        def forward(self, x_dict, edge_index_dict):
+            return x_dict
+
+    model = DummyModel()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    trainer = HGTTrainer(
+        model,
+        optimizer,
+        edge_type=("compound", "targets", "gene"),
+        early_stopping_patience=5,
+    )
+
+    train_idx = torch.tensor([[0, 1], [0, 1]])
+    train_labels = torch.tensor([1.0, 0.0])
+    val_idx = torch.tensor([[0, 1], [1, 0]])
+    val_labels = torch.tensor([1.0, 0.0])
+
+    history = trainer.fit(data, train_idx, train_labels, val_idx, val_labels, epochs=10)
+
+    assert 0 < len(history["train_loss"]) <= 10
+    assert len(history["train_loss"]) == len(history["val_auc"])
+    assert history["train_loss"][0] > history["train_loss"][-1]

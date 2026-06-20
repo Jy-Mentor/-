@@ -50,6 +50,13 @@ import module3_hgt  # type: ignore[import-not-found]
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
+# 同时将完整日志写入文件，便于后续审计与归档
+_LOG_FILE = PROJECT_ROOT / "L3_results" / "ablation_run_v4.log"
+_LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+_file_handler = logging.FileHandler(_LOG_FILE, mode="w", encoding="utf-8")
+_file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logging.getLogger().addHandler(_file_handler)
+
 SEED = 42
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 HIDDEN = 64
@@ -69,7 +76,7 @@ TEST_RATIO = 0.15
 # 交叉验证配置
 N_FOLDS = 5
 USE_CV = True  # 设为 False 可仅运行单次划分
-STRICT_TRAIN_GRAPH = False  # 设为 True 可移除与 val/test 节点相连的间接边
+STRICT_TRAIN_GRAPH = True  # 设为 True 可移除与 val/test 节点相连的间接边
 
 # Node2Vec 配置
 N2V_PRETRAIN_EPOCHS = 50
@@ -393,7 +400,7 @@ def build_strict_train_graph(
             mask &= ~np.isin(ei[0], list(protected_dst))
         if dt == src_type:
             mask &= ~np.isin(ei[1], list(protected_src))
-        train_data[et].edge_index = torch.from_numpy(ei[:, mask]).long()
+        train_data[et].edge_index = torch.from_numpy(ei[:, mask]).long().to(data[key].edge_index.device)
 
     logger.info("严格训练图已构建，移除了与 val/test 节点相连的间接边")
     return train_data

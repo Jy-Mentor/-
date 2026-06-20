@@ -195,20 +195,76 @@ def _get_default_db_config() -> dict:
 
 def _safe_request(url, method='GET', timeout=60, **kwargs):
     """带重试的HTTP请求"""
+    import traceback
+
     import requests
+
+    # 默认添加浏览器 User-Agent, 避免部分站点(如 PanglaoDB)返回 403
+    headers = kwargs.pop('headers', {})
+    headers.setdefault(
+        'User-Agent',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+        '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    )
+
     for attempt in range(3):
         try:
             if method == 'GET':
-                resp = requests.get(url, timeout=timeout, **kwargs)
+                resp = requests.get(url, headers=headers, timeout=timeout, **kwargs)
             else:
-                resp = requests.post(url, timeout=timeout, **kwargs)
+                resp = requests.post(url, headers=headers, timeout=timeout, **kwargs)
             resp.raise_for_status()
             return resp
-        except Exception as e:
+        except Exception:
+            traceback.print_exc()
             if attempt < 2:
                 time.sleep(2 ** attempt)
             else:
-                raise e
+                raise
+
+
+def _download_github_file_bytes(owner: str, repo: str, path: str, ref: str | None = None) -> bytes:
+    """通过 GitHub Contents API 下载文件并返回原始 bytes
+
+    用于替代 raw.githubusercontent.com, 后者在中国大陆网络环境下
+    经常出现连接重置/超时(错误 10054)。GitHub Contents API 通过
+    api.github.com 返回 base64 编码内容, 稳定性更好。
+
+    Args:
+        owner: 仓库所有者
+        repo: 仓库名
+        path: 文件路径
+        ref: 分支/tag/commit SHA, 可选
+
+    Returns:
+        文件原始二进制内容
+    """
+    import base64
+    import traceback
+
+    import requests
+
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    headers = {
+        'User-Agent': 'download_external_data.py',
+        'Accept': 'application/vnd.github.v3+json',
+    }
+    params = {'ref': ref} if ref else {}
+
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, params=params, headers=headers, timeout=60)
+            resp.raise_for_status()
+            payload = resp.json()
+            if 'content' not in payload:
+                raise ValueError(f"GitHub API 响应缺少 content: {list(payload.keys())}")
+            return base64.b64decode(payload['content'])
+        except Exception:
+            traceback.print_exc()
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+            else:
+                raise
 
 
 # =============================================================================
@@ -218,17 +274,24 @@ def _safe_request(url, method='GET', timeout=60, **kwargs):
 # 数据: https://www.gsea-msigdb.org/gsea/msigdb/
 # 使用: Mouse gene sets (gene symbols), KEGG + Reactome + Hallmark
 
+# MSigDB 2023.1 Mouse release 公开 GMT 下载链接
+# 原 download_geneset.jsp 接口已要求登录, 现改用 Broad 公开静态文件
+# 来源: https://data.broadinstitute.org/gsea-msigdb/msigdb/release/2023.1.Mm/
+MSIGDB_RELEASE = '2023.1.Mm'
+MSIGDB_BASE_URL = (
+    'https://data.broadinstitute.org/gsea-msigdb/msigdb/release/'
+    f'{MSIGDB_RELEASE}'
+)
 MSIGDB_MOUSE_GENESETS = {
     # Hallmark gene sets (50个, 概括生物学状态)
-    'hallmark': 'https://www.gsea-msigdb.org/gsea/msigdb/download_geneset.jsp?geneSetName=H&fileType=gmt&species=Mus%20musculus',
-    # KEGG pathways (186个)
-    'kegg': 'https://www.gsea-msigdb.org/gsea/msigdb/download_geneset.jsp?geneSetName=CP:KEGG_LEGACY&fileType=gmt&species=Mus%20musculus',
-    # Reactome pathways (1736个)
-    'reactome': 'https://www.gsea-msigdb.org/gsea/msigdb/download_geneset.jsp?geneSetName=CP:REACTOME&fileType=gmt&species=Mus%20musculus',
+    'hallmark': f'{MSIGDB_BASE_URL}/mh.all.v{MSIGDB_RELEASE}.symbols.gmt',
+    # Reactome pathways
+    'reactome': f'{MSIGDB_BASE_URL}/m2.cp.reactome.v{MSIGDB_RELEASE}.symbols.gmt',
     # WikiPathways
-    'wikipathways': 'https://www.gsea-msigdb.org/gsea/msigdb/download_geneset.jsp?geneSetName=CP:WIKIPATHWAYS&fileType=gmt&species=Mus%20musculus',
+    'wikipathways': f'{MSIGDB_BASE_URL}/m2.cp.wikipathways.v{MSIGDB_RELEASE}.symbols.gmt',
     # GO Biological Process
-    'go_bp': 'https://www.gsea-msigdb.org/gsea/msigdb/download_geneset.jsp?geneSetName=C5:BP&fileType=gmt&species=Mus%20musculus',
+    'go_bp': f'{MSIGDB_BASE_URL}/m5.go.bp.v{MSIGDB_RELEASE}.symbols.gmt',
+    # KEGG 单独文件在 2023.1.Mm 中不再提供, 由 download_kegg_pathway_genes() 通过 KEGG REST API 补充
 }
 
 def download_msigdb_gene_pathways():
@@ -365,31 +428,58 @@ def download_panglaodb_markers():
 # 3. CellChatDB 配体-受体对
 # =============================================================================
 # 文献: Jin et al., Nature Communications 2021
-# GitHub: https://github.com/sqjin/CellChat
-# 数据位置: inst/extdata/interaction_input_CellChatDB.csv
+# GitHub: https://github.com/sqjin/CellChat (v1 已归档, 数据以 .rda 形式存在)
+# 数据位置: data/CellChatDB.mouse.rda (v1 归档 commit)
+# 解析方式: 通过 GitHub Contents API 获取 base64 二进制, 再用 rdata 解析
 
-CELLCHAT_RAW_URL = (
-    "https://raw.githubusercontent.com/sqjin/CellChat/master/inst/extdata/"
-    "interaction_input_CellChatDB.csv"
-)
+# sqjin/CellChat v1 最后一个包含 CellChatDB.mouse.rda 的 commit
+CELLCHAT_V1_COMMIT = "5d3ac89bb06c071802ba4e231e5ff0068adff2b2"
+
 
 def download_cellchat_lr_pairs():
-    """从 CellChatDB GitHub 下载小鼠配体-受体对"""
+    """从 CellChatDB GitHub 归档仓库下载小鼠配体-受体对
+
+    CellChat v1 仓库中 LR 数据以 R .rda 格式存储, 不再提供 CSV。
+    本函数通过 GitHub Contents API 获取该文件 base64 内容,
+    使用 rdata 解析后提取 interaction 数据框的 ligand/receptor/pathway_name。
+    """
     out_file = OUT_DIR / "cellchat_lr_pairs.csv"
     if out_file.exists():
         logger.info(f"  CellChatDB 已存在: {out_file}")
         return out_file
 
     logger.info("=== 下载 CellChatDB 配体-受体对 ===")
+    logger.info(f"  来源: sqjin/CellChat @ {CELLCHAT_V1_COMMIT}")
+
     rows = []
     try:
-        resp = _safe_request(CELLCHAT_RAW_URL)
-        lines = resp.text.strip().split('\n')
-        reader = csv.DictReader(lines)
-        for row in reader:
-            ligand = row.get('ligand', '').strip()
-            receptor = row.get('receptor', '').strip()
-            pathway = row.get('pathway_name', '').strip()
+        import io
+
+        import rdata
+
+        raw_bytes = _download_github_file_bytes(
+            'sqjin', 'CellChat', 'data/CellChatDB.mouse.rda', ref=CELLCHAT_V1_COMMIT
+        )
+        logger.info(f"  下载 .rda 文件: {len(raw_bytes)} bytes")
+
+        parsed = rdata.read_rda(io.BytesIO(raw_bytes))
+        cellchat_db = parsed.get('CellChatDB.mouse')
+        if cellchat_db is None:
+            raise KeyError("CellChatDB.mouse 对象不存在于 .rda 文件")
+
+        interaction = cellchat_db.get('interaction')
+        if interaction is None:
+            raise KeyError("CellChatDB.mouse$interaction 不存在")
+
+        required_cols = {'ligand', 'receptor', 'pathway_name'}
+        missing_cols = required_cols - set(interaction.columns)
+        if missing_cols:
+            raise KeyError(f"interaction 数据框缺少列: {missing_cols}")
+
+        for _, row in interaction.iterrows():
+            ligand = str(row['ligand']).strip()
+            receptor = str(row['receptor']).strip()
+            pathway = str(row['pathway_name']).strip()
             if ligand and receptor:
                 rows.append({
                     'ligand': ligand.upper(),
@@ -398,8 +488,10 @@ def download_cellchat_lr_pairs():
                     'source': 'CellChatDB',
                 })
         logger.info(f"  CellChatDB: {len(rows)} 对LR")
-    except Exception as e:
-        logger.warning(f"  CellChatDB 下载失败: {e}")
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        logger.warning("  CellChatDB 下载失败, 详见上方异常")
 
     if rows:
         with open(out_file, 'w', newline='', encoding='utf-8') as f:
@@ -488,6 +580,9 @@ def download_pubchem_compound_props():
 # 文献: Szklarczyk et al., NAR 2021; Kuhn et al., NAR 2014
 # 数据: http://stitch.embl.de/download/ (小鼠, chemical-protein links)
 # 物种: 10090 (Mus musculus)
+# 注意: STITCH/STRING 下载服务器对自动化请求限制较严, 经常返回 403/404,
+#       且官方 bulk 下载链接版本会变化。本函数保留尝试, 失败时仅记录警告,
+#       不阻塞后续 DisGeNET/STRING API 等数据源。
 
 STITCH_DOWNLOAD_URL = (
     "http://stitch.embl.de/download/"
@@ -551,8 +646,10 @@ def download_stitch_compound_targets():
                         'source': 'STITCH_v5',
                     })
         logger.info(f"  STITCH: {len(rows)} 条化合物-靶点关联 (score >= 400)")
-    except Exception as e:
-        logger.warning(f"  STITCH 下载失败: {e}")
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        logger.warning("  STITCH 下载失败, 详见上方异常 (服务器可能限制自动化下载)")
 
     if rows:
         with open(out_file, 'w', newline='', encoding='utf-8') as f:
@@ -572,10 +669,8 @@ def download_stitch_compound_targets():
 # DisGeNET curated gene-disease associations (GitHub 开源镜像, 无需注册)
 # 原始仓库: https://github.com/dhimmel/disgenet
 # 数据版本: DisGeNET v3.0 (May 2015), Open Database License
-DISGENET_CURATED_URL = (
-    "https://raw.githubusercontent.com/dhimmel/disgenet/master/download/"
-    "curated_gene_disease_associations.txt.gz"
-)
+# 下载方式: 使用 GitHub Contents API (见 _download_github_file_bytes),
+#          替代 raw.githubusercontent.com, 避免网络连接重置
 
 def download_disgenet_disease_genes():
     """从 DisGeNET GitHub 开源镜像下载疾病-基因关联 (公开 curated 数据集)
@@ -601,8 +696,12 @@ def download_disgenet_disease_genes():
     disease_hits = {d: set() for d in target_diseases_config}
     rows = []
     try:
-        resp = _safe_request(DISGENET_CURATED_URL)
-        with gzip.GzipFile(fileobj=io.BytesIO(resp.content)) as gz:
+        # 使用 GitHub Contents API 替代 raw.githubusercontent.com,
+        # 避免在中国大陆网络下连接重置/超时
+        raw_bytes = _download_github_file_bytes(
+            'dhimmel', 'disgenet', 'download/curated_gene_disease_associations.txt.gz'
+        )
+        with gzip.GzipFile(fileobj=io.BytesIO(raw_bytes)) as gz:
             content = gz.read().decode('utf-8')
             lines = content.strip().split('\n')
             header = lines[0].strip().split('\t')
