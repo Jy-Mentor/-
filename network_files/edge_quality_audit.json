@@ -1,0 +1,573 @@
+{
+  "core_genes_count": 98,
+  "files_audited": 21,
+  "files": {
+    "acsl4_curated_edges.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\acsl4_curated_edges.csv",
+      "classification": "curated_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "列 gene_b 中 5 个节点不在 98 核心基因集内"
+      ],
+      "info": [],
+      "stats": {
+        "rows": 10,
+        "columns": [
+          "gene_a",
+          "gene_b",
+          "score",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "gene_a",
+        "gene_b"
+      ],
+      "recommendation": "人工复核"
+    },
+    "cellchat_lr_pairs.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\cellchat_lr_pairs.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "重复边 2 条",
+        "自环边 23 条（非允许类型）",
+        "列 ligand 中 105 个可疑基因名",
+        "  示例: ['ACTIVIN AB', 'INHIBIN A', 'INHIBIN B', 'IL23 COMPLEX', 'IL27 COMPLEX', 'NPNT COMPLEX 1', 'NPNT COMPLEX 2', 'ITGAL_ITGB2', 'ITGAL_ITGB2L', 'H2-T23']",
+        "列 receptor 中 935 个可疑基因名",
+        "  示例: ['TGFBR1_R2', 'ACVR1B_TGFBR2', 'ACVR1C_TGFBR2', 'ACVR1_TGFBR', 'BMPR1A_ACVR2A', 'BMPR1A_ACVR2B', 'BMPR1A_BMPR2', 'BMPR1B_ACVR2A', 'BMPR1B_ACVR2B', 'BMPR1B_BMPR2']"
+      ],
+      "info": [
+        "列 ligand 中 2001 个节点不在 98 核心基因集内",
+        "列 receptor 中 2003 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 2019,
+        "columns": [
+          "ligand",
+          "receptor",
+          "pathway",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "ligand",
+        "receptor"
+      ],
+      "recommendation": "可作为参考数据，但进入核心图前需清洗"
+    },
+    "celltype_marker_genes.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\celltype_marker_genes.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 11,
+        "columns": [
+          "celltype",
+          "gene",
+          "source",
+          "confidence",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "celltype",
+        "gene"
+      ],
+      "recommendation": "质量合格"
+    },
+    "chembl_compound_targets.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\chembl_compound_targets.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "列 gene 中 7210 个可疑基因名",
+        "  示例: ['ADP-GLUCOSE RECEPTOR', 'ADPG-R', 'ALDEHYDE DEHYDROGENASE FAMILY 1 MEMBER A7', 'ALDEHYDE DEHYDROGENASE PHENOBARBITAL-INDUCIBLE', 'ALDEHYDE DEHYDROGENASE, CYTOSOLIC 1', 'ALDH CLASS 1', 'ALDH-E1', 'ALKALINE PHOSPHATASE 3', 'ALL-1', 'AMINE OXIDASE [FLAVIN-CONTAINING] A']"
+      ],
+      "info": [
+        "列 gene 缺失值 4 条",
+        "列 gene 中 11246 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 11319,
+        "columns": [
+          "compound",
+          "gene",
+          "target_chembl_id",
+          "molecule_chembl_id",
+          "standard_type",
+          "standard_value",
+          "standard_units",
+          "pchembl_value",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "compound",
+        "gene"
+      ],
+      "recommendation": "可作为参考数据，但进入核心图前需清洗"
+    },
+    "chembl_compound_targets_cleaned.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\chembl_compound_targets_cleaned.csv",
+      "classification": "curated_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 77,
+        "columns": [
+          "compound",
+          "gene",
+          "target_chembl_id",
+          "molecule_chembl_id",
+          "standard_type",
+          "standard_value",
+          "standard_units",
+          "pchembl_value",
+          "source",
+          "confidence",
+          "confidence_level"
+        ]
+      },
+      "node_columns": [
+        "compound",
+        "gene"
+      ],
+      "recommendation": "质量合格"
+    },
+    "compound_target_edges.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\compound_target_edges.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 255,
+        "columns": [
+          "compound",
+          "gene",
+          "source",
+          "confidence",
+          "confidence_level",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "compound",
+        "gene"
+      ],
+      "recommendation": "质量合格"
+    },
+    "compound_target_edges_curated.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\compound_target_edges_curated.csv",
+      "classification": "curated_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 91,
+        "columns": [
+          "compound",
+          "gene"
+        ]
+      },
+      "node_columns": [
+        "compound",
+        "gene"
+      ],
+      "recommendation": "质量合格"
+    },
+    "disease_gene_associations.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\disease_gene_associations.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 97,
+        "columns": [
+          "disease",
+          "gene",
+          "source",
+          "confidence",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "disease",
+        "gene"
+      ],
+      "recommendation": "质量合格"
+    },
+    "disgenet_ciri_genes.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\disgenet_ciri_genes.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [
+        "列 gene 中 77 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 88,
+        "columns": [
+          "disease",
+          "gene",
+          "score",
+          "disease_id",
+          "disease_name",
+          "target_name"
+        ]
+      },
+      "node_columns": [
+        "disease",
+        "gene"
+      ],
+      "recommendation": "质量合格"
+    },
+    "disgenet_disease_genes.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\disgenet_disease_genes.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [
+        "列 gene 中 170 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 184,
+        "columns": [
+          "disease",
+          "gene",
+          "disease_name",
+          "disease_id",
+          "score",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "disease",
+        "gene"
+      ],
+      "recommendation": "质量合格"
+    },
+    "gene_coexp_edges.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\gene_coexp_edges.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 306,
+        "columns": [
+          "gene_A",
+          "gene_B",
+          "score",
+          "source",
+          "confidence",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "gene_A",
+        "gene_B"
+      ],
+      "recommendation": "质量合格"
+    },
+    "gene_pathway_enrichment.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\gene_pathway_enrichment.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 1236,
+        "columns": [
+          "gene",
+          "pathway",
+          "source",
+          "adj_p_value",
+          "confidence",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "gene",
+        "pathway"
+      ],
+      "recommendation": "质量合格"
+    },
+    "gene_pathway_enrichment_external.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\gene_pathway_enrichment_external.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "重复边 4335 条",
+        "列 gene 中 123 个可疑基因名",
+        "  示例: ['GAPDH-PS15', 'IGKV2-137', 'IGKV1-131', 'IGKV17-127', 'IGKV17-121', 'IGKV2-112', 'IGKV15-103', 'IGKV1-99', 'IGKV12-98', 'IGKV1-88']"
+      ],
+      "info": [
+        "列 gene 中 8092 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 8292,
+        "columns": [
+          "pathway",
+          "gene",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "gene",
+        "pathway"
+      ],
+      "recommendation": "可作为参考数据，但进入核心图前需清洗"
+    },
+    "kegg_pathway_genes.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\kegg_pathway_genes.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "列 gene_id 中 10084 个可疑基因名",
+        "  示例: ['mmu:11687', 'mmu:11793', 'mmu:12870', 'mmu:13058', 'mmu:14081', 'mmu:14319', 'mmu:14325', 'mmu:14629', 'mmu:14630', 'mmu:14792']",
+        "列 gene_id 中 10084 个小鼠 ID（如 mmu:...），物种可能错误"
+      ],
+      "info": [
+        "列 gene_id 中 10084 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 10084,
+        "columns": [
+          "pathway",
+          "gene_id",
+          "kegg_id",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "gene_id",
+        "pathway"
+      ],
+      "recommendation": "检查物种，必要时替换为人类数据"
+    },
+    "ligand_receptor_pairs.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\ligand_receptor_pairs.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 12,
+        "columns": [
+          "ligand",
+          "receptor",
+          "source",
+          "confidence",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "ligand",
+        "receptor"
+      ],
+      "recommendation": "质量合格"
+    },
+    "msigdb_gene_pathways.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\msigdb_gene_pathways.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "列 gene 中 9015 个可疑基因名",
+        "  示例: ['GAPDH-PS15', 'SMS-PS', 'NKX3-1', 'H2-AA', 'H2-DMA', 'NKX6-1', 'PTGES3-PS', 'NKX2-5', 'HBA-X', 'RPS19-PS6']"
+      ],
+      "info": [
+        "列 gene 中 735072 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 749492,
+        "columns": [
+          "pathway",
+          "gene",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "gene",
+        "pathway"
+      ],
+      "recommendation": "可作为参考数据，但进入核心图前需清洗"
+    },
+    "opentargets_ciri_genes.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\opentargets_ciri_genes.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "列 gene 中 6 个可疑基因名",
+        "  示例: ['MT-CO2', 'MT-CO1', 'MT-ND1', 'MT-ND2', 'NKX2-5', 'MT-CYB']"
+      ],
+      "info": [
+        "列 gene 中 1097 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 1109,
+        "columns": [
+          "disease",
+          "gene",
+          "score",
+          "efo_id",
+          "disease_name",
+          "target_name"
+        ]
+      },
+      "node_columns": [
+        "disease",
+        "gene"
+      ],
+      "recommendation": "可作为参考数据，但进入核心图前需清洗"
+    },
+    "panglaodb_celltype_markers.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\panglaodb_celltype_markers.csv",
+      "classification": "reference",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "重复边 1428 条",
+        "列 gene 中 1468 个可疑基因名",
+        "  示例: ['PROTEIN-CODING GENE', 'PROTEIN CODING GENE', 'ANTISENSE LNCRNA GENE', 'NON-CODING RNA', 'LINCRNA GENE']"
+      ],
+      "info": [
+        "列 gene 中 1470 个节点不在 98 核心基因集内"
+      ],
+      "stats": {
+        "rows": 1470,
+        "columns": [
+          "celltype",
+          "gene",
+          "species",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "celltype",
+        "gene"
+      ],
+      "recommendation": "可作为参考数据，但进入核心图前需清洗"
+    },
+    "panglaodb_celltype_markers_cleaned.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\panglaodb_celltype_markers_cleaned.csv",
+      "classification": "curated_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [
+        "列 gene 中 1 个节点不在 98 核心基因集内"
+      ],
+      "info": [],
+      "stats": {
+        "rows": 1,
+        "columns": [
+          "celltype",
+          "gene",
+          "species",
+          "source"
+        ]
+      },
+      "node_columns": [
+        "celltype",
+        "gene"
+      ],
+      "recommendation": "人工复核"
+    },
+    "string_ppi_edges.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\string_ppi_edges.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 530,
+        "columns": [
+          "protein_A",
+          "protein_B",
+          "score",
+          "source",
+          "confidence",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "protein_A",
+        "protein_B"
+      ],
+      "recommendation": "质量合格"
+    },
+    "trrust_tf_target.csv": {
+      "file": "C:\\Users\\Jy-Mentor-7\\Desktop\\铁衰老\\network_files\\trrust_tf_target.csv",
+      "classification": "core_edge",
+      "exists": true,
+      "errors": [],
+      "warnings": [],
+      "info": [],
+      "stats": {
+        "rows": 51,
+        "columns": [
+          "tf",
+          "target",
+          "source",
+          "confidence",
+          "download_date"
+        ]
+      },
+      "node_columns": [
+        "tf",
+        "target"
+      ],
+      "recommendation": "质量合格"
+    }
+  },
+  "summary": {
+    "total_files": 21,
+    "files_with_errors": 0,
+    "files_with_warnings": 9,
+    "total_warnings": 23,
+    "core_edge_files": [
+      "celltype_marker_genes.csv",
+      "compound_target_edges.csv",
+      "disease_gene_associations.csv",
+      "gene_coexp_edges.csv",
+      "gene_pathway_enrichment.csv",
+      "ligand_receptor_pairs.csv",
+      "string_ppi_edges.csv",
+      "trrust_tf_target.csv"
+    ],
+    "reference_files": [
+      "cellchat_lr_pairs.csv",
+      "chembl_compound_targets.csv",
+      "disgenet_ciri_genes.csv",
+      "disgenet_disease_genes.csv",
+      "gene_pathway_enrichment_external.csv",
+      "kegg_pathway_genes.csv",
+      "msigdb_gene_pathways.csv",
+      "opentargets_ciri_genes.csv",
+      "panglaodb_celltype_markers.csv"
+    ]
+  }
+}

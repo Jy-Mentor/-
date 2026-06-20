@@ -74,6 +74,23 @@ def create_session():
     s.headers.update(HEADERS)
     return s
 
+
+# 边元数据（来源、置信度、下载日期），与 _clean_core_network_edges.py 保持一致
+DOWNLOAD_DATE = pd.Timestamp.now().strftime("%Y-%m-%d")
+
+
+def add_edge_metadata(df: pd.DataFrame, source: str, confidence) -> pd.DataFrame:
+    """为边 DataFrame 增加 source/confidence/download_date 列."""
+    df = df.copy()
+    df["source"] = source
+    if callable(confidence):
+        df["confidence"] = confidence(df).round(4)
+    else:
+        df["confidence"] = confidence
+    df["download_date"] = DOWNLOAD_DATE
+    return df
+
+
 # ================================================================
 # 文件 1: gene_coexp_edges.csv
 # 来源: STRING 数据库，筛选 combined_score >= 700
@@ -106,6 +123,7 @@ def generate_gene_coexp_edges():
         result.columns = ["gene_A", "gene_B", "score"]
         result = result.drop_duplicates()
         result = result.sort_values("score", ascending=False)
+        result = add_edge_metadata(result, "STRING", lambda d: d["score"].clip(0, 1000) / 1000.0)
 
         output_path = OUTPUT_DIR / "gene_coexp_edges.csv"
         result.to_csv(output_path, index=False)
@@ -144,6 +162,7 @@ def _generate_coexp_from_raw():
         result = pd.concat(edges, ignore_index=True)
         result.columns = ["gene_A", "gene_B", "score"]
         result = result.drop_duplicates().sort_values("score", ascending=False)
+        result = add_edge_metadata(result, "STRING", lambda d: d["score"].clip(0, 1000) / 1000.0)
         output_path = OUTPUT_DIR / "gene_coexp_edges.csv"
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条边到 {output_path}")
@@ -198,6 +217,8 @@ def generate_pathway_enrichment():
 
             if rows:
                 result = pd.DataFrame(rows).drop_duplicates()
+                result["confidence"] = (1 - result["adj_p_value"].clip(0, 1)).round(4)
+                result["download_date"] = DOWNLOAD_DATE
                 result.to_csv(output_path, index=False)
                 log.info(f"  → 保存 {len(result)} 条 gene-pathway 关系到 {output_path}")
                 return True
@@ -301,11 +322,14 @@ def _pathway_enrichment_local_fallback(output_path):
 
     if rows:
         result = pd.DataFrame(rows).drop_duplicates()
+        result["confidence"] = (1 - result["adj_p_value"].clip(0, 1)).round(4)
+        result["download_date"] = DOWNLOAD_DATE
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 gene-pathway 关系到 {output_path} (local fallback)")
         return True
     else:
-        pd.DataFrame(columns=["gene", "pathway", "source", "adj_p_value"]).to_csv(output_path, index=False)
+        _empty_pathway_cols = ["gene", "pathway", "source", "adj_p_value", "confidence", "download_date"]
+        pd.DataFrame(columns=_empty_pathway_cols).to_csv(output_path, index=False)
         log.warning("  无匹配基因-通路关系")
         return False
 
@@ -340,16 +364,20 @@ def _pathway_enrichment_gprofiler(output_path):
 
         if rows:
             result = pd.DataFrame(rows).drop_duplicates()
+            result["confidence"] = (1 - result["adj_p_value"].clip(0, 1)).round(4)
+            result["download_date"] = DOWNLOAD_DATE
             result.to_csv(output_path, index=False)
             log.info(f"  → 保存 {len(result)} 条 gene-pathway 关系到 {output_path}")
             return True
         else:
             log.warning("  g:Profiler 也无显著富集结果")
-            pd.DataFrame(columns=["gene", "pathway", "source", "adj_p_value"]).to_csv(output_path, index=False)
+            _empty_pathway_cols = ["gene", "pathway", "source", "adj_p_value", "confidence", "download_date"]
+            pd.DataFrame(columns=_empty_pathway_cols).to_csv(output_path, index=False)
             return False
     except Exception as e:
         log.error(f"  g:Profiler 也失败: {e}")
-        pd.DataFrame(columns=["gene", "pathway", "source", "adj_p_value"]).to_csv(output_path, index=False)
+        _empty_pathway_cols = ["gene", "pathway", "source", "adj_p_value", "confidence", "download_date"]
+        pd.DataFrame(columns=_empty_pathway_cols).to_csv(output_path, index=False)
         return False
 
 # ================================================================
@@ -410,6 +438,7 @@ def generate_celltype_markers():
         df_filtered = df_brain[df_brain["gene"].isin(CORE_GENE_SET)]
 
         result = df_filtered[["celltype", "gene"]].drop_duplicates().sort_values(["celltype", "gene"])
+        result = add_edge_metadata(result, "PanglaoDB", 0.70)
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 celltype-gene 关系到 {output_path}")
         return True
@@ -453,11 +482,13 @@ def _celltype_markers_fallback(output_path, brain_celltypes):
 
     if rows:
         result = pd.DataFrame(rows).drop_duplicates().sort_values(["celltype", "gene"])
+        result = add_edge_metadata(result, "PanglaoDB_literature", 0.70)
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 celltype-gene 关系到 {output_path} (fallback)")
         return True
     else:
-        pd.DataFrame(columns=["celltype", "gene"]).to_csv(output_path, index=False)
+        _empty_celltype_cols = ["celltype", "gene", "source", "confidence", "download_date"]
+        pd.DataFrame(columns=_empty_celltype_cols).to_csv(output_path, index=False)
         log.warning("  无匹配基因")
         return False
 
@@ -470,7 +501,7 @@ def generate_compound_targets():
     log.info("=" * 60)
     log.info("[4/8] 生成 compound_target_edges.csv")
 
-    output_path = OUTPUT_DIR / "compound_target_edges.csv"
+    output_path = OUTPUT_DIR / "compound_target_edges_curated.csv"
 
     # 文献整理的化合物靶基因（仅限人类）
     compound_targets = {
@@ -599,6 +630,10 @@ def generate_compound_targets():
 
     if rows:
         result = pd.DataFrame(rows).drop_duplicates().sort_values(["compound", "gene"])
+        result["source"] = "curated"
+        result["confidence"] = 0.95
+        result["confidence_level"] = "high"
+        result["download_date"] = DOWNLOAD_DATE
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 compound-gene 关系到 {output_path}")
 
@@ -608,7 +643,10 @@ def generate_compound_targets():
             log.info(f"     {comp}: {count} 个靶基因")
         return True
     else:
-        pd.DataFrame(columns=["compound", "gene"]).to_csv(output_path, index=False)
+        _empty_compound_cols = [
+            "compound", "gene", "source", "confidence", "confidence_level", "download_date"
+        ]
+        pd.DataFrame(columns=_empty_compound_cols).to_csv(output_path, index=False)
         log.warning("  无匹配基因")
         return False
 
@@ -692,6 +730,7 @@ def generate_ligand_receptor_pairs():
             df = df[df["ligand"].isin(CORE_GENE_SET) & df["receptor"].isin(CORE_GENE_SET)]
 
             result = df[["ligand", "receptor"]].drop_duplicates().sort_values(["ligand", "receptor"])
+            result = add_edge_metadata(result, "CellChatDB", 0.85)
             result.to_csv(output_path, index=False)
             log.info(f"  → 保存 {len(result)} 条 ligand-receptor 对到 {output_path}")
             return True
@@ -1584,11 +1623,13 @@ def _ligand_receptor_fallback(output_path):
 
     if rows:
         result = pd.DataFrame(rows).drop_duplicates().sort_values(["ligand", "receptor"])
+        result = add_edge_metadata(result, "CellChatDB_literature", 0.85)
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 ligand-receptor 对到 {output_path} (fallback)")
         return True
     else:
-        pd.DataFrame(columns=["ligand", "receptor"]).to_csv(output_path, index=False)
+        _empty_lr_cols = ["ligand", "receptor", "source", "confidence", "download_date"]
+        pd.DataFrame(columns=_empty_lr_cols).to_csv(output_path, index=False)
         log.warning("  无匹配配体-受体对")
         return False
 
@@ -1626,6 +1667,7 @@ def generate_string_ppi_edges():
         result.columns = ["protein_A", "protein_B", "score"]
         result = result.drop_duplicates()
         result = result.sort_values("score", ascending=False)
+        result = add_edge_metadata(result, "STRING", lambda d: d["score"].clip(0, 1000) / 1000.0)
 
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条边到 {output_path}")
@@ -1669,6 +1711,7 @@ def generate_trrust_tf_target():
             df = df[mask]
 
             result = df[["tf", "target"]].drop_duplicates().sort_values(["tf", "target"])
+            result = add_edge_metadata(result, "TRRUST", 0.80)
             result.to_csv(output_path, index=False)
             log.info(f"  → 保存 {len(result)} 条 TF-target 关系到 {output_path}")
             return True
@@ -1940,11 +1983,12 @@ def _trrust_fallback(output_path):
 
     if rows:
         result = pd.DataFrame(rows).drop_duplicates().sort_values(["tf", "target"])
+        result = add_edge_metadata(result, "TRRUST_literature", 0.80)
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 TF-target 关系到 {output_path} (fallback)")
         return True
     else:
-        pd.DataFrame(columns=["tf", "target"]).to_csv(output_path, index=False)
+        pd.DataFrame(columns=["tf", "target", "source", "confidence", "download_date"]).to_csv(output_path, index=False)
         log.warning("  无匹配 TF-target 关系")
         return False
 
@@ -1977,6 +2021,12 @@ def generate_disease_gene_associations():
         else:
             result = df[["gene"]].drop_duplicates()
 
+        if "source" not in result.columns:
+            result["source"] = "curated"
+        if "confidence" not in result.columns:
+            result["confidence"] = 0.70
+        if "download_date" not in result.columns:
+            result["download_date"] = DOWNLOAD_DATE
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 disease-gene 关系到 {output_path}")
         return True
@@ -2005,6 +2055,7 @@ def generate_disease_gene_associations():
                             rows.append({"disease": disease_name, "gene": gene})
         if rows:
             result = pd.DataFrame(rows).drop_duplicates().sort_values(["disease", "gene"])
+            result = add_edge_metadata(result, "DisGeNET", 0.70)
             result.to_csv(output_path, index=False)
             log.info(f"  → 保存 {len(result)} 条 disease-gene 关系到 {output_path} (DisGeNET)")
             return True
@@ -2166,11 +2217,13 @@ def _disease_gene_fallback(output_path):
 
     if rows:
         result = pd.DataFrame(rows).drop_duplicates().sort_values(["disease", "gene"])
+        result = add_edge_metadata(result, "Literature", 0.70)
         result.to_csv(output_path, index=False)
         log.info(f"  → 保存 {len(result)} 条 disease-gene 关系到 {output_path} (fallback)")
         return True
     else:
-        pd.DataFrame(columns=["disease", "gene"]).to_csv(output_path, index=False)
+        _empty_disease_cols = ["disease", "gene", "source", "confidence", "download_date"]
+        pd.DataFrame(columns=_empty_disease_cols).to_csv(output_path, index=False)
         log.warning("  无匹配基因")
         return False
 
@@ -2195,8 +2248,8 @@ def main():
     # 3. celltype_marker_genes.csv
     results["celltype_marker_genes.csv"] = generate_celltype_markers()
 
-    # 4. compound_target_edges.csv
-    results["compound_target_edges.csv"] = generate_compound_targets()
+    # 4. compound_target_edges_curated.csv
+    results["compound_target_edges_curated.csv"] = generate_compound_targets()
 
     # 5. ligand_receptor_pairs.csv
     results["ligand_receptor_pairs.csv"] = generate_ligand_receptor_pairs()

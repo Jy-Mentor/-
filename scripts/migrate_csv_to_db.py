@@ -195,7 +195,14 @@ class CSVMigrator:
             b = str(row.get("protein_B", "")).strip().upper()
             score = self._safe_float(row.get("score"))
             if a and b and score is not None:
-                records.append({"protein_a_id": a, "protein_b_id": b, "score": score, "source": "STRING"})
+                records.append({
+                    "protein_a_id": a,
+                    "protein_b_id": b,
+                    "score": score,
+                    "source": str(row.get("source", "STRING")).strip() or "STRING",
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
+                })
         count = self.ppi_repo.bulk_upsert(records)
         self.stats["ppi_edges"] = count
         logger.info("迁移 ppi_edges: %d", count)
@@ -210,7 +217,13 @@ class CSVMigrator:
             tf = str(row.get("tf", "")).strip().upper()
             target = str(row.get("target", "")).strip().upper()
             if tf and target:
-                records.append({"tf_id": tf, "target_id": target, "source": "TRRUST"})
+                records.append({
+                    "tf_id": tf,
+                    "target_id": target,
+                    "source": str(row.get("source", "TRRUST")).strip() or "TRRUST",
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
+                })
         count = self.tf_repo.bulk_upsert(records)
         self.stats["tf_target_edges"] = count
         logger.info("迁移 tf_target_edges: %d", count)
@@ -245,7 +258,9 @@ class CSVMigrator:
                 rec: dict[str, Any] = {
                     "compound_id": compound,
                     "gene_id": gene,
-                    "source": source_name,
+                    "source": str(row.get("source", source_name)).strip() or source_name,
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
                 }
                 if target_chembl:
                     rec["target_chembl_id"] = target_chembl
@@ -262,6 +277,9 @@ class CSVMigrator:
                     rec["standard_unit"] = str(val) if pd.notna(val) else None
                 if "pchembl_value" in row:
                     rec["pchembl_value"] = self._safe_float(row.get("pchembl_value"))
+                if "confidence_level" in row:
+                    val = row.get("confidence_level")
+                    rec["confidence_level"] = str(val) if pd.notna(val) else None
                 records.append(rec)
             count = self.ct_repo.bulk_upsert(records)
             total += count
@@ -288,8 +306,10 @@ class CSVMigrator:
                 rec = {
                     "disease_id": disease,
                     "gene_id": gene,
-                    "source": source_name,
+                    "source": str(row.get("source", source_name)).strip() or source_name,
                     "score": self._safe_float(row.get("score")),
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
                 }
                 if "disease_id" in row and pd.notna(row.get("disease_id")):
                     rec["disease_original_id"] = str(row["disease_id"])
@@ -351,7 +371,13 @@ class CSVMigrator:
                 if key in seen:
                     continue
                 seen.add(key)
-                records.append({"gene_id": gene, "pathway_id": pathway_id, "source": source})
+                records.append({
+                    "gene_id": gene,
+                    "pathway_id": pathway_id,
+                    "source": source,
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
+                })
             count = self.gp_repo.bulk_upsert(records)
             total += count
             logger.info("迁移 gene_pathway_edges (enrichment): %d", count)
@@ -367,7 +393,16 @@ class CSVMigrator:
             ct = str(row.get("celltype", "")).strip()
             gene = str(row.get("gene", "")).strip().upper()
             if ct and gene:
-                records.append({"cell_type_id": ct, "gene_id": gene, "source": "celltype_marker_genes.csv"})
+                records.append({
+                    "cell_type_id": ct,
+                    "gene_id": gene,
+                    "source": (
+                        str(row.get("source", "celltype_marker_genes.csv")).strip()
+                        or "celltype_marker_genes.csv"
+                    ),
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
+                })
         count = self.ctm_repo.bulk_upsert(records)
         self.stats["cell_type_marker_edges"] = count
         logger.info("迁移 cell_type_marker_edges: %d", count)
@@ -382,7 +417,13 @@ class CSVMigrator:
             ligand = str(row.get("ligand", "")).strip().upper()
             receptor = str(row.get("receptor", "")).strip().upper()
             if ligand and receptor:
-                records.append({"ligand_id": ligand, "receptor_id": receptor, "source": "curated"})
+                records.append({
+                    "ligand_id": ligand,
+                    "receptor_id": receptor,
+                    "source": str(row.get("source", "curated")).strip() or "curated",
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
+                })
         count = self.lr_repo.bulk_upsert(records)
         self.stats["ligand_receptor_edges"] = count
         logger.info("迁移 ligand_receptor_edges: %d", count)
@@ -398,7 +439,14 @@ class CSVMigrator:
             b = str(row.get("gene_B", "")).strip().upper()
             score = self._safe_float(row.get("score"))
             if a and b and score is not None:
-                records.append({"gene_a_id": a, "gene_b_id": b, "score": score, "source": "WGCNA"})
+                records.append({
+                    "gene_a_id": a,
+                    "gene_b_id": b,
+                    "score": score,
+                    "source": str(row.get("source", "WGCNA")).strip() or "WGCNA",
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "download_date": str(row.get("download_date", "")).strip() or None,
+                })
         count = self.coexp_repo.bulk_upsert(records)
         self.stats["gene_coexp_edges"] = count
         logger.info("迁移 gene_coexp_edges: %d", count)

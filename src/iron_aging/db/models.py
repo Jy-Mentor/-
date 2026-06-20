@@ -156,6 +156,8 @@ class PPIEdge(Base):
     protein_b_id: Mapped[str] = mapped_column(String(64), ForeignKey("genes.symbol"), primary_key=True)
     score: Mapped[float] = mapped_column(Float)
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
     protein_a: Mapped["Gene"] = relationship(
         "Gene", foreign_keys=[protein_a_id], back_populates="ppi_edges_a"
@@ -180,6 +182,8 @@ class TFTargetEdge(Base):
     tf_id: Mapped[str] = mapped_column(String(64), ForeignKey("genes.symbol"), primary_key=True)
     target_id: Mapped[str] = mapped_column(String(64), ForeignKey("genes.symbol"), primary_key=True)
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
 
 class CompoundTargetEdge(Base):
@@ -198,6 +202,9 @@ class CompoundTargetEdge(Base):
     standard_unit: Mapped[str | None] = mapped_column(String(16))
     pchembl_value: Mapped[float | None] = mapped_column(Float)
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    confidence_level: Mapped[str | None] = mapped_column(String(16))
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
     compound: Mapped["Compound"] = relationship("Compound", back_populates="targets")
     gene: Mapped["Gene"] = relationship("Gene", back_populates="compound_targets")
@@ -217,6 +224,8 @@ class DiseaseGeneEdge(Base):
     disease_original_name: Mapped[str | None] = mapped_column(String(255))
     target_name: Mapped[str | None] = mapped_column(String(255))
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
 
 class GenePathwayEdge(Base):
@@ -227,6 +236,8 @@ class GenePathwayEdge(Base):
     gene_id: Mapped[str] = mapped_column(String(64), ForeignKey("genes.symbol"), primary_key=True)
     pathway_id: Mapped[int] = mapped_column(Integer, ForeignKey("pathways.id"), primary_key=True)
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
 
 class CellTypeMarkerEdge(Base):
@@ -240,6 +251,8 @@ class CellTypeMarkerEdge(Base):
     gene_id: Mapped[str] = mapped_column(String(64), ForeignKey("genes.symbol"), primary_key=True)
     marker_type: Mapped[str | None] = mapped_column(String(32), default="marker")
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
 
 class LigandReceptorEdge(Base):
@@ -252,6 +265,8 @@ class LigandReceptorEdge(Base):
         String(64), ForeignKey("genes.symbol"), primary_key=True
     )
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
 
 class GeneCoexpEdge(Base):
@@ -263,6 +278,8 @@ class GeneCoexpEdge(Base):
     gene_b_id: Mapped[str] = mapped_column(String(64), ForeignKey("genes.symbol"), primary_key=True)
     score: Mapped[float | None] = mapped_column(Float)
     source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
 
 
 # ---------------------------------------------------------------------------

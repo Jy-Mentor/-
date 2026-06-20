@@ -142,41 +142,41 @@ def _get_default_db_config() -> dict:
             'Aging': {'keywords': ['aging', 'ageing', 'senescence', 'cellular senescence']},
         },
         'kegg_pathways': {
-            'mmu04216': 'Ferroptosis', 'mmu00480': 'Glutathione_metabolism',
-            'mmu04140': 'Autophagy', 'mmu04210': 'Apoptosis',
-            'mmu04150': 'mTOR_signaling', 'mmu04151': 'PI3K_Akt_pathway',
-            'mmu04010': 'MAPK_signaling', 'mmu04630': 'JAK_STAT_pathway',
-            'mmu04064': 'NF-kB_signaling', 'mmu04621': 'NLRP3_inflammasome',
-            'mmu04115': 'p53_pathway', 'mmu04066': 'HIF1_signaling',
-            'mmu00640': 'Propanoate_metabolism', 'mmu00010': 'Glycolysis',
-            'mmu00020': 'TCA_cycle', 'mmu01212': 'Fatty_acid_metabolism',
-            'mmu00590': 'Arachidonic_acid_metabolism', 'mmu00190': 'Oxidative_phosphorylation',
-            'mmu04310': 'Wnt_signaling', 'mmu04330': 'Notch_signaling',
-            'mmu04340': 'Hedgehog_signaling', 'mmu04350': 'TGF-beta_signaling',
-            'mmu04370': 'VEGF_signaling', 'mmu04020': 'Calcium_signaling',
-            'mmu04024': 'cAMP_signaling', 'mmu04022': 'cGMP_PKG_pathway',
-            'mmu04015': 'Rap1_signaling', 'mmu04014': 'Ras_signaling',
-            'mmu04910': 'Insulin_signaling', 'mmu04920': 'Adipocytokine',
-            'mmu04710': 'Circadian_rhythm', 'mmu04720': 'Long_term_potentiation',
-            'mmu04728': 'Dopaminergic_synapse', 'mmu04724': 'Glutamatergic_synapse',
-            'mmu04727': 'GABAergic_synapse', 'mmu04726': 'Serotonergic_synapse',
-            'mmu04725': 'Cholinergic_synapse', 'mmu04360': 'Axon_guidance',
-            'mmu04510': 'Focal_adhesion', 'mmu04512': 'ECM_receptor',
-            'mmu04514': 'Cell_adhesion', 'mmu04530': 'Tight_junction',
-            'mmu04540': 'Gap_junction', 'mmu04610': 'Complement_cascade',
-            'mmu04612': 'Antigen_processing', 'mmu04640': 'Hematopoietic_cell_lineage',
-            'mmu04144': 'Endocytosis', 'mmu04145': 'Phagosome',
-            'mmu04142': 'Lysosome', 'mmu04146': 'Peroxisome',
-            'mmu03010': 'Ribosome', 'mmu03040': 'Spliceosome',
-            'mmu03013': 'RNA_transport', 'mmu02010': 'ABC_transporters',
-            'mmu00980': 'Drug_metabolism_cytochrome_P450', 'mmu00982': 'Xenobiotic_metabolism',
-            'mmu00100': 'Steroid_biosynthesis', 'mmu00230': 'Nucleotide_metabolism',
-            'mmu00250': 'Amino_acid_metabolism', 'mmu01200': 'Carbon_metabolism',
-            'mmu03015': 'mRNA_surveillance', 'mmu03060': 'Protein_export',
-            'mmu04141': 'Protein_processing_ER', 'mmu04120': 'Ubiquitin_proteasome',
-            'mmu04650': 'Natural_killer_cytotoxicity', 'mmu04660': 'T_cell_receptor',
-            'mmu04662': 'B_cell_receptor', 'mmu04666': 'Fc_gamma_phagocytosis',
-            'mmu04670': 'Leukocyte_transendothelial_migration', 'mmu04611': 'Platelet_activation',
+            'hsa04216': 'Ferroptosis', 'hsa00480': 'Glutathione_metabolism',
+            'hsa04140': 'Autophagy', 'hsa04210': 'Apoptosis',
+            'hsa04150': 'mTOR_signaling', 'hsa04151': 'PI3K_Akt_pathway',
+            'hsa04010': 'MAPK_signaling', 'hsa04630': 'JAK_STAT_pathway',
+            'hsa04064': 'NF-kB_signaling', 'hsa04621': 'NLRP3_inflammasome',
+            'hsa04115': 'p53_pathway', 'hsa04066': 'HIF1_signaling',
+            'hsa00640': 'Propanoate_metabolism', 'hsa00010': 'Glycolysis',
+            'hsa00020': 'TCA_cycle', 'hsa01212': 'Fatty_acid_metabolism',
+            'hsa00590': 'Arachidonic_acid_metabolism', 'hsa00190': 'Oxidative_phosphorylation',
+            'hsa04310': 'Wnt_signaling', 'hsa04330': 'Notch_signaling',
+            'hsa04340': 'Hedgehog_signaling', 'hsa04350': 'TGF-beta_signaling',
+            'hsa04370': 'VEGF_signaling', 'hsa04020': 'Calcium_signaling',
+            'hsa04024': 'cAMP_signaling', 'hsa04022': 'cGMP_PKG_pathway',
+            'hsa04015': 'Rap1_signaling', 'hsa04014': 'Ras_signaling',
+            'hsa04910': 'Insulin_signaling', 'hsa04920': 'Adipocytokine',
+            'hsa04710': 'Circadian_rhythm', 'hsa04720': 'Long_term_potentiation',
+            'hsa04728': 'Dopaminergic_synapse', 'hsa04724': 'Glutamatergic_synapse',
+            'hsa04727': 'GABAergic_synapse', 'hsa04726': 'Serotonergic_synapse',
+            'hsa04725': 'Cholinergic_synapse', 'hsa04360': 'Axon_guidance',
+            'hsa04510': 'Focal_adhesion', 'hsa04512': 'ECM_receptor',
+            'hsa04514': 'Cell_adhesion', 'hsa04530': 'Tight_junction',
+            'hsa04540': 'Gap_junction', 'hsa04610': 'Complement_cascade',
+            'hsa04612': 'Antigen_processing', 'hsa04640': 'Hematopoietic_cell_lineage',
+            'hsa04144': 'Endocytosis', 'hsa04145': 'Phagosome',
+            'hsa04142': 'Lysosome', 'hsa04146': 'Peroxisome',
+            'hsa03010': 'Ribosome', 'hsa03040': 'Spliceosome',
+            'hsa03013': 'RNA_transport', 'hsa02010': 'ABC_transporters',
+            'hsa00980': 'Drug_metabolism_cytochrome_P450', 'hsa00982': 'Xenobiotic_metabolism',
+            'hsa00100': 'Steroid_biosynthesis', 'hsa00230': 'Nucleotide_metabolism',
+            'hsa00250': 'Amino_acid_metabolism', 'hsa01200': 'Carbon_metabolism',
+            'hsa03015': 'mRNA_surveillance', 'hsa03060': 'Protein_export',
+            'hsa04141': 'Protein_processing_ER', 'hsa04120': 'Ubiquitin_proteasome',
+            'hsa04650': 'Natural_killer_cytotoxicity', 'hsa04660': 'T_cell_receptor',
+            'hsa04662': 'B_cell_receptor', 'hsa04666': 'Fc_gamma_phagocytosis',
+            'hsa04670': 'Leukocyte_transendothelial_migration', 'hsa04611': 'Platelet_activation',
         },
         'target_cell_types': [
             'Neuron', 'Neurons', 'Neuronal stem cells', 'Neural stem cells',
@@ -1070,7 +1070,7 @@ def download_ferrdb_genes():
 # API: https://rest.kegg.jp/
 
 def download_kegg_pathway_genes():
-    """从 KEGG REST API 下载小鼠通路基因映射
+    """从 KEGG REST API 下载人类通路基因映射
 
     通路ID列表: 从 external_db_config.yaml 加载 (替代硬编码)
     文献: Kanehisa et al., NAR 2021, PMID: 33125081
@@ -1090,7 +1090,7 @@ def download_kegg_pathway_genes():
     rows = []
     for kegg_id, pathway_name in target_pathways.items():
         try:
-            url = f"https://rest.kegg.jp/link/mmu/{kegg_id}"
+            url = f"https://rest.kegg.jp/link/hsa/{kegg_id}"
             resp = _safe_request(url)
             for line in resp.text.strip().split('\n'):
                 if not line.strip():
@@ -1098,7 +1098,7 @@ def download_kegg_pathway_genes():
                 parts = line.strip().split('\t')
                 if len(parts) >= 2:
                     gene_id = parts[1].strip()
-                    # KEGG基因ID格式: mmu:XXXXX
+                    # KEGG基因ID格式: hsa:XXXXX
                     rows.append({
                         'pathway': pathway_name,
                         'gene_id': gene_id,

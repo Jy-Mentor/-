@@ -1,0 +1,36 @@
+{
+  "quarantine_date": "2026-06-21",
+  "reason": "这些外部参考文件经 _audit_network_edges.py 质量审计后发现重复边、可疑基因名、物种错误（已修复 KEGG）或高比例非核心基因节点，不适合直接进入核心图。清洗后的替代文件已放入 network_files/。",
+  "files": [
+    {
+      "file": "cellchat_lr_pairs.csv",
+      "issues": ["重复边 2 条", "自环边 23 条", "ligand/receptor 列包含复合物/可疑基因名", "绝大多数节点不在 98 核心基因集内"],
+      "replacement": "network_files/ligand_receptor_pairs.csv（人工整理核心基因集内配体-受体对）"
+    },
+    {
+      "file": "chembl_compound_targets.csv",
+      "issues": ["gene 列 79.6% 为可疑基因名/全长蛋白名", "11246 个节点不在核心基因集内"],
+      "replacement": "network_files/chembl_compound_targets_cleaned.csv（mygene.info 标准化 + 核心基因过滤 + 置信度）"
+    },
+    {
+      "file": "gene_pathway_enrichment_external.csv",
+      "issues": ["重复边 4335 条", "123 个可疑基因名", "8092 个节点不在核心基因集内"],
+      "replacement": "network_files/gene_pathway_enrichment.csv（gseapy/g:Profiler 富集结果，已清洗）"
+    },
+    {
+      "file": "msigdb_gene_pathways.csv",
+      "issues": ["9015 个可疑基因名", "735072 个节点不在核心基因集内"],
+      "replacement": "network_files/gene_pathway_enrichment.csv"
+    },
+    {
+      "file": "opentargets_ciri_genes.csv",
+      "issues": ["6 个可疑基因名（MT- 等）", "1097 个节点不在核心基因集内"],
+      "replacement": "network_files/disease_gene_associations.csv（DisGeNET/整理）"
+    },
+    {
+      "file": "panglaodb_celltype_markers.csv",
+      "issues": ["重复边 1428 条", "gene 列包含非基因描述文本", "1470 个节点不在核心基因集内"],
+      "replacement": "network_files/celltype_marker_genes.csv（清洗后保留核心基因集 marker）"
+    }
+  ]
+}
