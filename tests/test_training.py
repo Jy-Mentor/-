@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import torch
+import torch.nn as nn
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = PROJECT_ROOT / "src"
@@ -52,3 +53,40 @@ def test_build_link_prediction_labels():
     edges, labels = build_link_prediction_labels(pos, neg)
     assert len(edges) == 4
     assert labels == [1.0, 1.0, 0.0, 0.0]
+
+
+def test_hgt_trainer_with_custom_edge_type():
+    """验证 HGTTrainer 支持自定义边类型."""
+    from torch_geometric.data import HeteroData
+
+    from iron_aging.models.link_predictor import LinkPredictor
+    from iron_aging.training.trainer import HGTTrainer
+
+    data = HeteroData()
+    data["compound"].x = torch.randn(4, 8)
+    data["gene"].x = torch.randn(5, 8)
+    data["compound", "targets", "gene"].edge_index = torch.tensor([[0, 1], [0, 1]])
+
+    class DummyModel(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.predictor = LinkPredictor(8, 16)
+
+        def forward(self, x_dict, edge_index_dict):
+            return x_dict
+
+    model = DummyModel()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    trainer = HGTTrainer(
+        model, optimizer, edge_type=("compound", "targets", "gene")
+    )
+
+    edge_label_index = torch.tensor([[0, 1, 2], [0, 1, 2]])
+    edge_labels = torch.tensor([1.0, 0.0, 1.0])
+
+    loss = trainer.train_epoch(data, edge_label_index, edge_labels)
+    assert loss > 0
+
+    metrics = trainer.evaluate(data, edge_label_index, edge_labels)
+    assert "auc" in metrics
+    assert "ap" in metrics

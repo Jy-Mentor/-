@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class HGTTrainer:
     """HGT-GAT 链路预测训练器.
 
-    负责模型训练、验证、早停与指标记录.
+    负责模型训练、验证、早停与指标记录. 支持任意源-目标节点类型的边.
     """
 
     def __init__(
@@ -30,11 +30,13 @@ class HGTTrainer:
         optimizer: torch.optim.Optimizer,
         device: torch.device | str = "cpu",
         early_stopping_patience: int = 20,
+        edge_type: tuple[str, str, str] | None = None,
     ):
         self.model = model
         self.optimizer = optimizer
         self.device = torch.device(device)
         self.early_stopping_patience = early_stopping_patience
+        self.edge_type = edge_type
         self.history: dict[str, list[float]] = {
             "train_loss": [],
             "val_loss": [],
@@ -43,6 +45,26 @@ class HGTTrainer:
         }
         self.best_val_metric = -np.inf
         self.patience_counter = 0
+
+    def _infer_edge_type(
+        self, edge_label_index: torch.Tensor | None = None
+    ) -> tuple[str, str, str]:
+        """推断边类型.
+
+        优先级:
+            1. 初始化时传入的 edge_type.
+            2. 从 edge_label_index 的元数据推断 (PyG 边索引属性).
+            3. 默认回退到 gene->pathway (兼容旧行为).
+        """
+        if self.edge_type is not None:
+            return self.edge_type
+        if (
+            edge_label_index is not None
+            and hasattr(edge_label_index, "edge_type")
+            and edge_label_index.edge_type is not None
+        ):
+            return edge_label_index.edge_type
+        return ("gene", "enriched_in", "pathway")
 
     def train_epoch(
         self,
@@ -67,10 +89,10 @@ class HGTTrainer:
         edge_label_index = edge_label_index.to(self.device)
         edge_labels = edge_labels.to(self.device)
 
+        src_type, _, dst_type = self._infer_edge_type(edge_label_index)
+
         # 模型应返回节点嵌入字典
         node_emb = self.model(data.x_dict, data.edge_index_dict)
-
-        src_type, _, dst_type = self._infer_edge_type()
         src_emb = node_emb[src_type][edge_label_index[0]]
         dst_emb = node_emb[dst_type][edge_label_index[1]]
 
@@ -108,8 +130,9 @@ class HGTTrainer:
         edge_label_index = edge_label_index.to(self.device)
         edge_labels = edge_labels.to(self.device)
 
+        src_type, _, dst_type = self._infer_edge_type(edge_label_index)
+
         node_emb = self.model(data.x_dict, data.edge_index_dict)
-        src_type, _, dst_type = self._infer_edge_type()
         src_emb = node_emb[src_type][edge_label_index[0]]
         dst_emb = node_emb[dst_type][edge_label_index[1]]
 
@@ -148,13 +171,6 @@ class HGTTrainer:
             return True
         self.patience_counter += 1
         if self.patience_counter >= self.early_stopping_patience:
-            logger.info(f"早停触发: {self.early_stopping_patience} 轮未提升")
+            logger.info("早停触发: %d 轮未提升", self.early_stopping_patience)
             return False
         return True
-
-    def _infer_edge_type(self) -> tuple[str, str, str]:
-        """推断默认边类型.
-
-        当前训练器默认处理 gene -> pathway 边.
-        """
-        return ("gene", "enriched_in", "pathway")

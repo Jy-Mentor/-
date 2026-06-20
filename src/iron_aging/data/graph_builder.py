@@ -13,10 +13,13 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+import pandas as pd
 import torch
 from sqlalchemy.orm import Session
 from torch_geometric.data import HeteroData
 
+from iron_aging import NETWORK_DIR, PROJECT_ROOT
 from iron_aging.db.repositories import (
     CellTypeMarkerRepository,
     CellTypeRepository,
@@ -138,6 +141,12 @@ class HeteroGraphBuilder:
         self._add_edges(data, "gene", "lr_pair", "gene", self.lr_repo.get_all(), nodes)
         self._add_edges(data, "gene", "coexp", "gene", self.coexp_repo.get_all(), nodes)
 
+        # 5. 附加节点特征 (v4.0 分层迁移中, 失败则保留空特征并记录警告)
+        try:
+            self._attach_node_features(data, node_lists)
+        except Exception:
+            logger.exception("节点特征附加失败, 将使用空特征继续")
+
         logger.info("异构图构建完成")
         if use_cache:
             torch.save(data, cache_path)
@@ -211,6 +220,50 @@ class HeteroGraphBuilder:
         if rel_type == "coexp":
             return rec.get("gene_a_id"), rec.get("gene_b_id")
         return None, None
+
+    def _attach_node_features(
+        self,
+        data: HeteroData,
+        node_lists: dict[str, list[dict[str, Any]]],
+    ) -> None:
+        """使用 feature builders 附加基因/化合物节点特征.
+
+        当前阶段优先从 CSV 真实数据计算; 疾病/通路/细胞类型等节点暂用零向量占位.
+        """
+        from iron_aging.features.compounds import CompoundFeatureBuilder
+        from iron_aging.features.genes import GeneFeatureBuilder
+
+        gene_names = [self._node_id("gene", r) for r in node_lists.get("gene", [])]
+        if gene_names:
+            gene_builder = GeneFeatureBuilder(project_root=PROJECT_ROOT)
+            gene_feat = gene_builder.build(gene_names)
+            feat_matrix = np.stack([gene_feat[g] for g in gene_names]).astype(np.float32)
+            data["gene"].x = torch.from_numpy(feat_matrix)
+            logger.info("附加 gene 特征: shape=%s", feat_matrix.shape)
+
+        compound_records = [
+            {"compound": self._node_id("compound", r), "CanonicalSMILES": r.get("smiles", "")}
+            for r in node_lists.get("compound", [])
+        ]
+        if compound_records:
+            compound_df = pd.DataFrame(compound_records)
+            compound_builder = CompoundFeatureBuilder(network_dir=NETWORK_DIR)
+            try:
+                prop_df = compound_builder.build_properties(compound_df)
+                feat_cols = [c for c in prop_df.columns if c != "compound"]
+                feat_matrix = prop_df[feat_cols].to_numpy(dtype=np.float32)
+                data["compound"].x = torch.from_numpy(feat_matrix)
+                logger.info("附加 compound 特征: shape=%s", feat_matrix.shape)
+            except ImportError:
+                logger.warning("RDKit 未安装, compound 特征使用零向量")
+                n_compounds = len(compound_records)
+                data["compound"].x = torch.zeros(n_compounds, 6, dtype=torch.float32)
+
+        # 其他节点类型暂用最小占位特征
+        for nt in ("disease", "pathway", "cell_type"):
+            n_nodes = len(node_lists.get(nt, []))
+            if n_nodes:
+                data[nt].x = torch.zeros(n_nodes, 1, dtype=torch.float32)
 
     def _compute_hash(self, *args: Any) -> str:
         """基于输入计算缓存哈希."""
