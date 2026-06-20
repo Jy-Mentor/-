@@ -1,11 +1,13 @@
-"""负采样模块.
+"""负采样与边泄漏修复模块.
 
-为链路预测任务生成负样本边, 确保不采样已知正样本.
+为链路预测任务生成负样本边, 并支持从训练图中移除验证/测试正样本边,
+避免训练时的标签泄漏.
 """
 
 from __future__ import annotations
 
 import numpy as np
+import torch
 
 
 def negative_sample_edges(
@@ -69,3 +71,34 @@ def build_link_prediction_labels(
     edges = positive_edges + negative_edges
     labels = [1.0] * len(positive_edges) + [0.0] * len(negative_edges)
     return edges, labels
+
+
+def remove_leaked_edges(
+    edge_index: torch.Tensor | None,
+    leak_set: set[tuple[int, int]],
+    device: torch.device | None = None,
+) -> torch.Tensor | None:
+    """从边索引中移除属于验证/测试集的边, 防止训练时标签泄漏.
+
+    参考: link prediction 标准做法 (Kipf & Welling, 2016).
+
+    Args:
+        edge_index: 2 x N 的边索引张量.
+        leak_set: 需要移除的边集合, 元素为 (src, dst) 元组.
+        device: 输出张量所在设备, 默认与输入相同.
+
+    Returns:
+        移除泄漏边后的边索引张量; 若输入为空或 leak_set 为空则原样返回.
+    """
+    if edge_index is None or len(leak_set) == 0:
+        return edge_index
+
+    if device is None:
+        device = edge_index.device
+
+    ei = edge_index.cpu().numpy()
+    mask = np.ones(ei.shape[1], dtype=bool)
+    for src, dst in leak_set:
+        match = (ei[0] == src) & (ei[1] == dst)
+        mask[match] = False
+    return torch.from_numpy(ei[:, mask]).to(device)

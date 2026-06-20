@@ -39,6 +39,22 @@ import traceback
 from pathlib import Path
 from typing import Any
 
+# Suppress OpenMP duplicate-lib warning on Windows
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+_SRC_DIR = PROJECT_ROOT / "src"
+if str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
+
+# 抑制已知第三方库弃用警告
+from iron_aging.utils.warnings import suppress_known_library_warnings
+
+suppress_known_library_warnings()
+
 import matplotlib
 
 matplotlib.use("Agg")
@@ -52,13 +68,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.model_selection import StratifiedKFold
 from torch_geometric.data import HeteroData
-
-# Suppress OpenMP duplicate-lib warning on Windows
-os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
-
-PROJECT_ROOT = Path(__file__).resolve().parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
 # Reuse the vetted ablation framework for data construction, training and eval
 import ablation_hgt_vs_gat as abl  # type: ignore[import-not-found]

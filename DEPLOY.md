@@ -121,7 +121,68 @@ python test_module3.py
 
 ---
 
-## 8. 配置说明
+## 8. Windows 环境常见问题
+
+### 8.1 OpenMP `libiomp5md.dll` 重复初始化
+
+在 Windows + Anaconda/Miniconda 环境下，导入 `torch` 或 `torch_geometric` 时可能遇到：
+
+```text
+OMP: Error #15: Initializing libiomp5md.dll, but found libiomp5md.dll already initialized.
+```
+
+**原因**：多个包（如 NumPy、PyTorch）各自链接了 Intel OpenMP 运行时，导致符号冲突。
+
+**规避方案（项目已内置）**：
+
+项目核心脚本（如 `module3_hgt.py`、`tcm_ferroptosis_ciri_gnn.py`）已在导入 PyTorch 前设置：
+
+```python
+import os
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+```
+
+**手动设置（终端/脚本）**：
+
+```powershell
+$env:KMP_DUPLICATE_LIB_OK = "TRUE"
+python module3_hgt.py
+```
+
+或在 Python 脚本开头加入：
+
+```python
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+```
+
+**风险提示**：
+
+- 该设置仅用于规避 Windows 下多个 OpenMP 运行时冲突，可能略微影响多线程数值一致性；
+- 生产环境（Linux）通常无需此设置；
+- 若计划打包为独立应用，建议在安装阶段统一 Intel MKL/OpenMP 库版本，而非依赖此环境变量。
+
+### 8.2 torch_geometric / torch.jit 弃用警告
+
+运行测试或训练时可能看到如下警告：
+
+```text
+DeprecationWarning: `torch_geometric.distributed` has been deprecated since 2.7.0
+DeprecationWarning: `torch.jit.script` is deprecated
+DeprecationWarning: Failing to pass a value to the 'type_params' parameter
+```
+
+**原因**：这些警告来自 `torch_geometric` 和 `torch` 库内部实现，非本项目代码问题。
+
+**处理方案**：
+
+- 项目已在入口脚本调用 `iron_aging.utils.warnings.suppress_known_library_warnings()` 进行过滤；
+- 警告不影响训练、评估与预测结果；
+- 未来升级 PyTorch / PyTorch Geometric 版本后应重新评估并移除过滤。
+
+---
+
+## 9. 配置说明
 
 核心配置位于 `config.yaml`:
 
@@ -132,7 +193,7 @@ python test_module3.py
 
 ---
 
-## 9. 注意事项
+## 10. 注意事项
 
 - 图构建第一次运行可能耗时数分钟, 二次运行将自动读取缓存 (<0.01s).
 - 若修改了网络输入文件, 需使用 `--clear-cache` 重新构建图.

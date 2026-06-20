@@ -123,6 +123,8 @@ from sklearn.manifold import TSNE
 from sklearn.metrics import roc_auc_score
 from torch_geometric.data import Data
 
+from iron_aging.training.negative_sampling import remove_leaked_edges
+
 warnings.filterwarnings("default")
 # 在调试时可改为 'default' 查看所有警告
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -4007,16 +4009,6 @@ def train_model(
     # 参考: link prediction标准做法 (Kipf & Welling, 2016)
     val_test_gp_set = set(gp_split["val"][0] + gp_split["test"][0])  # (gene, pathway)
     val_test_ct_set = set(ct_split["val"][0] + ct_split["test"][0])  # (compound, gene)
-
-    def remove_leaked_edges(edge_index, leak_set):
-        if edge_index is None or len(leak_set) == 0:
-            return edge_index
-        ei = edge_index.cpu().numpy()
-        mask = np.ones(ei.shape[1], dtype=bool)
-        for s, d in leak_set:
-            match = (ei[0] == s) & (ei[1] == d)
-            mask[match] = False
-        return torch.from_numpy(ei[:, mask]).to(device)
 
     # 移除2个监督边类型中的val/test正样本
     edge_index_dict[("gene", "enriched_in", "pathway")] = remove_leaked_edges(

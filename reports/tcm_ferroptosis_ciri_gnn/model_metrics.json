@@ -1,0 +1,208 @@
+{
+  "cv_metrics": {
+    "val_auc_mean": 0.9109862481656201,
+    "val_auc_std": 0.02591444423326421,
+    "test_auc_mean": 0.8854808393920137,
+    "test_auc_std": 0.027283962176665524
+  },
+  "hpo_results": {
+    "best_config": {
+      "hidden_dim": 64,
+      "num_layers": 1,
+      "heads": 2,
+      "dropout": 0.3,
+      "lr": 0.002,
+      "weight_decay": 1e-06
+    },
+    "trial_results": [
+      {
+        "trial": 0,
+        "config": {
+          "hidden_dim": 32,
+          "num_layers": 3,
+          "heads": 4,
+          "dropout": 0.3,
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "val_auc_mean": 0.9025065104166666,
+        "val_auc_std": 0.03890161230455538,
+        "test_auc_mean": 0.8875511930699371,
+        "test_auc_std": 0.005941977767112212
+      },
+      {
+        "trial": 1,
+        "config": {
+          "hidden_dim": 32,
+          "num_layers": 3,
+          "heads": 2,
+          "dropout": 0.2,
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "val_auc_mean": 0.8861490885416666,
+        "val_auc_std": 0.04476828741234359,
+        "test_auc_mean": 0.8781099556014764,
+        "test_auc_std": 0.01410599302911464
+      },
+      {
+        "trial": 2,
+        "config": {
+          "hidden_dim": 128,
+          "num_layers": 3,
+          "heads": 8,
+          "dropout": 0.5,
+          "lr": 0.001,
+          "weight_decay": 1e-06
+        },
+        "val_auc_mean": 0.8955891927083334,
+        "val_auc_std": 0.039868163231920196,
+        "test_auc_mean": 0.8832086730606529,
+        "test_auc_std": 0.009904840821097933
+      },
+      {
+        "trial": 3,
+        "config": {
+          "hidden_dim": 128,
+          "num_layers": 2,
+          "heads": 4,
+          "dropout": 0.3,
+          "lr": 0.0005,
+          "weight_decay": 0.0001
+        },
+        "val_auc_mean": 0.8965657552083334,
+        "val_auc_std": 0.040723131127743416,
+        "test_auc_mean": 0.9020911479975743,
+        "test_auc_std": 0.004241442460463017
+      },
+      {
+        "trial": 4,
+        "config": {
+          "hidden_dim": 128,
+          "num_layers": 2,
+          "heads": 4,
+          "dropout": 0.5,
+          "lr": 0.001,
+          "weight_decay": 1e-05
+        },
+        "val_auc_mean": 0.888671875,
+        "val_auc_std": 0.04802356350875333,
+        "test_auc_mean": 0.8829017018186175,
+        "test_auc_std": 0.011030635471003681
+      },
+      {
+        "trial": 5,
+        "config": {
+          "hidden_dim": 64,
+          "num_layers": 1,
+          "heads": 2,
+          "dropout": 0.3,
+          "lr": 0.002,
+          "weight_decay": 1e-06
+        },
+        "val_auc_mean": 0.9051106770833334,
+        "val_auc_std": 0.03927773412485917,
+        "test_auc_mean": 0.9011702342714675,
+        "test_auc_std": 0.013138785064807213
+      },
+      {
+        "trial": 6,
+        "config": {
+          "hidden_dim": 128,
+          "num_layers": 3,
+          "heads": 2,
+          "dropout": 0.3,
+          "lr": 0.0005,
+          "weight_decay": 0.0001
+        },
+        "val_auc_mean": 0.8837076822916666,
+        "val_auc_std": 0.03880342826816575,
+        "test_auc_mean": 0.8874388865179728,
+        "test_auc_std": 0.014799592861254273
+      },
+      {
+        "trial": 7,
+        "config": {
+          "hidden_dim": 128,
+          "num_layers": 2,
+          "heads": 2,
+          "dropout": 0.5,
+          "lr": 0.001,
+          "weight_decay": 0.0001
+        },
+        "val_auc_mean": 0.8818359375,
+        "val_auc_std": 0.03169004246771581,
+        "test_auc_mean": 0.8855521364449735,
+        "test_auc_std": 0.005032180212506018
+      }
+    ]
+  },
+  "calibration": {
+    "temperature": 1.0,
+    "ece_before": 0.06315892523056582,
+    "ece_after": 0.06315892523056582
+  },
+  "bcp_summary": {
+    "compound": "BCP",
+    "activity_rank": 48,
+    "treatment_rank": 46,
+    "activity_score": 0.6630145233793486,
+    "treatment_score": 0.7860318424973091,
+    "potential_level": "high",
+    "bbb_score": 4.0,
+    "bbb_pass": "Likely",
+    "n_active_targets": 63,
+    "mechanism_categories": [
+      "GSH/GPX4 axis",
+      "HIF-1 hypoxia response",
+      "Nrf2/ARE antioxidant",
+      "ROS scavenging",
+      "anti-inflammatory",
+      "iron metabolism",
+      "lipid peroxidation",
+      "p53/CDKN1A stress"
+    ],
+    "top_predicted_targets": [
+      {
+        "gene": "SOD1",
+        "score": 0.848933219909668
+      },
+      {
+        "gene": "TP53",
+        "score": 0.8387885093688965
+      },
+      {
+        "gene": "MAPK1",
+        "score": 0.8377381563186646
+      },
+      {
+        "gene": "MAPK3",
+        "score": 0.8350918889045715
+      },
+      {
+        "gene": "CDKN1B",
+        "score": 0.8227846026420593
+      },
+      {
+        "gene": "HIF1A",
+        "score": 0.819066047668457
+      },
+      {
+        "gene": "LPCAT3",
+        "score": 0.8125263452529907
+      },
+      {
+        "gene": "PTGS2",
+        "score": 0.8091633915901184
+      },
+      {
+        "gene": "KEAP1",
+        "score": 0.8073690533638
+      },
+      {
+        "gene": "HMOX1",
+        "score": 0.8038097620010376
+      }
+    ]
+  }
+}

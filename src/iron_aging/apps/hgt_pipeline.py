@@ -19,6 +19,10 @@ for _path in (_SRC_DIR, _PROJECT_ROOT):
         sys.path.insert(0, str(_path))
 
 # ruff: noqa: E402
+from iron_aging.utils.warnings import suppress_known_library_warnings
+
+suppress_known_library_warnings()
+
 import module3_hgt
 from iron_aging.config import load_config
 from iron_aging.data.graph_builder import clear_graph_cache
