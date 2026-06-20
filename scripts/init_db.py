@@ -10,7 +10,7 @@ from pathlib import Path
 # 允许从项目根目录导入 src
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from iron_aging.db.connection import init_db
+from iron_aging.db.connection import get_engine, init_db
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,7 +29,8 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    engine = init_db(url=args.url)
+    engine = get_engine(url=args.url)
+    init_db(engine)
     logger.info("数据库初始化完成: %s", engine.url)
     return 0
 

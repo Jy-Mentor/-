@@ -16,9 +16,14 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 # ruff: noqa: E402
+import torch
+from torch_geometric.data import HeteroData
+
 from iron_aging.apps.hgt_pipeline import parse_args
 from iron_aging.etl.base import DataSource, ETLResult
+from iron_aging.models import HeteroLinkPredictionModel
 from iron_aging.pipelines.base import Pipeline, PipelineConfig, PipelineResult
+from iron_aging.pipelines.hgt_pipeline import _build_link_prediction_data, _split_edges
 
 
 class MockDataSource(DataSource):
@@ -166,19 +171,100 @@ def test_hgt_pipeline_argparse_custom() -> None:
     assert args.clear_cache is True
 
 
-def test_hgt_pipeline_main_delegates_to_legacy(monkeypatch: pytest.MonkeyPatch) -> None:
-    """hgt_pipeline.main() 第一阶段应透传至 module3_hgt.main()."""
-    # 创建一个伪 module3_hgt 模块, 避免触发实际训练
+def test_hgt_pipeline_main_uses_v4_pipeline(monkeypatch: pytest.MonkeyPatch) -> None:
+    """hgt_pipeline.main() 默认应调用 v4.0 HGTLinkPredictionPipeline."""
+    fake_result = PipelineResult(
+        experiment_id="fake",
+        status="success",
+        metrics={"best_val_auc": 0.8, "test": {"auc": 0.75}},
+    )
+    fake_pipeline_cls = mock.Mock()
+    fake_pipeline_cls.return_value.run.return_value = fake_result
+    monkeypatch.setattr(
+        "iron_aging.pipelines.HGTLinkPredictionPipeline", fake_pipeline_cls
+    )
+
+    # 保留 fake module3_hgt, 避免 reload 时触发真实 module3_hgt
     fake_module = ModuleType("module3_hgt")
     fake_module.main = mock.Mock(return_value=0)  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "module3_hgt", fake_module)
 
-    # reload hgt_pipeline 使其使用被 mock 的 module3_hgt
     import importlib
 
     from iron_aging.apps import hgt_pipeline
 
     importlib.reload(hgt_pipeline)
 
-    assert hgt_pipeline.main(["--device", "cpu"]) == 0
+    assert hgt_pipeline.main(["--epochs", "2"]) == 0
+    fake_pipeline_cls.return_value.run.assert_called_once()
+
+
+def test_hgt_pipeline_main_legacy_delegates_to_module3(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """hgt_pipeline.main() --legacy 应透传至 module3_hgt.main()."""
+    fake_module = ModuleType("module3_hgt")
+    fake_module.main = mock.Mock(return_value=0)  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "module3_hgt", fake_module)
+
+    import importlib
+
+    from iron_aging.apps import hgt_pipeline
+
+    importlib.reload(hgt_pipeline)
+
+    assert hgt_pipeline.main(["--legacy"]) == 0
     fake_module.main.assert_called_once()
+
+
+def test_hetero_link_prediction_model_from_data() -> None:
+    """HeteroLinkPredictionModel 应能从 HeteroData 自动推断维度并前向传播."""
+    data = HeteroData()
+    data["gene"].x = torch.randn(10, 8)
+    data["compound"].x = torch.randn(5, 6)
+    data["gene", "interacts", "gene"].edge_index = torch.tensor([[0, 1], [1, 2]])
+    data["compound", "targets", "gene"].edge_index = torch.tensor([[0, 1], [1, 2]])
+
+    model = HeteroLinkPredictionModel.from_hetero_data(data, hidden_dim=8, out_dim=4)
+    out = model(data.x_dict, data.edge_index_dict)
+    assert "gene" in out
+    assert "compound" in out
+    assert out["gene"].shape == (10, 4)
+
+
+def test_split_edges() -> None:
+    """_split_edges 应按比例划分边."""
+    edge_index = torch.arange(100).unsqueeze(0).repeat(2, 1)
+    train_ei, val_ei, test_ei = _split_edges(edge_index, train_ratio=0.7, val_ratio=0.15, seed=42)
+    assert train_ei.shape[1] == 70
+    assert val_ei.shape[1] >= 10
+    assert test_ei.shape[1] >= 10
+    assert train_ei.shape[1] + val_ei.shape[1] + test_ei.shape[1] == 100
+
+
+def test_build_link_prediction_data() -> None:
+    """_build_link_prediction_data 应生成训练图并移除验证/测试正样本边."""
+    data = HeteroData()
+    data["gene"].x = torch.randn(10, 4)
+    data["pathway"].x = torch.randn(5, 4)
+    data["gene"].num_nodes = 10
+    data["pathway"].num_nodes = 5
+    # 10 条唯一正样本边
+    src = torch.arange(10)
+    dst = torch.arange(10) % 5
+    data["gene", "belongs_to", "pathway"].edge_index = torch.stack([src, dst])
+
+    train_data, splits, labels = _build_link_prediction_data(
+        data,
+        ("gene", "belongs_to", "pathway"),
+        train_ratio=0.5,
+        val_ratio=0.25,
+        seed=42,
+    )
+    train_ei = train_data["gene", "belongs_to", "pathway"].edge_index
+    # 训练图只保留训练集正样本边, 验证/测试边已被移除
+    assert train_ei.shape[1] == splits["train"].shape[1] // 2
+    assert splits["train"].shape[1] % 2 == 0
+    assert splits["val"].shape[1] % 2 == 0
+    assert splits["test"].shape[1] % 2 == 0
+    assert labels["train"].shape[0] == splits["train"].shape[1]

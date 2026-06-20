@@ -279,7 +279,7 @@ class HeteroGraphBuilder:
             logger.info("附加 gene 特征: shape=%s", feat_matrix.shape)
 
         compound_records = [
-            {"compound": self._node_id("compound", r), "CanonicalSMILES": r.get("smiles", "")}
+            {"compound": self._node_id("compound", r), "CanonicalSMILES": r.get("canonical_smiles", "")}
             for r in node_lists.get("compound", [])
         ]
         if compound_records:

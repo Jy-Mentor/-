@@ -1,0 +1,306 @@
+"""HGT 异质图链路预测 Pipeline.
+
+使用 v4.0 分层组件完成端到端训练与评估：
+- 数据层：HeteroGraphBuilder 从 DB 构建 HeteroData
+- 模型层：HeteroLinkPredictionModel
+- 训练层：HGTTrainer
+- 输出：PipelineResult 含指标、模型路径、排名路径
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import os
+import traceback
+import uuid
+from pathlib import Path
+
+import numpy as np
+import torch
+from sklearn.model_selection import train_test_split
+from torch_geometric.data import HeteroData
+
+from iron_aging.data.graph_builder import HeteroGraphBuilder
+from iron_aging.db.connection import get_engine, get_session_factory
+from iron_aging.models import HeteroLinkPredictionModel
+from iron_aging.pipelines.base import Pipeline, PipelineConfig, PipelineResult
+from iron_aging.training.negative_sampling import (
+    build_link_prediction_labels,
+    negative_sample_edges,
+    remove_leaked_edges,
+)
+from iron_aging.training.trainer import HGTTrainer
+
+logger = logging.getLogger(__name__)
+
+# Windows OpenMP 重复库规避
+os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
+
+
+def _to_float(value: float | str | None, default: float) -> float:
+    """将配置值安全转换为浮点数."""
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _to_int(value: int | str | None, default: int) -> int:
+    """将配置值安全转换为整数."""
+    if value is None:
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _set_seed(seed: int) -> None:
+    """固定随机种子以保证可复现性."""
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def _split_edges(
+    edge_index: torch.Tensor,
+    train_ratio: float = 0.7,
+    val_ratio: float = 0.15,
+    seed: int = 42,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """将边索引划分为训练/验证/测试集."""
+    num_edges = edge_index.shape[1]
+    indices = np.arange(num_edges)
+    train_idx, temp_idx = train_test_split(
+        indices, train_size=train_ratio, random_state=seed
+    )
+    val_size = val_ratio / (1 - train_ratio)
+    val_idx, test_idx = train_test_split(
+        temp_idx, train_size=val_size, random_state=seed
+    )
+    return edge_index[:, train_idx], edge_index[:, val_idx], edge_index[:, test_idx]
+
+
+def _build_link_prediction_data(
+    data: HeteroData,
+    edge_type: tuple[str, str, str],
+    train_ratio: float = 0.7,
+    val_ratio: float = 0.15,
+    neg_sampling_ratio: float = 1.0,
+    seed: int = 42,
+) -> tuple[HeteroData, dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+    """为指定边类型构建链路预测训练数据.
+
+    Returns:
+        train_data: 移除了验证/测试正样本边的训练图.
+        split_label_index: 各集合的边索引.
+        split_labels: 各集合的标签.
+    """
+    src_type, rel_type, dst_type = edge_type
+    num_src = data[src_type].num_nodes
+    num_dst = data[dst_type].num_nodes
+
+    pos_edges_full = data[edge_type].edge_index
+    train_ei, val_ei, test_ei = _split_edges(
+        pos_edges_full, train_ratio, val_ratio, seed
+    )
+
+    pos_train = set(
+        (int(a), int(b)) for a, b in train_ei.t().tolist()
+    )
+    pos_val = set(
+        (int(a), int(b)) for a, b in val_ei.t().tolist()
+    )
+    pos_test = set(
+        (int(a), int(b)) for a, b in test_ei.t().tolist()
+    )
+    all_pos = pos_train | pos_val | pos_test
+
+    rng = np.random.default_rng(seed)
+    train_neg = negative_sample_edges(
+        num_src, num_dst, int(len(pos_train) * neg_sampling_ratio), all_pos, rng
+    )
+    val_neg = negative_sample_edges(
+        num_src, num_dst, int(len(pos_val) * neg_sampling_ratio), all_pos, rng
+    )
+    test_neg = negative_sample_edges(
+        num_src, num_dst, int(len(pos_test) * neg_sampling_ratio), all_pos, rng
+    )
+
+    train_edges, train_labels = build_link_prediction_labels(
+        list(pos_train), train_neg
+    )
+    val_edges, val_labels = build_link_prediction_labels(list(pos_val), val_neg)
+    test_edges, test_labels = build_link_prediction_labels(list(pos_test), test_neg)
+
+    def _to_tensor(edges: list[tuple[int, int]]) -> torch.Tensor:
+        return torch.tensor([[s for s, _ in edges], [d for _, d in edges]], dtype=torch.long)
+
+    split_label_index = {
+        "train": _to_tensor(train_edges),
+        "val": _to_tensor(val_edges),
+        "test": _to_tensor(test_edges),
+    }
+    split_labels = {
+        "train": torch.tensor(train_labels, dtype=torch.float),
+        "val": torch.tensor(val_labels, dtype=torch.float),
+        "test": torch.tensor(test_labels, dtype=torch.float),
+    }
+
+    # 构建训练图：移除验证/测试正样本边，避免标签泄漏
+    train_data = data.clone()
+    leak_set = pos_val | pos_test
+    train_data[edge_type].edge_index = remove_leaked_edges(
+        train_data[edge_type].edge_index, leak_set
+    )
+    return train_data, split_label_index, split_labels
+
+
+class HGTLinkPredictionPipeline(Pipeline):
+    """HGT 链路预测 Pipeline.
+
+    支持从配置文件读取超参数，对指定异质边类型进行链路预测训练.
+    """
+
+    name = "hgt_link_prediction"
+
+    def run(self, config: PipelineConfig) -> PipelineResult:
+        """执行训练流程."""
+        experiment_id = config.experiment_name or f"hgt_{uuid.uuid4().hex[:8]}"
+        result = PipelineResult(experiment_id=experiment_id, status="failure")
+
+        model_config = config.model_config
+        training_config = config.training_config
+        seed = config.seed
+        use_cache = config.use_cache
+
+        _set_seed(seed)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logger.info("实验 %s 使用设备: %s", experiment_id, device)
+
+        # 1. 从 DB 构建图
+        engine = get_engine()
+        session_factory = get_session_factory(engine)
+        try:
+            with session_factory() as session:
+                builder = HeteroGraphBuilder(session)
+                data = builder.build(use_cache=use_cache)
+        except Exception:
+            logger.exception("图构建失败")
+            traceback.print_exc()
+            result.errors = ["graph_build_failed"]
+            return result
+        finally:
+            engine.dispose()
+
+        # 2. 默认对 compound -> gene 靶点预测；可从配置覆盖
+        edge_type = tuple(model_config.get("edge_type", ["compound", "targets", "gene"]))
+        if len(edge_type) != 3 or edge_type not in data.edge_types:
+            available = [list(et) for et in data.edge_types]
+            logger.error("边类型 %s 不可用，可用: %s", edge_type, available)
+            result.errors = [f"invalid_edge_type: {edge_type}"]
+            result.metrics["available_edge_types"] = available
+            return result
+
+        # 3. 划分边
+        train_ratio = _to_float(training_config.get("train_ratio"), 0.7)
+        val_ratio = _to_float(training_config.get("val_ratio"), 0.15)
+        neg_ratio = _to_float(training_config.get("neg_sampling_ratio"), 1.0)
+        try:
+            train_data, split_label_index, split_labels = _build_link_prediction_data(
+                data,
+                edge_type,
+                train_ratio=train_ratio,
+                val_ratio=val_ratio,
+                neg_sampling_ratio=neg_ratio,
+                seed=seed,
+            )
+        except Exception:
+            logger.exception("边划分失败")
+            traceback.print_exc()
+            result.errors = ["edge_split_failed"]
+            return result
+
+        # 4. 构建模型
+        hidden_dim = _to_int(model_config.get("hidden_dim"), 64)
+        out_dim = _to_int(model_config.get("out_dim"), 16)
+        num_heads = _to_int(model_config.get("num_heads"), 4)
+        num_layers = _to_int(model_config.get("num_layers"), 2)
+        dropout = _to_float(model_config.get("dropout"), 0.3)
+
+        model = HeteroLinkPredictionModel.from_hetero_data(
+            train_data,
+            hidden_dim=hidden_dim,
+            out_dim=out_dim,
+            num_heads=num_heads,
+            num_layers=num_layers,
+            dropout=dropout,
+        ).to(device)
+
+        optimizer = torch.optim.Adam(
+            model.parameters(),
+            lr=_to_float(training_config.get("learn_rate"), 0.001),
+            weight_decay=_to_float(training_config.get("weight_decay"), 1e-5),
+        )
+
+        # 5. 训练
+        epochs = _to_int(training_config.get("epochs"), 200)
+        patience = _to_int(training_config.get("early_stop_patience"), 20)
+        trainer = HGTTrainer(
+            model=model,
+            optimizer=optimizer,
+            device=device,
+            early_stopping_patience=patience,
+            edge_type=edge_type,
+        )
+        try:
+            history = trainer.fit(
+                train_data,
+                split_label_index["train"],
+                split_labels["train"],
+                split_label_index["val"],
+                split_labels["val"],
+                epochs=epochs,
+            )
+        except Exception:
+            logger.exception("训练失败")
+            traceback.print_exc()
+            result.errors = ["training_failed"]
+            return result
+
+        # 6. 测试集评估
+        try:
+            test_metrics = trainer.evaluate(
+                train_data,
+                split_label_index["test"],
+                split_labels["test"],
+            )
+        except Exception:
+            logger.exception("测试评估失败")
+            traceback.print_exc()
+            result.errors = ["test_evaluation_failed"]
+            return result
+
+        # 7. 保存结果
+        output_dir = Path("L3_results") / experiment_id
+        output_dir.mkdir(parents=True, exist_ok=True)
+        model_path = output_dir / "model.pt"
+        metrics_path = output_dir / "metrics.json"
+        torch.save(model.state_dict(), model_path)
+        metrics = {
+            "history": history,
+            "test": test_metrics,
+            "best_val_auc": trainer.best_val_metric,
+            "edge_type": list(edge_type),
+        }
+        metrics_path.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
+        logger.info("模型保存至 %s, 指标保存至 %s", model_path, metrics_path)
+
+        result.status = "success"
+        result.metrics = metrics
+        result.model_path = model_path
+        return result
