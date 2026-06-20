@@ -17,6 +17,7 @@ from iron_aging.training.losses import bce_with_logits_loss, vib_kl_loss  # noqa
 from iron_aging.training.negative_sampling import (  # noqa: E402
     build_link_prediction_labels,
     negative_sample_edges,
+    remove_leaked_edges,
 )
 
 
@@ -53,6 +54,23 @@ def test_build_link_prediction_labels():
     edges, labels = build_link_prediction_labels(pos, neg)
     assert len(edges) == 4
     assert labels == [1.0, 1.0, 0.0, 0.0]
+
+
+def test_remove_leaked_edges():
+    """验证移除泄漏边保留非泄漏边."""
+    edge_index = torch.tensor([[0, 1, 2, 3], [0, 1, 2, 3]])
+    leak_set = {(1, 1), (3, 3)}
+    filtered = remove_leaked_edges(edge_index, leak_set)
+    assert filtered is not None
+    assert filtered.shape[1] == 2
+    assert torch.equal(filtered, torch.tensor([[0, 2], [0, 2]]))
+
+
+def test_remove_leaked_edges_empty_input():
+    """验证空输入时 remove_leaked_edges 安全返回."""
+    assert remove_leaked_edges(None, {(0, 0)}) is None
+    edge_index = torch.tensor([[0, 1], [0, 1]])
+    assert torch.equal(remove_leaked_edges(edge_index, set()), edge_index)
 
 
 def test_hgt_trainer_with_custom_edge_type():
