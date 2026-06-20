@@ -251,6 +251,25 @@ def test_gat_link_prediction_model_from_data() -> None:
     assert out["compound"].shape == (5, 4)
 
 
+def test_rgcn_link_prediction_model_from_data() -> None:
+    """HeteroLinkPredictionModel 使用 RGCN 编码器时应正确前向传播."""
+    data = HeteroData()
+    data["gene"].x = torch.randn(10, 8)
+    data["compound"].x = torch.randn(5, 6)
+    data["gene", "interacts", "gene"].edge_index = torch.tensor([[0, 1], [1, 2]])
+    data["compound", "targets", "gene"].edge_index = torch.tensor([[0, 1], [1, 2]])
+
+    model = HeteroLinkPredictionModel.from_hetero_data(
+        data, hidden_dim=8, out_dim=4, encoder_type="rgcn"
+    )
+    assert model.encoder_type == "rgcn"
+    out = model(data.x_dict, data.edge_index_dict)
+    assert "gene" in out
+    assert "compound" in out
+    assert out["gene"].shape == (10, 4)
+    assert out["compound"].shape == (5, 4)
+
+
 def test_split_edges() -> None:
     """_split_edges 应按比例划分边."""
     edge_index = torch.arange(100).unsqueeze(0).repeat(2, 1)
@@ -262,7 +281,7 @@ def test_split_edges() -> None:
 
 
 def test_build_link_prediction_data() -> None:
-    """_build_link_prediction_data 应生成训练图并移除验证/测试正样本边."""
+    """_build_link_prediction_data 应生成训练图并移除所有目标正样本边."""
     data = HeteroData()
     data["gene"].x = torch.randn(10, 4)
     data["pathway"].x = torch.randn(5, 4)
@@ -273,7 +292,7 @@ def test_build_link_prediction_data() -> None:
     dst = torch.arange(10) % 5
     data["gene", "belongs_to", "pathway"].edge_index = torch.stack([src, dst])
 
-    train_data, splits, labels = _build_link_prediction_data(
+    train_data, splits, num_src, num_dst = _build_link_prediction_data(
         data,
         ("gene", "belongs_to", "pathway"),
         train_ratio=0.5,
@@ -281,9 +300,10 @@ def test_build_link_prediction_data() -> None:
         seed=42,
     )
     train_ei = train_data["gene", "belongs_to", "pathway"].edge_index
-    # 训练图只保留训练集正样本边, 验证/测试边已被移除
-    assert train_ei.shape[1] == splits["train"].shape[1] // 2
-    assert splits["train"].shape[1] % 2 == 0
-    assert splits["val"].shape[1] % 2 == 0
-    assert splits["test"].shape[1] % 2 == 0
-    assert labels["train"].shape[0] == splits["train"].shape[1]
+    # SpotTarget: 训练图移除全部目标边 (train/val/test)
+    assert train_ei.shape[1] == 0
+    assert len(splits["train_pos_edges"]) == 5
+    assert len(splits["val_pos_edges"]) == 2
+    assert len(splits["test_pos_edges"]) == 3
+    assert num_src == 10
+    assert num_dst == 5

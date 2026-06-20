@@ -44,7 +44,7 @@ model:
   dropout: 0.3
   gat_residual_weight: 0.3
   num_hgt_layers: 2
-  encoder_type: gat  # hgt | gat
+  encoder_type: rgcn  # hgt | gat | rgcn
   use_vib: true
   use_self_distill: true
 
@@ -55,7 +55,13 @@ training:
   weight_decay: 1e-5
   seed: 42
   eval_every: 40
-  early_stop_patience: 5
+  early_stop_patience: 30
+  train_ratio: 0.7
+  val_ratio: 0.15
+  neg_sampling_ratio: 1.0
+  negative_sampling: structured  # random | structured
+  loss_type: ranking  # bce | ranking
+  ranking_margin: 1.0
 
   # 学习率调度
   warmup_epochs: 10

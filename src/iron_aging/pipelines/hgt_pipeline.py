@@ -1,10 +1,15 @@
-"""HGT 异质图链路预测 Pipeline.
+"""HGT/GAT/RGCN 异质图链路预测 Pipeline.
 
 使用 v4.0 分层组件完成端到端训练与评估：
 - 数据层：HeteroGraphBuilder 从 DB 构建 HeteroData
 - 模型层：HeteroLinkPredictionModel
 - 训练层：HGTTrainer
-- 输出：PipelineResult 含指标、模型路径、排名路径
+- 输出：PipelineResult 含指标、模型路径
+
+参考实践:
+- SpotTarget (Zhu et al., WSDM 2024): 消息传递图严格排除 train/val/test 目标边.
+- PLNLP (Wang et al., 2021): pairwise ranking loss.
+- PyG: structured negative sampling.
 """
 
 from __future__ import annotations
@@ -29,6 +34,7 @@ from iron_aging.training.negative_sampling import (
     build_link_prediction_labels,
     negative_sample_edges,
     remove_leaked_edges,
+    structured_negative_sampling,
 )
 from iron_aging.training.trainer import HGTTrainer
 
@@ -91,14 +97,19 @@ def _build_link_prediction_data(
     train_ratio: float = 0.7,
     val_ratio: float = 0.15,
     neg_sampling_ratio: float = 1.0,
+    negative_sampling: str = "structured",
     seed: int = 42,
-) -> tuple[HeteroData, dict[str, torch.Tensor], dict[str, torch.Tensor]]:
+) -> tuple[HeteroData, dict[str, list[tuple[int, int]]], int, int]:
     """为指定边类型构建链路预测训练数据.
 
+    训练图会移除 train/val/test 全部目标正样本边, 避免 SpotTarget 论文指出的
+    target-link inclusion 问题 (过拟合/分布偏移/隐式测试泄漏).
+
     Returns:
-        train_data: 移除了验证/测试正样本边的训练图.
-        split_label_index: 各集合的边索引.
-        split_labels: 各集合的标签.
+        train_data: 移除了所有监督目标边的训练图.
+        splits: 各集合正负样本边.
+        num_src: 源节点数.
+        num_dst: 目标节点数.
     """
     src_type, rel_type, dst_type = edge_type
     num_src = data[src_type].num_nodes
@@ -121,47 +132,47 @@ def _build_link_prediction_data(
     all_pos = pos_train | pos_val | pos_test
 
     rng = np.random.default_rng(seed)
-    train_neg = negative_sample_edges(
-        num_src, num_dst, int(len(pos_train) * neg_sampling_ratio), all_pos, rng
-    )
-    val_neg = negative_sample_edges(
-        num_src, num_dst, int(len(pos_val) * neg_sampling_ratio), all_pos, rng
-    )
-    test_neg = negative_sample_edges(
-        num_src, num_dst, int(len(pos_test) * neg_sampling_ratio), all_pos, rng
-    )
 
-    train_edges, train_labels = build_link_prediction_labels(
-        list(pos_train), train_neg
-    )
-    val_edges, val_labels = build_link_prediction_labels(list(pos_val), val_neg)
-    test_edges, test_labels = build_link_prediction_labels(list(pos_test), test_neg)
+    def _sample_neg(pos_set: set[tuple[int, int]], count: int) -> list[tuple[int, int]]:
+        if negative_sampling == "structured":
+            return structured_negative_sampling(
+                num_src, num_dst, count, all_pos, rng
+            )
+        return negative_sample_edges(num_src, num_dst, count, all_pos, rng)
 
-    def _to_tensor(edges: list[tuple[int, int]]) -> torch.Tensor:
-        return torch.tensor([[s for s, _ in edges], [d for _, d in edges]], dtype=torch.long)
+    train_neg = _sample_neg(pos_train, int(len(pos_train) * neg_sampling_ratio))
+    val_neg = _sample_neg(pos_val, int(len(pos_val) * neg_sampling_ratio))
+    test_neg = _sample_neg(pos_test, int(len(pos_test) * neg_sampling_ratio))
 
-    split_label_index = {
-        "train": _to_tensor(train_edges),
-        "val": _to_tensor(val_edges),
-        "test": _to_tensor(test_edges),
-    }
-    split_labels = {
-        "train": torch.tensor(train_labels, dtype=torch.float),
-        "val": torch.tensor(val_labels, dtype=torch.float),
-        "test": torch.tensor(test_labels, dtype=torch.float),
+    train_edges, _ = build_link_prediction_labels(list(pos_train), train_neg)
+    val_edges, _ = build_link_prediction_labels(list(pos_val), val_neg)
+    test_edges, _ = build_link_prediction_labels(list(pos_test), test_neg)
+
+    splits: dict[str, list[tuple[int, int]]] = {
+        "train_pos_edges": list(pos_train),
+        "train_neg_edges": train_neg,
+        "val_pos_edges": list(pos_val),
+        "val_neg_edges": val_neg,
+        "test_pos_edges": list(pos_test),
+        "test_neg_edges": test_neg,
     }
 
-    # 构建训练图：移除验证/测试正样本边，避免标签泄漏
+    # 构建训练图：移除所有目标正样本边 (SpotTarget)
     train_data = data.clone()
-    leak_set = pos_val | pos_test
+    leak_set = all_pos
     train_data[edge_type].edge_index = remove_leaked_edges(
         train_data[edge_type].edge_index, leak_set
     )
-    return train_data, split_label_index, split_labels
+    logger.info(
+        "构建训练图: 移除 %d 条目标边, 剩余 %d 条消息传递边",
+        len(all_pos),
+        train_data[edge_type].edge_index.shape[1],
+    )
+    return train_data, splits, num_src, num_dst
 
 
 class HGTLinkPredictionPipeline(Pipeline):
-    """HGT 链路预测 Pipeline.
+    """HGT/GAT/RGCN 链路预测 Pipeline.
 
     支持从配置文件读取超参数，对指定异质边类型进行链路预测训练.
     """
@@ -210,13 +221,15 @@ class HGTLinkPredictionPipeline(Pipeline):
         train_ratio = _to_float(training_config.get("train_ratio"), 0.7)
         val_ratio = _to_float(training_config.get("val_ratio"), 0.15)
         neg_ratio = _to_float(training_config.get("neg_sampling_ratio"), 1.0)
+        negative_sampling = str(training_config.get("negative_sampling", "structured")).lower()
         try:
-            train_data, split_label_index, split_labels = _build_link_prediction_data(
+            train_data, splits, num_src, num_dst = _build_link_prediction_data(
                 data,
                 edge_type,
                 train_ratio=train_ratio,
                 val_ratio=val_ratio,
                 neg_sampling_ratio=neg_ratio,
+                negative_sampling=negative_sampling,
                 seed=seed,
             )
         except Exception:
@@ -260,21 +273,31 @@ class HGTLinkPredictionPipeline(Pipeline):
         # 5. 训练
         epochs = _to_int(training_config.get("epochs"), 200)
         patience = _to_int(training_config.get("early_stop_patience"), 20)
+        loss_type = str(training_config.get("loss_type", "bce")).lower()
+        margin = _to_float(training_config.get("ranking_margin"), 1.0)
         trainer = HGTTrainer(
             model=model,
             optimizer=optimizer,
             device=device,
             early_stopping_patience=patience,
             edge_type=edge_type,
+            loss_type=loss_type,
+            neg_sampling_ratio=neg_ratio,
+            margin=margin,
         )
         try:
             history = trainer.fit(
                 train_data,
-                split_label_index["train"],
-                split_labels["train"],
-                split_label_index["val"],
-                split_labels["val"],
+                splits["train_pos_edges"],
+                splits["val_pos_edges"],
+                splits["test_pos_edges"],
+                splits["train_neg_edges"],
+                splits["val_neg_edges"],
+                splits["test_neg_edges"],
+                num_src=num_src,
+                num_dst=num_dst,
                 epochs=epochs,
+                seed=seed,
             )
         except Exception:
             logger.exception("训练失败")
@@ -286,8 +309,8 @@ class HGTLinkPredictionPipeline(Pipeline):
         try:
             test_metrics = trainer.evaluate(
                 train_data,
-                split_label_index["test"],
-                split_labels["test"],
+                splits["test_pos_edges"],
+                splits["test_neg_edges"],
             )
         except Exception:
             logger.exception("测试评估失败")

@@ -6,6 +6,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 import torch
 
@@ -53,6 +55,57 @@ def negative_sample_edges(
         )
 
     return list(negatives)
+
+
+def structured_negative_sampling(
+    num_src: int,
+    num_dst: int,
+    num_negatives: int,
+    positive_edges: set[tuple[int, int]],
+    rng: np.random.Generator | int | None = None,
+    max_trials: int = 100_000,
+) -> list[tuple[int, int]]:
+    """结构化负采样：对每条正样本保持源节点，替换目标节点.
+
+    生成的负样本与正样本共享源节点，因此比纯随机负样本更难区分，
+    同时保持局部拓扑结构. 参考: PyG structured_negative_sampling 的异构扩展.
+
+    Args:
+        num_src: 源节点数量.
+        num_dst: 目标节点数量.
+        num_negatives: 需要采样的负样本数量.
+        positive_edges: 已知正样本边集合.
+        rng: 随机数生成器或种子.
+        max_trials: 最大尝试次数.
+
+    Returns:
+        负样本边列表.
+    """
+    if rng is None:
+        rng = np.random.default_rng()
+    elif isinstance(rng, int):
+        rng = np.random.default_rng(rng)
+
+    pos_list = list(positive_edges)
+    if not pos_list:
+        return []
+
+    negatives: list[tuple[int, int]] = []
+    trials = 0
+    while len(negatives) < num_negatives and trials < max_trials:
+        src, _ = pos_list[rng.integers(0, len(pos_list))]
+        dst = rng.integers(0, num_dst)
+        edge = (int(src), int(dst))
+        if edge not in positive_edges:
+            negatives.append(edge)
+        trials += 1
+
+    if len(negatives) < num_negatives:
+        logger = logging.getLogger(__name__)
+        logger.warning(
+            "结构化负采样只得到 %d/%d 条负样本", len(negatives), num_negatives
+        )
+    return negatives
 
 
 def build_link_prediction_labels(

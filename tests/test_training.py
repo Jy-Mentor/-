@@ -5,6 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -74,7 +75,7 @@ def test_remove_leaked_edges_empty_input():
 
 
 def test_hgt_trainer_with_custom_edge_type():
-    """验证 HGTTrainer 支持自定义边类型."""
+    """验证 HGTTrainer 支持自定义边类型与 ranking loss."""
     from torch_geometric.data import HeteroData
 
     from iron_aging.models.link_predictor import LinkPredictor
@@ -96,16 +97,22 @@ def test_hgt_trainer_with_custom_edge_type():
     model = DummyModel()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     trainer = HGTTrainer(
-        model, optimizer, edge_type=("compound", "targets", "gene")
+        model,
+        optimizer,
+        edge_type=("compound", "targets", "gene"),
+        loss_type="ranking",
     )
 
-    edge_label_index = torch.tensor([[0, 1, 2], [0, 1, 2]])
-    edge_labels = torch.tensor([1.0, 0.0, 1.0])
+    pos_edges = [(0, 0), (1, 1)]
+    all_pos_edges = set(pos_edges)
+    rng = np.random.default_rng(42)
 
-    loss = trainer.train_epoch(data, edge_label_index, edge_labels)
+    loss = trainer.train_epoch(data, pos_edges, num_src=4, num_dst=5,
+                               all_pos_edges=all_pos_edges, rng=rng)
     assert loss > 0
 
-    metrics = trainer.evaluate(data, edge_label_index, edge_labels)
+    neg_edges = [(0, 2), (1, 3)]
+    metrics = trainer.evaluate(data, pos_edges, neg_edges)
     assert "auc" in metrics
     assert "ap" in metrics
 
@@ -115,6 +122,7 @@ def test_hgt_trainer_fit():
     from torch_geometric.data import HeteroData
 
     from iron_aging.models.link_predictor import LinkPredictor
+    from iron_aging.training.negative_sampling import negative_sample_edges
     from iron_aging.training.trainer import HGTTrainer
 
     data = HeteroData()
@@ -137,14 +145,31 @@ def test_hgt_trainer_fit():
         optimizer,
         edge_type=("compound", "targets", "gene"),
         early_stopping_patience=5,
+        loss_type="bce",
     )
 
-    train_idx = torch.tensor([[0, 1], [0, 1]])
-    train_labels = torch.tensor([1.0, 0.0])
-    val_idx = torch.tensor([[0, 1], [1, 0]])
-    val_labels = torch.tensor([1.0, 0.0])
+    train_pos = [(0, 0), (1, 1)]
+    val_pos = [(0, 1)]
+    test_pos = [(1, 0)]
+    all_pos = set(train_pos) | set(val_pos) | set(test_pos)
 
-    history = trainer.fit(data, train_idx, train_labels, val_idx, val_labels, epochs=10)
+    train_neg = negative_sample_edges(4, 5, 2, all_pos, rng=42)
+    val_neg = negative_sample_edges(4, 5, 2, all_pos, rng=43)
+    test_neg = negative_sample_edges(4, 5, 2, all_pos, rng=44)
+
+    history = trainer.fit(
+        data,
+        train_pos_edges=train_pos,
+        val_pos_edges=val_pos,
+        test_pos_edges=test_pos,
+        train_neg_edges=train_neg,
+        val_neg_edges=val_neg,
+        test_neg_edges=test_neg,
+        num_src=4,
+        num_dst=5,
+        epochs=10,
+        seed=42,
+    )
 
     assert 0 < len(history["train_loss"]) <= 10
     assert len(history["train_loss"]) == len(history["val_auc"])

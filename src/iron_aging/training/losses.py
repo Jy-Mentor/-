@@ -28,6 +28,32 @@ def bce_with_logits_loss(
     return F.binary_cross_entropy_with_logits(logits, labels, pos_weight=weight)
 
 
+def margin_ranking_loss(
+    pos_score: torch.Tensor,
+    neg_score: torch.Tensor,
+    margin: float = 1.0,
+) -> torch.Tensor:
+    """Pairwise margin ranking loss.
+
+    直接优化正样本分数高于负样本分数 margin, 与 AUC 目标更一致.
+    参考: PLNLP (Wang et al., 2021) Pairwise Learning for Neural Link Prediction.
+
+    Args:
+        pos_score: 正样本边预测分数 [N].
+        neg_score: 负样本边预测分数 [N].
+        margin: 间隔超参数.
+
+    Returns:
+        标量损失.
+    """
+    if pos_score.dim() == 2 and pos_score.size(-1) == 1:
+        pos_score = pos_score.squeeze(-1)
+    if neg_score.dim() == 2 and neg_score.size(-1) == 1:
+        neg_score = neg_score.squeeze(-1)
+    target = torch.ones_like(pos_score)
+    return F.margin_ranking_loss(pos_score, neg_score, target, margin=margin)
+
+
 def vib_kl_loss(mu: torch.Tensor, logvar: torch.Tensor, beta: float = 1e-3) -> torch.Tensor:
     """变分信息瓶颈 KL 损失.
 
