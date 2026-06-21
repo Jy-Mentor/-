@@ -68,6 +68,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="hgt_link_prediction",
         help="实验名称",
     )
+    parser.add_argument(
+        "--encoder-type",
+        type=str,
+        default=None,
+        help="编码器类型: hgt | gat | rgcn | gat_hgt (默认使用配置文件)",
+    )
     return parser.parse_args(argv)
 
 
@@ -91,6 +97,8 @@ def main(argv: list[str] | None = None) -> int:
     training_config = config.get("training", {})
     if args.epochs is not None:
         training_config["epochs"] = args.epochs
+    if args.encoder_type is not None:
+        model_config["encoder_type"] = args.encoder_type
 
     pipeline_config = PipelineConfig(
         experiment_name=args.experiment_name,

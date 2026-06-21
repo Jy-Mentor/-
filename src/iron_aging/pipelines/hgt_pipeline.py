@@ -23,10 +23,10 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from sklearn.model_selection import train_test_split
 from torch_geometric.data import HeteroData
 
 from iron_aging.data.graph_builder import HeteroGraphBuilder
+from iron_aging.data.split import split_edges
 from iron_aging.db.connection import get_engine, get_session_factory
 from iron_aging.models import HeteroLinkPredictionModel
 from iron_aging.pipelines.base import Pipeline, PipelineConfig, PipelineResult
@@ -72,25 +72,6 @@ def _set_seed(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
-def _split_edges(
-    edge_index: torch.Tensor,
-    train_ratio: float = 0.7,
-    val_ratio: float = 0.15,
-    seed: int = 42,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """将边索引划分为训练/验证/测试集."""
-    num_edges = edge_index.shape[1]
-    indices = np.arange(num_edges)
-    train_idx, temp_idx = train_test_split(
-        indices, train_size=train_ratio, random_state=seed
-    )
-    val_size = val_ratio / (1 - train_ratio)
-    val_idx, test_idx = train_test_split(
-        temp_idx, train_size=val_size, random_state=seed
-    )
-    return edge_index[:, train_idx], edge_index[:, val_idx], edge_index[:, test_idx]
-
-
 def _build_link_prediction_data(
     data: HeteroData,
     edge_type: tuple[str, str, str],
@@ -99,6 +80,7 @@ def _build_link_prediction_data(
     neg_sampling_ratio: float = 1.0,
     negative_sampling: str = "structured",
     seed: int = 42,
+    split_mode: str = "random",
 ) -> tuple[HeteroData, dict[str, list[tuple[int, int]]], int, int]:
     """为指定边类型构建链路预测训练数据.
 
@@ -116,8 +98,14 @@ def _build_link_prediction_data(
     num_dst = data[dst_type].num_nodes
 
     pos_edges_full = data[edge_type].edge_index
-    train_ei, val_ei, test_ei = _split_edges(
-        pos_edges_full, train_ratio, val_ratio, seed
+    train_ei, val_ei, test_ei = split_edges(
+        pos_edges_full,
+        num_src=num_src,
+        train_ratio=train_ratio,
+        val_ratio=val_ratio,
+        seed=seed,
+        mode=split_mode,
+        task="ct" if src_type == "compound" else "gp",
     )
 
     pos_train = set(
@@ -223,6 +211,7 @@ class HGTLinkPredictionPipeline(Pipeline):
         val_ratio = _to_float(training_config.get("val_ratio"), 0.15)
         neg_ratio = _to_float(training_config.get("neg_sampling_ratio"), 1.0)
         negative_sampling = str(training_config.get("negative_sampling", "structured")).lower()
+        split_mode = str(training_config.get("split_mode", "random")).lower()
         try:
             train_data, splits, num_src, num_dst = _build_link_prediction_data(
                 data,
@@ -232,6 +221,7 @@ class HGTLinkPredictionPipeline(Pipeline):
                 neg_sampling_ratio=neg_ratio,
                 negative_sampling=negative_sampling,
                 seed=seed,
+                split_mode=split_mode,
             )
         except Exception:
             logger.exception("边划分失败")

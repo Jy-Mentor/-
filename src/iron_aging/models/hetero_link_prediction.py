@@ -13,6 +13,7 @@ from torch_geometric.data import HeteroData
 from torch_geometric.nn import RGCNConv
 
 from iron_aging.models.gat_encoder import GATEncoder
+from iron_aging.models.gat_hgt_encoder import GATHGTEncoder
 from iron_aging.models.hgt_encoder import HGTEncoder
 from iron_aging.models.link_predictor import LinkPredictor
 
@@ -83,13 +84,13 @@ class HeteroLinkPredictionModel(nn.Module):
         self.encoder_type = encoder_type.lower()
         self.num_nodes_dict = num_nodes_dict
 
-        if self.encoder_type in ("gat", "rgcn"):
+        if self.encoder_type in ("gat", "rgcn", "gat_hgt"):
             if num_nodes_dict is None:
                 msg = f"{encoder_type.upper()} 编码器需要提供 num_nodes_dict"
                 raise ValueError(msg)
             self.node_type_offset = self._compute_offsets(num_nodes_dict)
             self.max_feat_dim = max(in_dims.values())
-            proj_dim = self.max_feat_dim
+            proj_dim = self.max_feat_dim if self.encoder_type != "gat_hgt" else hidden_dim
         else:
             proj_dim = hidden_dim
 
@@ -117,6 +118,16 @@ class HeteroLinkPredictionModel(nn.Module):
                 num_relations=len(self.edge_types),
                 num_layers=num_layers,
                 dropout=dropout,
+            )
+        elif self.encoder_type == "gat_hgt":
+            self.encoder = GATHGTEncoder(
+                hidden_dim=hidden_dim,
+                out_dim=out_dim,
+                metadata=metadata,
+                num_nodes_dict=num_nodes_dict,
+                num_heads=num_heads,
+                dropout=dropout,
+                num_layers=num_layers,
             )
         else:
             self.encoder = HGTEncoder(

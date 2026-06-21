@@ -103,8 +103,13 @@ def score_pairs(
 
 
 def _infer_encoder(experiment_name: str) -> str:
-    """从实验名推断编码器类型."""
+    """从实验名推断编码器类型.
+
+    注意顺序: gat_hgt 同时包含 gat 与 hgt, 需优先匹配.
+    """
     lowered = experiment_name.lower()
+    if "gat_hgt" in lowered:
+        return "gat_hgt"
     if "hgt" in lowered:
         return "hgt"
     if "gat" in lowered:

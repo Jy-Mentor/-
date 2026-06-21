@@ -1,31 +1,37 @@
-"""TCM monomer × ferroptosis × CIRI prediction module with GAT-HGT fusion GNN.
+"""[EXPLORATORY / DEPRECATED] TCM monomer × ferroptosis × CIRI prediction module.
 
-This module implements an integrated pipeline for predicting the therapeutic
-potential of natural TCM monomers (including BCP) against cerebral
-ischemia-reperfusion injury (CIRI) through modulation of ferroptosis-related
-targets and pathways.
+WARNING
+-------
+This script is kept for reproducibility of earlier exploratory analyses only.
+It is NOT the official implementation for the iron-aging study.  The official
+v4.0 pipeline is located at:
 
-Key features
-------------
-1. GAT-HGT fusion encoder that combines heterogeneous graph transformer (HGT)
-   with graph attention network (GAT) on a homogeneous projection.
-2. Focused TCM-ferroptosis-CIRI interaction network built from real project
-   files, covering TCM monomers, ferroptosis genes, pathways and diseases.
-3. Three prediction functions:
-   - active ingredient screening
-   - mechanism analysis
-   - treatment effect evaluation
-4. Rigorous training/validation/testing with stratified K-fold cross
-   validation and hyper-parameter optimisation.
-5. Interpretable visualisations (network, heatmap, bar charts).
+    src/iron_aging/apps/hgt_pipeline.py
+
+The GAT-HGT fusion encoder originally developed here has been migrated to the
+official pipeline (encoder_type="gat_hgt").  Key limitations of this script:
+
+1. Evaluates on the full graph, so validation/test target edges participate in
+   message passing.  This can inflate AUC/AP and is considered data leakage in
+   link-prediction evaluation.  The official pipeline follows SpotTarget
+   (Zhu et al., WSDM 2024) and removes all target edges from the message-passing
+   graph during both training and evaluation.
+2. Uses random reliable negative sampling, whereas the official pipeline uses
+   structured negative sampling by default.
+3. Uses stratified K-fold cross-validation with an 85/15 train/val split inside
+   each fold; the official pipeline uses a single reproducible 70/15/15 split.
+4. Some downstream scoring utilities mix BBB, activity and pathway heuristics
+   with hard-coded weights; these are not part of the official model evaluation.
+
+For any publication-grade result, please use src/iron_aging/apps/hgt_pipeline.py
+with config.yaml and report metrics from the official pipeline only.
 
 References
 ----------
 - Hu et al. (2020) "Heterogeneous Graph Transformer", WWW.
 - Velickovic et al. (2018) "Graph Attention Networks", ICLR.
 - Brody et al. (2022) "How Attentive are Graph Attention Networks?", ICLR.
-- Gharizadeh et al. (2024) HGTDR for drug repurposing, Bioinformatics.
-- Tsvetkov et al. (2022) Cuproptosis, Science. PMID:35298263.
+- Zhu et al. (2024) "SpotTarget", WSDM.
 """
 
 from __future__ import annotations

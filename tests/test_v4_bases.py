@@ -20,10 +20,11 @@ import torch
 from torch_geometric.data import HeteroData
 
 from iron_aging.apps.hgt_pipeline import parse_args
+from iron_aging.data.split import split_edges
 from iron_aging.etl.base import DataSource, ETLResult
 from iron_aging.models import HeteroLinkPredictionModel
 from iron_aging.pipelines.base import Pipeline, PipelineConfig, PipelineResult
-from iron_aging.pipelines.hgt_pipeline import _build_link_prediction_data, _split_edges
+from iron_aging.pipelines.hgt_pipeline import _build_link_prediction_data
 
 
 class MockDataSource(DataSource):
@@ -164,11 +165,18 @@ def test_hgt_pipeline_argparse_defaults() -> None:
 
 def test_hgt_pipeline_argparse_custom() -> None:
     """hgt_pipeline 自定义参数解析应正确."""
-    args = parse_args(["--config", "custom.yaml", "--device", "cpu", "--epochs", "10", "--clear-cache"])
+    args = parse_args([
+        "--config", "custom.yaml",
+        "--device", "cpu",
+        "--epochs", "10",
+        "--clear-cache",
+        "--encoder-type", "gat_hgt",
+    ])
     assert args.config == "custom.yaml"
     assert args.device == "cpu"
     assert args.epochs == 10
     assert args.clear_cache is True
+    assert args.encoder_type == "gat_hgt"
 
 
 def test_hgt_pipeline_main_uses_v4_pipeline(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -271,13 +279,29 @@ def test_rgcn_link_prediction_model_from_data() -> None:
 
 
 def test_split_edges() -> None:
-    """_split_edges 应按比例划分边."""
+    """split_edges 应按比例划分边."""
     edge_index = torch.arange(100).unsqueeze(0).repeat(2, 1)
-    train_ei, val_ei, test_ei = _split_edges(edge_index, train_ratio=0.7, val_ratio=0.15, seed=42)
+    train_ei, val_ei, test_ei = split_edges(
+        edge_index, num_src=100, train_ratio=0.7, val_ratio=0.15, seed=42, mode="random"
+    )
     assert train_ei.shape[1] == 70
     assert val_ei.shape[1] >= 10
     assert test_ei.shape[1] >= 10
     assert train_ei.shape[1] + val_ei.shape[1] + test_ei.shape[1] == 100
+
+
+def test_split_edges_stratified() -> None:
+    """split_edges stratified 模式应按源节点分层划分."""
+    # 100 条边, src 为 0-99 各出现 1 次
+    edge_index = torch.arange(100).unsqueeze(0).repeat(2, 1)
+    train_ei, val_ei, test_ei = split_edges(
+        edge_index, num_src=100, train_ratio=0.7, val_ratio=0.15, seed=42, mode="stratified"
+    )
+    assert train_ei.shape[1] + val_ei.shape[1] + test_ei.shape[1] == 100
+    # 分层模式下每个集合都包含不同 src
+    assert len(set(train_ei[0].tolist())) > 0
+    assert len(set(val_ei[0].tolist())) > 0
+    assert len(set(test_ei[0].tolist())) > 0
 
 
 def test_build_link_prediction_data() -> None:

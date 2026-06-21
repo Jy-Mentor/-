@@ -119,3 +119,43 @@ def test_rgcn_edge_type_mapping_stable(device):
     out = model(data.x_dict, data.edge_index_dict)
     assert out["gene"].shape == (3, 4)
     assert out["compound"].shape == (2, 4)
+
+
+def test_gat_hgt_encoder_forward(device):
+    """验证 GAT-HGT 融合编码器前向传播与输出形状."""
+    from torch_geometric.data import HeteroData
+
+    from iron_aging.models.hetero_link_prediction import HeteroLinkPredictionModel
+
+    metadata = (
+        ["gene", "compound"],
+        [
+            ("gene", "interacts", "gene"),
+            ("compound", "targets", "gene"),
+        ],
+    )
+    model = HeteroLinkPredictionModel(
+        metadata=metadata,
+        in_dims={"gene": 4, "compound": 4},
+        hidden_dim=8,
+        out_dim=4,
+        encoder_type="gat_hgt",
+        num_nodes_dict={"gene": 3, "compound": 2},
+        num_heads=2,
+        num_layers=1,
+        dropout=0.0,
+    ).to(device)
+
+    data = HeteroData()
+    data["gene"].x = torch.randn(3, 4, device=device)
+    data["compound"].x = torch.randn(2, 4, device=device)
+    data["gene", "interacts", "gene"].edge_index = torch.tensor(
+        [[0, 1], [1, 2]], dtype=torch.long, device=device
+    )
+    data["compound", "targets", "gene"].edge_index = torch.tensor(
+        [[0], [0]], dtype=torch.long, device=device
+    )
+
+    out = model(data.x_dict, data.edge_index_dict)
+    assert out["gene"].shape == (3, 4)
+    assert out["compound"].shape == (2, 4)

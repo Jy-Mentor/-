@@ -44,7 +44,7 @@ model:
   dropout: 0.3
   gat_residual_weight: 0.3
   num_hgt_layers: 2
-  encoder_type: rgcn  # hgt | gat | rgcn
+  encoder_type: rgcn  # hgt | gat | rgcn | gat_hgt
   use_vib: true
   use_self_distill: true
 
@@ -91,6 +91,7 @@ training:
     easy_neg_ratio: 0.7
 
   # 数据划分
+  split_mode: stratified  # random | stratified
   split:
     train_ratio: 0.7
     val_ratio: 0.15
