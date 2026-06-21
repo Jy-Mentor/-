@@ -109,7 +109,8 @@ from typing import Dict, List, Optional
 # 确保 src 与项目根目录可被导入 (兼容直接运行 python module3_hgt.py)
 _PROJECT_ROOT = Path(__file__).resolve().parent
 _SRC_DIR = _PROJECT_ROOT / "src"
-for _path in (_SRC_DIR, _PROJECT_ROOT):
+_L1_DIR = _PROJECT_ROOT / "L1"
+for _path in (_SRC_DIR, _PROJECT_ROOT, _L1_DIR):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
@@ -142,236 +143,11 @@ try:
 
     logger.info("基因集加载: idsp_gene_sets.py")
 except ImportError:
-    PURE_FERROPTOSIS = {
-        "ACSL4",
-        "PTGS2",
-        "HMOX1",
-        "TFRC",
-        "SLC7A11",
-        "CHAC1",
-        "SLC3A2",
-        "FTH1",
-        "FTL",
-        "NFE2L2",
-        "GPX4",
-        "DPP4",
-        "ALOX5",
-        "ALOX12",
-        "SAT1",
-        "SLC40A1",
-        "STEAP3",
-        "CBS",
-        "CSE1L",
-        "HSPB1",
-        "VDAC2",
-        "VDAC3",
-        "GOT1",
-        "GCLC",
-        "GCLM",
-        "ABCC1",
-        "ABCC2",
-        "ATF3",
-        "ATF4",
-        "DDIT3",
-        "SESN2",
-        "FANCD2",
-        "CDO1",
-        "ZEB1",
-        "SNAI1",
-        "MMP9",
-        "RGS4",
-        "SQSTM1",
-        "NCOA4",
-        "BECN1",
-        "PRNP",
-        "ADIPOQ",
-        "PLIN2",
-        "LPIN1",
-        "LPIN2",
-        "PNPLA2",
-        "MAP1LC3A",
-        "MAP1LC3B",
-        "GABARAP",
-        "GABARAPL1",
-        "ATG3",
-        "ATG5",
-        "ATG7",
-        "BAP1",
-        "TRIB3",
-        "KEAP1",
-        "TFAM",
-        "PPARGC1A",
-        "SIRT1",
-        "FOXO1",
-        "FOXO3",
-        "PRKAA1",
-        "PRKAA2",
-        "NFKB1",
-        "RELA",
-        "BNIP3",
-        "BNIP3L",
-        "HSP90AA1",
-        "HSPA5",
-        "HSPD1",
-        "EIF2AK3",
-        "EIF2A",
-    }
-    PURE_SENESCENCE = {
-        "CDKN2A",
-        "CDKN2B",
-        "CDKN1A",
-        "CDKN1B",
-        "RB1",
-        "E2F1",
-        "E2F2",
-        "E2F3",
-        "CCND1",
-        "CCNE1",
-        "CCNA2",
-        "CCNB1",
-        "CDK4",
-        "CDK6",
-        "CDK2",
-        "TP53",
-        "MDM2",
-        "MDM4",
-        "CHEK1",
-        "CHEK2",
-        "ATM",
-        "ATR",
-        "H2AX",
-        "GADD45A",
-        "GADD45B",
-        "SERPINE1",
-        "IGFBP3",
-        "IGFBP5",
-        "IGFBP7",
-        "IL6",
-        "IL1A",
-        "IL1B",
-        "CCL2",
-        "CCL3",
-        "CCL4",
-        "CXCL1",
-        "CXCL2",
-        "CXCL10",
-        "MMP1",
-        "MMP2",
-        "MMP3",
-        "MMP10",
-        "MMP12",
-        "MMP13",
-        "TIMP1",
-        "TIMP2",
-        "FN1",
-        "COL1A1",
-        "COL1A2",
-        "COL3A1",
-        "LMNB1",
-        "HMGB1",
-        "HMGA1",
-        "HMGA2",
-        "SIRT6",
-        "FOXO4",
-        "STAT3",
-        "JAK2",
-        "MAPK1",
-        "MAPK3",
-        "MAPK8",
-        "MAPK14",
-        "AKT1",
-        "MTOR",
-        "RPS6KB1",
-        "PTEN",
-        "TSC1",
-        "TSC2",
-        "CREB1",
-        "ATF2",
-        "JUN",
-        "FOS",
-        "MYC",
-        "MAX",
-        "MNT",
-        "HDAC1",
-        "HDAC2",
-        "HDAC3",
-        "EP300",
-        "CREBBP",
-        "BRD4",
-        "PARP1",
-        "BUB1B",
-        "BUB1",
-        "BUB3",
-        "CDC20",
-        "MAD2L1",
-        "PLK1",
-        "AURKA",
-        "AURKB",
-        "TOP2A",
-        "MKI67",
-        "PCNA",
-        "MCM2",
-        "MCM3",
-        "MCM4",
-        "MCM5",
-        "MCM6",
-        "MCM7",
-        "RFC1",
-        "RFC2",
-        "RFC3",
-        "RFC4",
-        "RFC5",
-        "RPA1",
-        "RPA2",
-        "RPA3",
-        "LIG1",
-        "LIG3",
-        "LIG4",
-        "XRCC1",
-        "XRCC6",
-        "XRCC5",
-        "PRKDC",
-        "NBN",
-        "MRE11",
-        "RAD50",
-        "RAD51",
-        "BRCA1",
-        "BRCA2",
-        "BLM",
-        "WRN",
-        "TERF1",
-        "TERF2",
-        "TERT",
-        "CD38",
-        "CD4",
-        "CD8A",
-        "CSF2",
-        "CSF3",
-        "IFNG",
-        "TNF",
-        "TGFB1",
-        "VEGFA",
-        "ICAM1",
-        "VCAM1",
-        "SELE",
-        "IL18",
-        "IL10",
-        "TNFRSF1A",
-    }
-    SHARED_GENES = {
-        "TP53",
-        "CDKN1A",
-        "RB1",
-        "CD74",
-        "S100A8",
-        "IFNG",
-        "IRF1",
-        "TLR4",
-        "NLRP3",
-        "HIF1A",
-        "KEAP1",
-        "SOD1",
-    }
+    logger.error(
+        "无法导入 idsp_gene_sets.py，该模块提供铁死亡/衰老基因集；"
+        "缺失真实基因集将严重影响模型生物学解释，禁止运行。"
+    )
+    raise
 
 
 # ============================================================
@@ -506,10 +282,9 @@ def _parse_config_simple(filepath: Path) -> dict:
                             else:
                                 val = int(val)
                         except ValueError:
-                            try:
-                                val = float(val)
-                            except ValueError:
-                                pass
+                            logger.debug(
+                                "配置值 '%s' 无法解析为数字，按字符串保留", val
+                            )
 
                     if current_sub:
                         if current_sub not in config[current_section]:
@@ -1054,7 +829,11 @@ def _compute_fingerprint_from_smiles(
             )
 
             fp = GetHashedAtomPairFingerprintAsBitVect(mol, nBits=n_bits)
-        except Exception:
+        except Exception as e:
+            logger.warning(
+                f"GetHashedAtomPairFingerprintAsBitVect 不可用: {e}，"
+                "回退到 AtomPairs.GetAtomPairFingerprintAsBitVect"
+            )
             fp = AtomPairs.GetAtomPairFingerprintAsBitVect(mol)
     elif fp_type == "maccs":
         fp = MACCSkeys.GenMACCSKeys(mol)
@@ -3459,7 +3238,6 @@ class HGTGATModel(nn.Module):
         self.gat_residual_weight = gat_residual_weight
         self.use_vib = use_vib
         self.use_self_distill = use_self_distill
-        list(node_feat_dims.keys())
         # 5种节点类型: Gene, Pathway, Compound, Disease, Pocket
         # CellType和LR节点已折叠为基因特征
         edge_types = [
@@ -3549,6 +3327,18 @@ class HGTGATModel(nn.Module):
         # 2个任务: 基因-通路 + 化合物-靶点
         self.log_var_gp = nn.Parameter(torch.tensor([0.5]))
         self.log_var_ct = nn.Parameter(torch.tensor([0.5]))
+
+        # 任务专属投影层 (缓解多任务共享编码器的梯度冲突)
+        self.task_proj_gp = nn.Sequential(
+            nn.Linear(hgt_out_dim, hgt_out_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+        self.task_proj_ct = nn.Sequential(
+            nn.Linear(hgt_out_dim, hgt_out_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
 
         # 多任务预测头 (2个任务)
         self.gene_pathway_pred = nn.Sequential(
@@ -3747,12 +3537,16 @@ class HGTGATModel(nn.Module):
         return importance
 
     def predict_gene_pathway(self, gene_emb, pathway_emb):
-        """任务1: 基因-通路归属"""
+        """任务1: 基因-通路归属 (使用任务专属投影)"""
+        gene_emb = self.task_proj_gp(gene_emb)
+        pathway_emb = self.task_proj_gp(pathway_emb)
         combined = torch.cat([gene_emb, pathway_emb], dim=-1)
         return self.gene_pathway_pred(combined)
 
     def predict_compound_target(self, compound_emb, gene_emb):
-        """任务2: 化合物-靶点结合"""
+        """任务2: 化合物-靶点结合 (使用任务专属投影)"""
+        compound_emb = self.task_proj_ct(compound_emb)
+        gene_emb = self.task_proj_ct(gene_emb)
         combined = torch.cat([compound_emb, gene_emb], dim=-1)
         return self.compound_target_pred(combined)
 
@@ -3869,7 +3663,6 @@ def train_model(
     # 文献依据: BioTranslator (Xu et al., 2023 NAR), KG4SL (Liu et al., 2022 Bioinformatics)
     # 仅核心基因参与监督损失, 背景基因只做消息传递
     core_gene_indices = graph_data["gene"].get("core_indices", list(range(n_gene)))
-    set(core_gene_indices)
     n_core_gene = len(core_gene_indices)
     logger.info(f"  核心基因训练掩码: {n_core_gene}/{n_gene} 个基因参与监督")
 
@@ -4088,9 +3881,9 @@ def train_model(
 
         tb_writer = SummaryWriter(log_dir=str(OUTPUT_DIR / "tb_logs"))
         logger.info("  TensorBoard 日志已启用 -> results/tb_logs")
-    except Exception:
+    except Exception as e:
         tb_writer = None
-        logger.warning("  TensorBoard 不可用 (pip install tensorboard)")
+        logger.warning(f"  TensorBoard 不可用: {e} (pip install tensorboard)")
 
     # -- 课程学习调度器 (模块4) -- 仅GP任务, CT任务不使用课程学习
     cur_cfg = train_cfg.get("curriculum", {})
@@ -4129,21 +3922,24 @@ def train_model(
     ).to(device)
 
     # ---- HeCo 对比预训练阶段 ----
+    # 使用独立优化器, 避免 HeCo 的 Adam 状态污染下游监督优化器 (参考 HeCo 官方实现).
     heco_cfg = config.get("heco", {})
     heco_epochs = int(epochs * heco_cfg.get("pretrain_epochs_ratio", 0.167))
-    logger.info(f"  HeCo对比预训练: {heco_epochs} epochs")
+    logger.info(f"  HeCo对比预训练: {heco_epochs} epochs (独立优化器)")
+    heco_optimizer = torch.optim.Adam(model.parameters(), lr=learn_rate)
     for epoch in range(1, heco_epochs + 1):
         model.train()
-        optimizer.zero_grad()
+        heco_optimizer.zero_grad()
         heco_loss = model.forward_heco_contrastive(
             x_dict, train_edge_index_dict, gene_gat_edge
         )
         heco_loss.backward()
-        optimizer.step()
+        heco_optimizer.step()
         if epoch % 10 == 0:
             logger.info(
                 f"    HeCo pretrain {epoch}/{heco_epochs}: loss={heco_loss.item():.4f}"
             )
+    del heco_optimizer
 
     # 训练循环
     model.train()
@@ -4189,7 +3985,9 @@ def train_model(
     # 当前的ct训练数据 (初始为原始, 后续动态更新)
     ct_edges_current = ct_edges_t
     ct_labels_current = ct_labels_t
-    hard_neg_refresh_interval = 10  # 每10个epoch刷新困难负样本
+    hard_neg_refresh_interval = train_cfg.get("neg_sampling", {}).get(
+        "hard_neg_refresh_interval", 40
+    )
 
     for epoch in range(1, epochs + 1):
         optimizer.zero_grad()
@@ -4310,29 +4108,31 @@ def train_model(
             )
 
         if epoch % eval_every == 0:
-            # 验证集评估 (在eval模式下重新计算嵌入)
-            val_auc1 = evaluate(
-                model,
-                x_dict,
-                train_edge_index_dict,
-                gene_gat_edge,
-                gp_val_edges,
-                gp_val_labels,
-                lambda h, e: model.predict_gene_pathway(
-                    h["gene"][e[:, 0]], h["pathway"][e[:, 1]]
-                ),
-            )
-            val_auc2 = evaluate(
-                model,
-                x_dict,
-                train_edge_index_dict,
-                gene_gat_edge,
-                ct_val_edges,
-                ct_val_labels,
-                lambda h, e: model.predict_compound_target(
-                    h["compound"][e[:, 0]], h["gene"][e[:, 1]]
-                ),
-            )
+            # 验证集评估 (使用 EMA 模型, 保证 Val/Test 评估状态一致)
+            ema_model.eval()
+            with torch.no_grad():
+                val_auc1 = evaluate(
+                    ema_model,
+                    x_dict,
+                    train_edge_index_dict,
+                    gene_gat_edge,
+                    gp_val_edges,
+                    gp_val_labels,
+                    lambda h, e: ema_model.predict_gene_pathway(
+                        h["gene"][e[:, 0]], h["pathway"][e[:, 1]]
+                    ),
+                )
+                val_auc2 = evaluate(
+                    ema_model,
+                    x_dict,
+                    train_edge_index_dict,
+                    gene_gat_edge,
+                    ct_val_edges,
+                    ct_val_labels,
+                    lambda h, e: ema_model.predict_compound_target(
+                        h["compound"][e[:, 0]], h["gene"][e[:, 1]]
+                    ),
+                )
             val_auc_mean = (val_auc1 + val_auc2) / 2
 
             logger.info(
@@ -4362,10 +4162,18 @@ def train_model(
                 tb_writer.add_scalar("GradNorm/w_gp", gradnorm_weights[0].item(), step)
                 tb_writer.add_scalar("GradNorm/w_ct", gradnorm_weights[1].item(), step)
 
-            # 保存最佳模型 + 早停机制
+            # 保存最佳模型 + 对应 EMA 状态 + 早停机制
             if val_auc_mean > best_val_auc:
                 best_val_auc = val_auc_mean
-                best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
+                best_state = {
+                    "model": {
+                        k: v.cpu().clone() for k, v in model.state_dict().items()
+                    },
+                    "ema": {
+                        k: v.cpu().clone()
+                        for k, v in ema_model.state_dict().items()
+                    },
+                }
                 patience_counter = 0
                 logger.info(f"    ↑ 新最佳val_AUC={best_val_auc:.4f} (patience重置)")
             else:
@@ -4378,14 +4186,15 @@ def train_model(
 
             model.train()
 
-    # 恢复最佳模型
+    # 恢复最佳模型及其 EMA 状态, 保证 Val/Test 使用同一组平滑参数
     if best_state is not None:
-        model.load_state_dict(best_state)
-        logger.info(f"  恢复最佳模型 (val_AUC={best_val_auc:.4f})")
+        model.load_state_dict(best_state["model"])
+        ema_model.load_state_dict(best_state["ema"])
+        logger.info(f"  恢复最佳模型与 EMA 状态 (val_AUC={best_val_auc:.4f})")
 
-    # 最终测试集评估 (使用EMA模型, 提升泛化AUC)
+    # 最终测试集评估 (使用 EMA 模型, 与验证阶段一致)
     ema_model.eval()
-    logger.info("  使用EMA平滑参数进行最终评估")
+    logger.info("  使用 EMA 平滑参数进行最终评估")
     with torch.no_grad():
         x_hgt_test = ema_model(x_dict, train_edge_index_dict, gene_gat_edge)
         test_auc1 = _compute_auc(
@@ -4715,13 +4524,16 @@ def compute_attention_flow(model, graph_data: dict, x_hgt: dict) -> dict:
     """
     logger.info("=" * 60)
     logger.info("计算跨细胞通讯注意力流 (基于基因嵌入 + LR角色特征)")
+    logger.warning(
+        "通讯强度由模型嵌入相似度推断, 缺乏真实单细胞空间转录组表达验证; "
+        "结果仅为计算假设, 不能直接作为生物学结论。"
+    )
 
     # LR和CellType已折叠为基因特征, 不再作为独立节点
     # 通过基因的LR角色特征和细胞类型表达特征推断通讯流
     gene_names = graph_data["gene"]["names"]
     cell_types = graph_data.get("cell_types", [])
     celltype_marker_map = graph_data.get("celltype_marker_map", {})
-    len(gene_names)
 
     # 构建基因→细胞类型表达映射 (从celltype_marker_map)
     gene_to_ct = defaultdict(set)
@@ -4736,7 +4548,6 @@ def compute_attention_flow(model, graph_data: dict, x_hgt: dict) -> dict:
     # 下载脚本: download_external_data.py → download_cellchat_lr_pairs()
     lr_pairs_internal = _load_lr_pairs_for_flow(gene_names)
 
-    next(model.parameters()).device
     comm_flow = {}
 
     for lig, rec in lr_pairs_internal:
@@ -5715,8 +5526,8 @@ def main():
         )
 
         graph_data = _cached_build_graph(use_cache=True)
-    except Exception:
-        logger.warning("图缓存加载失败，回退到本地构建")
+    except Exception as e:
+        logger.warning(f"图缓存加载失败，回退到本地构建: {e}")
         traceback.print_exc()
         graph_data = build_heterogeneous_graph()
 

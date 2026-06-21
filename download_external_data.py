@@ -85,6 +85,7 @@ download_external_data.py — 从外部权威数据库和GitHub开源项目下�
 import csv
 import logging
 import time
+import traceback
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -122,7 +123,8 @@ def _load_db_config() -> dict:
         logger.warning("PyYAML 未安装, 使用内置默认值")
         return _get_default_db_config()
     except Exception as e:
-        logger.error(f"外部数据库配置加载失败: {e}")
+        traceback.print_exc()
+        logger.error("外部数据库配置加载失败: %s，使用内置默认值", e)
         return _get_default_db_config()
     return config
 

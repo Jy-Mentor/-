@@ -18,6 +18,7 @@ from typing import Any
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import NullPool, StaticPool
 
 from iron_aging import PROJECT_ROOT
 from iron_aging.config import load_config
@@ -70,9 +71,15 @@ def get_engine(url: str | None = None, **kwargs: Any) -> Engine:
 
     Returns:
         SQLAlchemy Engine 实例.
+
+    参考:
+        SQLAlchemy 官方建议：SQLite 在多线程/并发场景下应使用 NullPool
+        而非 check_same_thread=False，后者会掩盖线程安全 bug。
+        https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#threading-pooling-behavior
     """
     url = url or get_database_url()
     is_sqlite = url.startswith("sqlite")
+    is_sqlite_memory = is_sqlite and (":memory:" in url or "mode=memory" in url)
 
     engine_kwargs: dict[str, Any] = {
         "pool_pre_ping": True,
@@ -85,9 +92,21 @@ def get_engine(url: str | None = None, **kwargs: Any) -> Engine:
                 "max_overflow": kwargs.pop("max_overflow", 20),
             }
         )
+    elif is_sqlite_memory:
+        # 内存 SQLite 必须使用 StaticPool，确保所有操作共享同一个内存数据库，
+        # 否则 NullPool 每次新建连接都会得到一个空的新数据库。
+        # check_same_thread=False 允许 StaticPool 在跨线程场景下复用连接。
+        engine_kwargs.update(
+            {
+                "poolclass": StaticPool,
+                "connect_args": {"check_same_thread": False},
+            }
+        )
     else:
-        # SQLite 单连接即可, 禁用连接池避免多线程问题
-        engine_kwargs["connect_args"] = {"check_same_thread": False}
+        # 文件 SQLite 使用 NullPool：每次操作新建连接，
+        # 避免连接池复用同一连接导致的跨线程问题。
+        # 保持 check_same_thread=True（默认值），让 SQLite 本身检测线程误用。
+        engine_kwargs["poolclass"] = NullPool
 
     engine_kwargs.update(kwargs)
     logger.info("创建数据库引擎: %s", url.split("//")[0] + "//***")

@@ -196,13 +196,13 @@ def run_tasks_parallel(
                         task_result = future.result()
                     results.append({"index": idx, "result": task_result})
                     completed += 1
-                except Exception as exc:  # noqa: BLE001
+                except Exception as exc:  # noqa: BLE001 (单任务失败需记录并聚合, 不影响其他任务)
                     error_msg = f"任务 {idx} 失败: {exc}"
                     logger.error(error_msg)
                     traceback.print_exc()
                     errors.append(error_msg)
                     failed += 1
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001 (并发框架层需捕获并聚合, 返回统一结果)
         error_msg = f"并发执行框架异常: {exc}"
         logger.error(error_msg)
         traceback.print_exc()

@@ -54,14 +54,19 @@ def clear_graph_cache(cache_dir: Path | str | None = None) -> None:
         logger.info("图缓存已清除: %s", target)
 
 
-def build_heterogeneous_graph(use_cache: bool = True) -> dict[str, Any]:  # noqa: ARG001
+def build_heterogeneous_graph(use_cache: bool = True) -> dict[str, Any]:
     """向后兼容包装器：委托给 module3_hgt 的图构建逻辑.
 
     该函数保留以避免破坏直接调用 graph_builder.build_heterogeneous_graph 的旧代码。
     完整迁移后，将逐步替换为 HeteroGraphBuilder + ETL 流程。
+
+    Args:
+        use_cache: 为 False 时先清除图缓存，强制重新构建图。
     """
     import module3_hgt  # type: ignore[import-not-found]
 
+    if not use_cache:
+        clear_graph_cache()
     return module3_hgt.build_heterogeneous_graph()
 
 
@@ -342,11 +347,138 @@ class HeteroGraphBuilder:
                 n_compounds = len(compound_records)
                 data["compound"].x = torch.zeros(n_compounds, 6, dtype=torch.float32)
 
-        # 其他节点类型暂用最小占位特征
-        for nt in ("disease", "pathway", "cell_type", "mirna"):
-            n_nodes = len(node_lists.get(nt, []))
-            if n_nodes:
-                data[nt].x = torch.zeros(n_nodes, 1, dtype=torch.float32)
+        # 为 pathway / disease / cell_type / mirna 聚合相关基因特征
+        # 符合项目规则：所有节点特征必须用真实数据，通路特征从成员基因学习
+        if "gene" in data and data["gene"].x is not None:
+            gene_features = data["gene"].x.numpy()
+            gene_names = data["gene"].names
+
+            # pathway: 成员基因均值
+            pathway_x = self._aggregate_node_features_from_genes(
+                node_type="pathway",
+                node_names=data["pathway"].names,
+                gene_names=gene_names,
+                gene_features=gene_features,
+                related_records=self.gp_repo.get_all(),
+                node_key="pathway_id",
+                gene_key="gene_id",
+                node_id_to_name=None,
+            )
+            if pathway_x is not None:
+                data["pathway"].x = pathway_x
+
+            # disease: 关联基因均值
+            disease_x = self._aggregate_node_features_from_genes(
+                node_type="disease",
+                node_names=data["disease"].names,
+                gene_names=gene_names,
+                gene_features=gene_features,
+                related_records=self.dg_repo.get_all(),
+                node_key="disease_id",
+                gene_key="gene_id",
+                node_id_to_name=None,
+            )
+            if disease_x is not None:
+                data["disease"].x = disease_x
+
+            # cell_type: 标记基因均值
+            cell_type_x = self._aggregate_node_features_from_genes(
+                node_type="cell_type",
+                node_names=data["cell_type"].names,
+                gene_names=gene_names,
+                gene_features=gene_features,
+                related_records=self.ctm_repo.get_all(),
+                node_key="cell_type_id",
+                gene_key="gene_id",
+                node_id_to_name=None,
+            )
+            if cell_type_x is not None:
+                data["cell_type"].x = cell_type_x
+
+            # mirna: 靶基因均值
+            mirna_x = self._aggregate_node_features_from_genes(
+                node_type="mirna",
+                node_names=data["mirna"].names,
+                gene_names=gene_names,
+                gene_features=gene_features,
+                related_records=self.mt_repo.get_all(),
+                node_key="mirna_id",
+                gene_key="gene_id",
+                node_id_to_name=None,
+            )
+            if mirna_x is not None:
+                data["mirna"].x = mirna_x
+        else:
+            logger.warning("gene 特征缺失，无法为 pathway/disease/cell_type/mirna 聚合真实特征，使用零向量占位")
+            for nt in ("disease", "pathway", "cell_type", "mirna"):
+                n_nodes = len(node_lists.get(nt, []))
+                if n_nodes:
+                    data[nt].x = torch.zeros(n_nodes, 1, dtype=torch.float32)
+
+    def _aggregate_node_features_from_genes(
+        self,
+        node_type: str,
+        node_names: list[str],
+        gene_names: list[str],
+        gene_features: np.ndarray,
+        related_records: Iterable[dict[str, Any]],
+        node_key: str,
+        gene_key: str,
+        node_id_to_name: dict[int, str] | None,
+    ) -> torch.Tensor | None:
+        """通过相关基因特征均值构建非基因节点特征.
+
+        Args:
+            node_type: 节点类型，仅用于日志.
+            node_names: 该类型节点业务主键列表.
+            gene_names: 基因节点业务主键列表.
+            gene_features: 基因特征矩阵，形状 (n_genes, feat_dim).
+            related_records: 节点-基因关联记录.
+            node_key: 关联记录中节点主键字段名.
+            gene_key: 关联记录中基因主键字段名.
+            node_id_to_name: 若节点主键为整数（如 pathway.id）而 node_names 为名称，
+                             提供 id -> name 映射；否则传 None.
+
+        Returns:
+            聚合后的节点特征张量；若无法聚合则返回 None.
+        """
+        if not node_names or gene_features.size == 0:
+            return None
+
+        gene_name_to_idx = {name: i for i, name in enumerate(gene_names)}
+        node_name_to_idx = {name: i for i, name in enumerate(node_names)}
+
+        node_to_gene_indices: dict[int, list[int]] = {}
+        for rec in related_records:
+            node_id = rec.get(node_key)
+            gene_id = rec.get(gene_key)
+            if node_id is None or gene_id is None:
+                continue
+            if node_id_to_name is not None:
+                node_id = node_id_to_name.get(node_id)
+            node_name = str(node_id)
+            gene_name = str(gene_id)
+            if node_name not in node_name_to_idx or gene_name not in gene_name_to_idx:
+                continue
+            node_idx = node_name_to_idx[node_name]
+            gene_idx = gene_name_to_idx[gene_name]
+            node_to_gene_indices.setdefault(node_idx, []).append(gene_idx)
+
+        if not node_to_gene_indices:
+            logger.warning("%s 无相关基因映射，使用零向量占位", node_type)
+            return torch.zeros(len(node_names), gene_features.shape[1], dtype=torch.float32)
+
+        aggregated = np.zeros((len(node_names), gene_features.shape[1]), dtype=np.float32)
+        for node_idx, gene_indices in node_to_gene_indices.items():
+            aggregated[node_idx] = gene_features[gene_indices].mean(axis=0)
+
+        logger.info(
+            "附加 %s 特征：%d 个节点，基于真实基因特征聚合，shape=%s",
+            node_type,
+            len(node_names),
+            aggregated.shape,
+        )
+        return torch.from_numpy(aggregated)
 
     def _compute_hash(self, *args: Any) -> str:
         """基于输入计算缓存哈希."""

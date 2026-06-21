@@ -15,8 +15,7 @@ _SRC_DIR = _PROJECT_ROOT / "src"
 if str(_SRC_DIR) not in sys.path:
     sys.path.insert(0, str(_SRC_DIR))
 
-# ruff: noqa: E402
-from iron_aging.apps.hgt_pipeline import main
+from iron_aging.apps.hgt_pipeline import main  # noqa: E402 (先插入 sys.path, 再导入项目模块)
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -26,7 +26,13 @@ from typing import Any
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
-warnings.filterwarnings("ignore")
+# 仅针对测试中已知且不可避免的第三方库精确抑制警告，
+# 不全局关闭，以保证能捕获新增代码引入的真实告警。
+warnings.filterwarnings(
+    "ignore",
+    message="`torch_geometric.distributed` has been deprecated",
+    category=DeprecationWarning,
+)
 
 import numpy as np
 import torch

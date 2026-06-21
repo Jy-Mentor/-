@@ -6,9 +6,13 @@
 
 from __future__ import annotations
 
+import logging
+import traceback
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -44,7 +48,13 @@ class DataSource(ABC):
         return []
 
     def run(self, **params: Any) -> ETLResult:
-        """执行 fetch -> normalize -> validate 并返回结果."""
+        """执行 fetch -> normalize -> validate 并返回结果.
+
+        异常处理原则：
+        - 记录完整 traceback，不静默吞错
+        - 将错误信息写入 ETLResult.errors，便于 ETLRunner 汇总
+        - 调用方必须检查 result.success，否则可能使用脏/空数据
+        """
         result = ETLResult(source_name=self.name)
         try:
             raw = self.fetch(**params)
@@ -53,6 +63,10 @@ class DataSource(ABC):
             if errors:
                 result.errors.extend(errors)
             result.entity_counts["normalized"] = len(normalized)
-        except Exception as e:  # noqa: BLE001
-            result.errors.append(f"{self.name} ETL 失败: {e}")
+        except Exception as e:
+            # 打印并记录完整 traceback，符合项目零造假/不吞错原则
+            traceback.print_exc()
+            error_msg = f"{self.name} ETL 失败: {e}"
+            logger.error(error_msg)
+            result.errors.append(error_msg)
         return result

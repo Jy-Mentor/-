@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# ruff: noqa
 r"""
 =====================================================================
 L1: 双评分分析 — 在CIRI中识别铁驱动的衰老程序 (IDSP)
@@ -34,7 +33,6 @@ import logging
 import os
 import re
 import traceback
-import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -53,7 +51,6 @@ try:
 except ImportError:
     _HAS_JOBLIB = False
 
-warnings.filterwarnings('ignore')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -1001,7 +998,9 @@ def dual_enrichment_analysis(expr_df: pd.DataFrame, dataset_name: str,
         common = sum(1 for g in gset if g in expr_df.index)
         if common < 5:
             logger.warning(f"  [{dataset_name}] {gname} 交集={common} < 5, 跳过")
-            empty_scores = pd.DataFrame(columns=['ferroptosis','senescence','shared','dataset','sample','group','idsp_index'])
+            empty_scores = pd.DataFrame(
+                columns=['ferroptosis', 'senescence', 'shared', 'dataset', 'sample', 'group', 'idsp_index']
+            )
             empty_comp = {'dataset': dataset_name, 'n_case': 0, 'n_control': 0, 'r_ferr_sene': np.nan,
                           'd_ferroptosis': np.nan, 'd_senescence': np.nan, 'd_idsp': np.nan,
                           'p_ferroptosis': np.nan, 'p_senescence': np.nan, 'p_idsp': np.nan}
@@ -1519,11 +1518,11 @@ def _load_expr_gse16561() -> Tuple[pd.DataFrame, List[str], List[str]]:
     with gzip.open(sm_file, 'rt', encoding='latin-1') as f:
         lines = f.readlines()
     desc_line = sample_line = None
-    for l in lines:
-        if l.startswith('!Sample_description'):
-            desc_line = l.strip().split('\t')
-        if l.startswith('!Sample_geo_accession'):
-            sample_line = l.strip().split('\t')
+    for line in lines:
+        if line.startswith('!Sample_description'):
+            desc_line = line.strip().split('\t')
+        if line.startswith('!Sample_geo_accession'):
+            sample_line = line.strip().split('\t')
     case_cols, control_cols = [], []
     for i, gsm in enumerate(sample_line[1:], 1):
         gsm = gsm.strip('"').strip()
@@ -1734,8 +1733,14 @@ def temporal_dual_analysis(expr_df: pd.DataFrame, timepoint_dict: dict,
             logger.warning(f"    {tp_name}: 有效样本不足 (ferr={n_ferr_valid}, sene={n_sene_valid}), 跳过")
             continue
 
-        _, p_ferr = stats.ttest_ind(ferr_tp.dropna(), sham_ferr.dropna(), equal_var=False) if len(ferr_tp.dropna())>=2 and len(sham_ferr.dropna())>=2 else (None, np.nan)
-        _, p_sene = stats.ttest_ind(sene_tp.dropna(), sham_sene.dropna(), equal_var=False) if len(sene_tp.dropna())>=2 and len(sham_sene.dropna())>=2 else (None, np.nan)
+        if len(ferr_tp.dropna()) >= 2 and len(sham_ferr.dropna()) >= 2:
+            _, p_ferr = stats.ttest_ind(ferr_tp.dropna(), sham_ferr.dropna(), equal_var=False)
+        else:
+            p_ferr = np.nan
+        if len(sene_tp.dropna()) >= 2 and len(sham_sene.dropna()) >= 2:
+            _, p_sene = stats.ttest_ind(sene_tp.dropna(), sham_sene.dropna(), equal_var=False)
+        else:
+            p_sene = np.nan
 
         results.append({
             'dataset': dataset_name,
@@ -1834,7 +1839,10 @@ def temporal_dual_analysis(expr_df: pd.DataFrame, timepoint_dict: dict,
         ferr_auc = sene_auc = np.nan
     df.attrs['ferr_accumulation_auc'] = ferr_auc
     df.attrs['sene_accumulation_auc'] = sene_auc
-    df.attrs['sene_auc_ratio'] = sene_auc / ferr_auc if (pd.notna(ferr_auc) and pd.notna(sene_auc) and ferr_auc != 0) else np.nan
+    if pd.notna(ferr_auc) and pd.notna(sene_auc) and ferr_auc != 0:
+        df.attrs['sene_auc_ratio'] = sene_auc / ferr_auc
+    else:
+        df.attrs['sene_auc_ratio'] = np.nan
 
     # --- 2. 晚期/早期变化率比 (反映激活模式衰减或持续) ---
     non_sham = df[df['timepoint'] != 'Sham'].sort_values('time_hr')
@@ -2105,8 +2113,14 @@ def lodo_cross_validation(comparisons: List[dict], meta_func: callable) -> pd.Da
             'meta_p_senescence': meta_sene,
             'mean_d_ferroptosis': np.mean(d_ferr) if d_ferr else np.nan,
             'mean_d_senescence': np.mean(d_sene) if d_sene else np.nan,
-            'cv_d_ferroptosis': float(np.std(d_ferr) / abs(np.mean(d_ferr))) if d_ferr and np.mean(d_ferr) != 0 else np.nan,
-            'cv_d_senescence': float(np.std(d_sene) / abs(np.mean(d_sene))) if d_sene and np.mean(d_sene) != 0 else np.nan,
+            'cv_d_ferroptosis': (
+                float(np.std(d_ferr) / abs(np.mean(d_ferr)))
+                if d_ferr and np.mean(d_ferr) != 0 else np.nan
+            ),
+            'cv_d_senescence': (
+                float(np.std(d_sene) / abs(np.mean(d_sene)))
+                if d_sene and np.mean(d_sene) != 0 else np.nan
+            ),
         })
     return pd.DataFrame(results)
 
@@ -2511,7 +2525,8 @@ def plot_gene_heatmap(all_gene_dfs: List[pd.DataFrame], save_path: str):
 # 主流程
 # ============================================================
 
-def main():
+# TODO: 将 main() 拆分为多个阶段函数以降低 McCabe 复杂度；当前保持原流程以避免破坏分析逻辑。
+def main():  # noqa: C901
     logger.info("=" * 60)
     logger.info("L1: IDSP 双评分分析 — 在CIRI中识别铁驱动的衰老程序")
     logger.info(f"纯铁死亡: {len(PURE_FERROPTOSIS)} | 纯衰老: {len(PURE_SENESCENCE)} | 共享: {len(SHARED_GENES)}")
@@ -2633,7 +2648,9 @@ def main():
         all_ipsi = []
         for tp_cols in tp_dict.values():
             all_ipsi.extend(tp_cols)
-        scores_104036, comp_104036 = dual_enrichment_analysis(expr_104036, 'GSE104036', all_ipsi, sham_cols, is_paired=False)
+        scores_104036, comp_104036 = dual_enrichment_analysis(
+            expr_104036, 'GSE104036', all_ipsi, sham_cols, is_paired=False
+        )
         all_scores.append(scores_104036)
         all_comparisons.append(comp_104036)
 
@@ -2713,8 +2730,10 @@ def main():
     perm_sig_sene = sum(1 for p in perm_results
                         if p.get('gene_set') == 'Senescence'
                         and pd.notna(p.get('p_perm')) and p['p_perm'] < 0.05)
-    logger.info(f"  置换检验: 铁死亡 {perm_sig_ferr}/{len([p for p in perm_results if p['gene_set']=='Ferroptosis'])} 显著, "
-                f"衰老 {perm_sig_sene}/{len([p for p in perm_results if p['gene_set']=='Senescence'])} 显著")
+    n_perm_ferr = len([p for p in perm_results if p['gene_set'] == 'Ferroptosis'])
+    n_perm_sene = len([p for p in perm_results if p['gene_set'] == 'Senescence'])
+    logger.info(f"  置换检验: 铁死亡 {perm_sig_ferr}/{n_perm_ferr} 显著, "
+                f"衰老 {perm_sig_sene}/{n_perm_sene} 显著")
     perm_df = pd.DataFrame(perm_results)
     perm_df.to_csv(OUTPUT_DIR / 'L1_permutation_tests.csv', index=False)
 
@@ -3243,9 +3262,19 @@ def main():
             f"\nMeta分析 (Fisher): 铁死亡 p={safe_fmt(meta_p_f, '.4e')}, "
             f"衰老 p={safe_fmt(meta_p_s, '.4e')}\n")
         f.write(fisher_line)
-        f.write(f"Meta分析 (Stouffer加权): 铁死亡 p={safe_fmt(meta_p_stouffer_f, '.4e')}, 衰老 p={safe_fmt(meta_p_stouffer_s, '.4e')}\n")
+        stouffer_line = (
+            f"Meta分析 (Stouffer加权): 铁死亡 p={safe_fmt(meta_p_stouffer_f, '.4e')}, "
+            f"衰老 p={safe_fmt(meta_p_stouffer_s, '.4e')}\n"
+        )
+        f.write(stouffer_line)
         if re_ferr:
-            f.write(f"随机效应Meta (铁死亡): d={safe_fmt(re_ferr['summary_effect'])}, p={safe_fmt(re_ferr['p_value'], '.4e')}, I²={safe_fmt(re_ferr['I2'], '.0f')}%, τ²={safe_fmt(re_ferr['tau2'], '.4f')}\n")
+            re_ferr_line = (
+                f"随机效应Meta (铁死亡): d={safe_fmt(re_ferr['summary_effect'])}, "
+                f"p={safe_fmt(re_ferr['p_value'], '.4e')}, "
+                f"I²={safe_fmt(re_ferr['I2'], '.0f')}%, "
+                f"τ²={safe_fmt(re_ferr['tau2'], '.4f')}\n"
+            )
+            f.write(re_ferr_line)
             if pd.notna(re_ferr.get('pi_lower')):
                 pi_ferr_line = (
                     f"  95%预测区间: [{safe_fmt(re_ferr['pi_lower'])}, "
@@ -3256,10 +3285,15 @@ def main():
                 f"随机效应Meta (衰老): d={safe_fmt(re_sene['summary_effect'])}, "
                 f"p={safe_fmt(re_sene['p_value'], '.4e')}, "
                 f"I²={safe_fmt(re_sene['I2'], '.0f')}%, "
-                f"τ²={safe_fmt(re_sene['tau2'], '.4f')}\n")
+                f"τ²={safe_fmt(re_sene['tau2'], '.4f')}\n"
+            )
             f.write(re_sene_line)
             if pd.notna(re_sene.get('pi_lower')):
-                f.write(f"  95%预测区间: [{safe_fmt(re_sene['pi_lower'])}, {safe_fmt(re_sene['pi_upper'])}] (新研究预期效应量范围)\n")
+                pi_sene_line = (
+                    f"  95%预测区间: [{safe_fmt(re_sene['pi_lower'])}, "
+                    f"{safe_fmt(re_sene['pi_upper'])}] (新研究预期效应量范围)\n"
+                )
+                f.write(pi_sene_line)
         if bayes_ferr and bayes_ferr.get('converged'):
             f.write(f"Bayesian Meta (铁死亡): μ={safe_fmt(bayes_ferr.get('mu_mean'))} "
                     f"(95%HDI [{safe_fmt(bayes_ferr.get('mu_hdi_2.5'))}, {safe_fmt(bayes_ferr.get('mu_hdi_97.5'))}]), "

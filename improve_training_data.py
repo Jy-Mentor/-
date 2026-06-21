@@ -14,6 +14,7 @@ improve_training_data.py — 训练数据补充与优化脚本
 
 from __future__ import annotations
 
+import datetime
 import io
 import json
 import logging
@@ -314,10 +315,14 @@ def build_brain_celltype_markers(
 
 
 def backup_file(path: Path) -> Path:
-    """为现有网络文件创建带时间戳的备份。"""
-    backup_path = path.with_suffix(f"{path.suffix}.backup")
+    """为现有网络文件创建带时间戳的备份。
+
+    使用 ISO 格式时间戳，避免连续运行覆盖上一次备份。
+    """
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_path = path.with_suffix(f"{path.suffix}.{timestamp}.backup")
     shutil.copy2(path, backup_path)
-    logger.info(f"  已备份 {path.name} -> {backup_path.name}")
+    logger.info("  已备份 %s -> %s", path.name, backup_path.name)
     return backup_path
 
 

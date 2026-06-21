@@ -1,12 +1,13 @@
 """GAT-HGT 融合编码器.
 
-将异构图 Transformer (HGT) 与同构图注意力网络 (GATv2) 并行编码,
+将异构图 Transformer (HGT) 与异构图注意力网络 (HeteroGAT) 并行编码,
 通过可学习的门控机制按节点类型融合两种表示, 兼顾异构语义与同构结构信息.
 
 参考:
 - Hu et al. (2020) "Heterogeneous Graph Transformer", WWW.
 - Velickovic et al. (2018) "Graph Attention Networks", ICLR.
 - Brody et al. (2022) "How Attentive are Graph Attention Networks?", ICLR.
+- PyG HeteroConv: https://pytorch-geometric.readthedocs.io/en/latest/modules/nn.html#torch_geometric.nn.HeteroConv
 """
 
 from __future__ import annotations
@@ -15,8 +16,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.data import HeteroData
+from torch_geometric.nn import GATv2Conv, HeteroConv
 
-from iron_aging.models.gat_encoder import GATEncoder
 from iron_aging.models.hgt_encoder import HGTEncoder
 
 
@@ -26,7 +27,7 @@ class GATHGTEncoder(nn.Module):
     输入特征先由 HeteroLinkPredictionModel 投影到统一 hidden_dim,
     随后分别经过:
       - HGT 分支: 在异构边上学习类型感知表示.
-      - GAT 分支: 在全局同质投影上学习局部注意力表示.
+      - HeteroGAT 分支: 按边类型分别学习局部注意力 (避免同质投影语义污染).
     最终按节点类型使用可学习门控融合两个分支.
     """
 
@@ -44,7 +45,6 @@ class GATHGTEncoder(nn.Module):
         self.node_types = metadata[0]
         self.edge_types = metadata[1]
         self.num_nodes_dict = num_nodes_dict
-        self.node_type_offset = self._compute_offsets(num_nodes_dict)
 
         self.hgt_encoder = HGTEncoder(
             hidden_dim=hidden_dim,
@@ -54,53 +54,48 @@ class GATHGTEncoder(nn.Module):
             dropout=dropout,
             num_layers=num_layers,
         )
-        # GAT 在统一 hidden_dim 特征上运行; GATEncoder 输出 out_dim
-        self.gat_encoder = GATEncoder(
-            in_dim=hidden_dim,
-            hidden_dim=hidden_dim,
-            out_dim=out_dim,
-            heads=num_heads,
-            dropout=dropout,
-        )
+
+        # HeteroGAT: 每种边类型拥有独立的 GATv2Conv 参数,
+        # 避免将 gene/pathway/compound/disease/pocket 硬塞进同一注意力空间.
+        self.gat_convs = nn.ModuleList()
+        gat_hidden = hidden_dim // num_heads
+        for _ in range(num_layers):
+            conv_dict: dict[tuple[str, str, str], GATv2Conv] = {}
+            for edge_type in self.edge_types:
+                conv_dict[edge_type] = GATv2Conv(
+                    hidden_dim,
+                    gat_hidden,
+                    heads=num_heads,
+                    dropout=dropout,
+                    add_self_loops=False,
+                    share_weights=False,
+                )
+            self.gat_convs.append(HeteroConv(conv_dict, aggr="mean"))
+        self.gat_proj = nn.ModuleDict({
+            nt: nn.Linear(hidden_dim, out_dim) for nt in self.node_types
+        })
 
         self.fusion_gate = nn.ModuleDict({
             nt: nn.Linear(out_dim * 2, 1) for nt in self.node_types
         })
         self.dropout = dropout
 
-    @staticmethod
-    def _compute_offsets(num_nodes_dict: dict[str, int]) -> dict[str, int]:
-        """计算同质投影中的节点类型偏移."""
-        offset = 0
-        offsets: dict[str, int] = {}
-        for nt, num in num_nodes_dict.items():
-            offsets[nt] = offset
-            offset += num
-        return offsets
-
-    def _to_homogeneous_edge_index(
-        self, edge_index_dict: dict[tuple[str, str, str], torch.Tensor]
-    ) -> torch.Tensor:
-        """将异构边索引合并为同质边索引."""
-        edge_list: list[torch.Tensor] = []
-        for (src_type, _, dst_type), edge_index in edge_index_dict.items():
-            shifted = torch.stack([
-                edge_index[0] + self.node_type_offset[src_type],
-                edge_index[1] + self.node_type_offset[dst_type],
-            ])
-            edge_list.append(shifted)
-        return torch.cat(edge_list, dim=1)
-
-    def _split_homogeneous_embeddings(
-        self, z: torch.Tensor
+    def _gat_forward(
+        self,
+        x_dict: dict[str, torch.Tensor],
+        edge_index_dict: dict[tuple[str, str, str], torch.Tensor],
     ) -> dict[str, torch.Tensor]:
-        """将同质节点嵌入按类型拆分回字典."""
-        z_dict: dict[str, torch.Tensor] = {}
-        for nt in self.node_types:
-            offset = self.node_type_offset[nt]
-            num = self.num_nodes_dict[nt]
-            z_dict[nt] = z[offset : offset + num]
-        return z_dict
+        """HeteroGAT 前向: 按边类型分别学习注意力."""
+        gat_z = x_dict
+        for conv in self.gat_convs:
+            gat_z = conv(gat_z, edge_index_dict)
+            gat_z = {k: F.elu(v) for k, v in gat_z.items()}
+            gat_z = {
+                k: F.dropout(v, p=self.dropout, training=self.training)
+                for k, v in gat_z.items()
+            }
+        gat_z = {k: self.gat_proj[k](v) for k, v in gat_z.items()}
+        return gat_z
 
     def forward(
         self,
@@ -109,17 +104,12 @@ class GATHGTEncoder(nn.Module):
     ) -> dict[str, torch.Tensor]:
         """前向传播, 返回融合后的节点嵌入字典."""
         hgt_z = self.hgt_encoder(x_dict, edge_index_dict)
-
-        # GAT 同质投影: 按 node_type_offset 拼接所有节点
-        x = torch.cat([x_dict[nt] for nt in self.node_types], dim=0)
-        homogeneous_edge_index = self._to_homogeneous_edge_index(edge_index_dict)
-        gat_z_hom = self.gat_encoder(x, homogeneous_edge_index)
-        gat_z = self._split_homogeneous_embeddings(gat_z_hom)
+        gat_z = self._gat_forward(x_dict, edge_index_dict)
 
         fused: dict[str, torch.Tensor] = {}
         for nt in self.node_types:
             h = hgt_z[nt]
-            g = gat_z[nt]
+            g = gat_z.get(nt, h)
             concat = torch.cat([h, g], dim=-1)
             gate = torch.sigmoid(self.fusion_gate[nt](concat))
             fused[nt] = gate * h + (1.0 - gate) * g

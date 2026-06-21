@@ -41,10 +41,10 @@ model:
   gat_out_dim: 16
   hgt_out_dim: 16
   num_heads: 2
-  dropout: 0.3
+  dropout: 0.5
   gat_residual_weight: 0.3
   num_hgt_layers: 2
-  encoder_type: rgcn  # hgt | gat | rgcn | gat_hgt
+  encoder_type: gat_hgt  # hgt | gat | rgcn | gat_hgt
   use_vib: true
   use_self_distill: true
 
@@ -52,10 +52,10 @@ model:
 training:
   epochs: 200
   learn_rate: 0.001
-  weight_decay: 1e-5
+  weight_decay: 1e-4
   seed: 42
-  eval_every: 40
-  early_stop_patience: 30
+  eval_every: 20
+  early_stop_patience: 10
   train_ratio: 0.7
   val_ratio: 0.15
   neg_sampling_ratio: 1.0
@@ -86,9 +86,9 @@ training:
 
   # 负采样
   neg_sampling:
-    hard_neg_ratio: 0.3
-    hard_neg_refresh_interval: 10
-    easy_neg_ratio: 0.7
+    hard_neg_ratio: 0.2
+    hard_neg_refresh_interval: 40
+    easy_neg_ratio: 0.8
 
   # 数据划分
   split_mode: stratified  # random | stratified

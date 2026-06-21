@@ -19,11 +19,9 @@
 
 import gc
 import logging
-import os
 import shutil
 import sys
 import tarfile
-import warnings
 from pathlib import Path
 from typing import List
 
@@ -36,13 +34,11 @@ from scipy import sparse, stats
 
 # 加载统一项目配置 (避免硬编码绝对路径)
 _PROJECT_ROOT = Path(__file__).resolve().parent
-sys.path.insert(0, str(_PROJECT_ROOT))  # noqa: E402
-from _l2_config import get_l2_config  # noqa: E402
+sys.path.insert(0, str(_PROJECT_ROOT))  # noqa: E402 (脚本直接运行, 需先插入项目根目录)
+from _l2_config import get_l2_config  # noqa: E402 (同上, 插入路径后才能导入项目配置)
 
 _L2_CFG = get_l2_config(_PROJECT_ROOT)
 
-warnings.filterwarnings("ignore")
-os.environ["PYTHONWARNINGS"] = "ignore"
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 logger = logging.getLogger(__name__)
 

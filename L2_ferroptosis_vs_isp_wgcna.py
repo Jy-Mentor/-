@@ -25,7 +25,6 @@ import os
 import re
 import subprocess
 import sys
-import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -39,7 +38,6 @@ from _l2_config import get_l2_config
 
 _L2_CFG = get_l2_config(Path(__file__).resolve().parent)
 
-warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 logger = logging.getLogger(__name__)
 

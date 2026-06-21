@@ -18,8 +18,7 @@ for _path in (_SRC_DIR, _PROJECT_ROOT):
     if str(_path) not in sys.path:
         sys.path.insert(0, str(_path))
 
-# ruff: noqa: E402
-from iron_aging.utils.warnings import suppress_known_library_warnings
+from iron_aging.utils.warnings import suppress_known_library_warnings  # noqa: E402 (先插入 sys.path, 再导入项目模块)
 
 suppress_known_library_warnings()
 

@@ -15,8 +15,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-# ruff: noqa: E402
-import torch
+import torch  # noqa: E402 (先插入 sys.path, 再导入项目模块)
 from torch_geometric.data import HeteroData
 
 from iron_aging.apps.hgt_pipeline import parse_args
