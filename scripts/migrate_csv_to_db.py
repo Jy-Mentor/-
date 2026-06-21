@@ -488,15 +488,23 @@ class CSVMigrator:
         logger.info("迁移 compound_compound_similarity_edges: %d", count)
         return count
 
+    def _pathway_id_by_name(self, name: str) -> int | None:
+        """按名称查找 pathway ID, 优先 KEGG_REST 来源, 否则取任意来源."""
+        pathways = list(self.pathway_repo.get_all())
+        # 优先 KEGG_REST
+        for p in pathways:
+            if p["name"] == name and p.get("source") == "KEGG_REST":
+                return p["id"]
+        # 其次任意来源
+        for p in pathways:
+            if p["name"] == name:
+                return p["id"]
+        return None
+
     def migrate_pathway_pathway_similarity_edges(self) -> int:
         df = self._read_csv("pathway_pathway_similarity_edges.csv")
         if df is None:
             return 0
-        # 需要把 pathway 名称映射到 pathways.id
-        pathway_map = {
-            (p["name"], p["source"]): p["id"]
-            for p in self.pathway_repo.get_all()
-        }
         records: list[dict[str, Any]] = []
         for _, row in df.iterrows():
             name_a = str(row.get("pathway_A", "")).strip()
@@ -504,9 +512,8 @@ class CSVMigrator:
             jaccard = self._safe_float(row.get("jaccard"))
             if not name_a or not name_b or jaccard is None:
                 continue
-            # 优先匹配 KEGG_REST 来源, 其次任意来源
-            pid_a = pathway_map.get((name_a, "KEGG_REST"))
-            pid_b = pathway_map.get((name_b, "KEGG_REST"))
+            pid_a = self._pathway_id_by_name(name_a)
+            pid_b = self._pathway_id_by_name(name_b)
             if pid_a is None or pid_b is None:
                 logger.debug(" pathway 名称未映射到 ID: %s / %s", name_a, name_b)
                 continue
@@ -691,11 +698,12 @@ class CSVMigrator:
         self.migrate_compound_target_edges()
         self.migrate_disease_gene_edges()
         self.migrate_gene_pathway_edges()
+        # pathway-pathway 相似性边依赖 gene_pathway 迁移插入的全部通路节点
+        self.migrate_pathway_pathway_similarity_edges()
         self.migrate_cell_type_marker_edges()
         self.migrate_ligand_receptor_edges()
         self.migrate_gene_coexp_edges()
         self.migrate_compound_compound_similarity_edges()
-        self.migrate_pathway_pathway_similarity_edges()
         self.migrate_compound_disease_edges()
         self.migrate_disease_disease_similarity_edges()
         self.migrate_mirna_target_edges()

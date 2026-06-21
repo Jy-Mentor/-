@@ -107,22 +107,26 @@ class PathwayRepository(_SimpleRepository):
     pk_fields = ("id",)
 
     def bulk_upsert(self, records: list[dict[str, Any]]) -> int:
-        # Pathway 使用自增主键, 需要单独处理 source+external_id 冲突
+        # Pathway 使用自增主键, 按 (name, source) 去重; external_id 仅在存在时参与查询
         if not records:
             return 0
         count = 0
         for rec in records:
-            if not rec.get("name"):
+            name = rec.get("name")
+            source = rec.get("source")
+            if not name or not source:
                 continue
-            existing = self.session.execute(
-                select(models.Pathway).where(
-                    models.Pathway.source == rec.get("source"),
-                    models.Pathway.external_id == rec.get("external_id"),
-                )
-            ).scalar_one_or_none()
+            stmt = select(models.Pathway).where(
+                models.Pathway.name == name,
+                models.Pathway.source == source,
+            )
+            if rec.get("external_id") is not None:
+                stmt = stmt.where(models.Pathway.external_id == rec["external_id"])
+            existing = self.session.execute(stmt).scalar_one_or_none()
             if existing:
                 for key, value in rec.items():
-                    setattr(existing, key, value)
+                    if key != "id":
+                        setattr(existing, key, value)
             else:
                 self.session.add(models.Pathway(**rec))
                 count += 1

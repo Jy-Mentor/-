@@ -1,4 +1,3 @@
-disease_a,disease_b,score,shared_genes,source,confidence,download_date
-AD,Aging,0.2414,7,disease_gene_associations,0.2414,2026-06-21
-AD,CIRI,0.2923,19,disease_gene_associations,0.2923,2026-06-21
-Aging,CIRI,0.1746,11,disease_gene_associations,0.1746,2026-06-21
+disease_a,disease_b,score,shared_genes,shared_compounds,sources,confidence,confidence_level,download_date
+AD,Aging,0.5781,38,1,curated_disease_genes,0.5781,high,2026-06-21
+AD,CIRI,0.1605,12,4,DisGeNET_disease_genes;CTD_compound_disease,0.1605,low,2026-06-21

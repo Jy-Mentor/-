@@ -113,7 +113,7 @@ class Pathway(Base):
     source_url: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[DateTime | None] = mapped_column(DateTime, server_default=func.now())
 
-    __table_args__ = (UniqueConstraint("source", "external_id", name="uix_pathway_source_ext"),)
+    __table_args__ = (UniqueConstraint("name", "source", name="uix_pathway_name_source"),)
 
 
 class CellType(Base):
