@@ -137,6 +137,18 @@ def main() -> None:
         default=None,
         help="编码器类型 (hgt/gat/rgcn); 默认从实验名推断",
     )
+    parser.add_argument(
+        "--max-per-gene",
+        type=int,
+        default=10,
+        help="top-k 中每个基因最多出现的次数，避免模型过度偏好少数高 degree 基因",
+    )
+    parser.add_argument(
+        "--top-k",
+        type=int,
+        default=100,
+        help="提取的新预测数量",
+    )
     args = parser.parse_args()
 
     experiment_name = args.experiment
@@ -183,10 +195,26 @@ def main() -> None:
     df.to_csv(full_path, index=False)
     print(f"Saved all scores: {full_path}")
 
-    # 新预测 top-k
+    # 新预测 top-k（带多样性约束，避免单个基因霸榜）
     novel_df = df[~df["observed"]].sort_values("score", ascending=False).reset_index(drop=True)
-    top_k = 100
-    top_novel = novel_df.head(top_k)
+    top_k = args.top_k
+    max_per_gene = args.max_per_gene
+
+    if max_per_gene > 0:
+        gene_counts: dict[str, int] = {}
+        selected_rows: list[int] = []
+        for idx, row in novel_df.iterrows():
+            gene = row["gene_name"]
+            if gene_counts.get(gene, 0) < max_per_gene:
+                selected_rows.append(idx)
+                gene_counts[gene] = gene_counts.get(gene, 0) + 1
+            if len(selected_rows) >= top_k:
+                break
+        top_novel = novel_df.loc[selected_rows].reset_index(drop=True)
+        print(f"[多样性约束] 每个基因最多 {max_per_gene} 条，top-{top_k} 共覆盖 {len(gene_counts)} 个唯一基因")
+    else:
+        top_novel = novel_df.head(top_k)
+
     top_novel_path = output_dir / f"top{top_k}_novel_predictions.csv"
     top_novel.to_csv(top_novel_path, index=False)
     print(f"Saved top-{top_k} novel predictions: {top_novel_path}")

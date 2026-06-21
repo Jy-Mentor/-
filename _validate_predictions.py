@@ -57,6 +57,64 @@ CONFIDENCE_WEIGHT: dict[str, float] = {
 
 DEFAULT_WEIGHT = 0.5  # 没有 confidence_level 时的默认权重
 
+# 中药单体（植物来源天然化合物 + 本研究核心化合物 BCP/VC）。
+# 排除合成铁死亡工具（Fer-1, DFO, Lip-1, Erastin, RSL3, ML162）及合成药物。
+TCM_MONOMERS: set[str] = {
+    "BCP",
+    "VC",
+    "Cinnamaldehyde",
+    "Cinnamic_acid",
+    "Quercetin",
+    "Naringenin",
+    "Eucalyptol",
+    "Borneol",
+    "Baicalein",
+    "Wogonin",
+    "Luteolin",
+    "Kaempferol",
+    "Hesperetin",
+    "Resveratrol",
+    "Curcumin",
+    "Ferulic acid",
+    "Pinocembrin",
+    "Chrysin",
+    "Apigenin",
+    "Genistein",
+    "Daidzein",
+    "Formononetin",
+    "Oroxylin A",
+    "Scutellarein",
+    "Tangeretin",
+    "Nobiletin",
+    "Fisetin",
+    "Galangin",
+    "Phloretin",
+    "Catechin",
+    "Epicatechin",
+    "Tetramethylpyrazine",
+    "Tanshinone IIA",
+    "Danshensu",
+    "Honokiol",
+    "Magnolol",
+    "Schisandrin",
+    "Schisandrin B",
+    "Dihydroartemisinin",
+    "Artemisinin",
+    "Shikonin",
+    "Plumbagin",
+    "Emodin",
+    "Aloe emodin",
+    "Physcion",
+    "Chrysophanol",
+    "Salidroside",
+    "Tyrosol",
+    "Hydroxytyrosol",
+    "Sulforaphane",
+    "Alpha-lipoic acid",
+    "Melatonin",
+    "Huperzine A",
+}
+
 
 def normalize_name(s: str) -> str:
     """统一名称格式用于匹配：大写、去首尾空格、压缩连续空格."""
@@ -181,6 +239,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="验证 top-k 预测的外部数据库支持")
     parser.add_argument("--experiment", type=str, default="hgt_compare_seed42")
     parser.add_argument("--score-threshold", type=float, default=0.5, help="证据加权分阈值，>= 该值视为有支持")
+    parser.add_argument("--tcm-only", action="store_true", help="仅验证中药单体（排除合成铁死亡工具及合成药物）")
     args = parser.parse_args()
 
     exp_dir = Path("L3_results") / args.experiment
@@ -193,6 +252,11 @@ def main() -> None:
     missing = required_cols - set(pred_df.columns)
     if missing:
         raise ValueError(f"预测文件缺少列: {missing}")
+
+    if args.tcm_only:
+        before = len(pred_df)
+        pred_df = pred_df[pred_df["compound_name"].isin(TCM_MONOMERS)].copy()
+        print(f"[TCM 模式] 过滤前 {before} 条预测，过滤后 {len(pred_df)} 条（仅中药单体）")
 
     pred_df["compound_key"] = pred_df["compound_name"].apply(normalize_name)
     pred_df["compound_norm"] = pred_df["compound_name"].apply(normalize_compound)
@@ -236,8 +300,9 @@ def main() -> None:
 
     supported_df = pred_df[pred_df["pair_supported"]].copy()
 
-    # 保存完整验证结果
-    output_path = exp_dir / "top100_validation.csv"
+    # 保存完整验证结果（TCM 模式使用不同文件名）
+    suffix = "_tcm" if args.tcm_only else ""
+    output_path = exp_dir / f"top100_validation{suffix}.csv"
     pred_df[[
         "compound_name", "gene_name", "score",
         "pair_supported", "evidence_score", "compound_known", "gene_known",
@@ -259,6 +324,7 @@ def main() -> None:
 
     summary = {
         "experiment": args.experiment,
+        "tcm_only": args.tcm_only,
         "score_threshold": args.score_threshold,
         "total_predictions": total,
         "pair_supported": pair_supported,
@@ -273,12 +339,13 @@ def main() -> None:
             "compound_name", "gene_name", "score", "evidence_score", "external_sources"
         ]].to_dict("records") if not supported_df.empty else [],
     }
-    summary_path = exp_dir / "validation_summary.json"
+    summary_path = exp_dir / f"validation_summary{suffix}.json"
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"Saved summary: {summary_path}")
 
+    mode_label = "（TCM 单体）" if args.tcm_only else ""
     print(
-        f"\n验证结果（加权 pair 匹配，阈值={args.score_threshold}）: "
+        f"\n验证结果{mode_label}（加权 pair 匹配，阈值={args.score_threshold}）: "
         f"{pair_supported}/{total} 条 top-100 新预测在本地外部数据库中找到证据 "
         f"(支持率 {summary['pair_support_rate']:.2%})"
     )
