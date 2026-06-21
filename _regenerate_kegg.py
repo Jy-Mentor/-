@@ -1,8 +1,9 @@
 """重新生成 kegg_pathway_genes.csv（人类通路）.
 
-下载失败时会自动恢复旧文件，避免数据丢失.
+下载失败或进程被中断时会自动恢复旧文件，避免数据丢失.
 """
 import logging
+import signal
 import sys
 import traceback
 from pathlib import Path
@@ -18,7 +19,7 @@ BACKUP_FILE = OUT_DIR / "kegg_pathway_genes.csv.bak"
 
 
 def _restore_backup() -> None:
-    """下载失败时从备份恢复旧文件."""
+    """下载失败或中断时从备份恢复旧文件."""
     if BACKUP_FILE.exists():
         if KEGG_FILE.exists():
             KEGG_FILE.unlink()
@@ -26,8 +27,20 @@ def _restore_backup() -> None:
         logger.info("已恢复旧文件: %s", KEGG_FILE)
 
 
+def _on_interrupt(signum, frame) -> None:  # noqa: ARG001
+    """捕获 SIGINT/SIGTERM，确保备份被恢复后再退出."""
+    logger.warning("收到中断信号，正在恢复旧文件...")
+    _restore_backup()
+    sys.exit(1)
+
+
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, _on_interrupt)
+    if hasattr(signal, "SIGTERM"):
+        signal.signal(signal.SIGTERM, _on_interrupt)
+
     logger.info("重新生成 KEGG 人类通路基因映射...")
+    logger.info("提示: KEGG REST API 可能因网络原因耗时较长，单次请求最大等待 60 秒，共 3 次重试。")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
     # 先备份旧文件，避免下载失败导致数据丢失
