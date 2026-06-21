@@ -24,14 +24,17 @@ from iron_aging.db.repositories import (
     CellTypeMarkerRepository,
     CellTypeRepository,
     CompoundCompoundSimilarityRepository,
+    CompoundDiseaseRepository,
     CompoundRepository,
     CompoundTargetRepository,
+    DiseaseDiseaseSimilarityRepository,
     DiseaseGeneRepository,
     DiseaseRepository,
     GeneCoexpRepository,
     GenePathwayRepository,
     GeneRepository,
     LigandReceptorRepository,
+    MiRNATargetRepository,
     PathwayPathwaySimilarityRepository,
     PathwayRepository,
     PPIRepository,
@@ -130,6 +133,9 @@ class HeteroGraphBuilder:
         self.coexp_repo = GeneCoexpRepository(session)
         self.ccs_repo = CompoundCompoundSimilarityRepository(session)
         self.pps_repo = PathwayPathwaySimilarityRepository(session)
+        self.cd_repo = CompoundDiseaseRepository(session)
+        self.dds_repo = DiseaseDiseaseSimilarityRepository(session)
+        self.mt_repo = MiRNATargetRepository(session)
 
     def build(self, use_cache: bool = True) -> HeteroData:
         """构建 HeteroData."""
@@ -144,6 +150,10 @@ class HeteroGraphBuilder:
         node_lists["disease"] = list(self.disease_repo.get_all())
         node_lists["pathway"] = list(self.pathway_repo.get_all())
         node_lists["cell_type"] = list(self.cell_type_repo.get_all())
+        # miRNA 实体来自 mirna_target_edges 中的唯一 mirna 名称
+        node_lists["mirna"] = [
+            {"name": m} for m in self._collect_mirna_names()
+        ]
 
         for nt, records in node_lists.items():
             nodes[nt] = {self._node_id(nt, r): i for i, r in enumerate(records)}
@@ -187,6 +197,15 @@ class HeteroGraphBuilder:
         self._add_edges(
             data, "pathway", "similar_to", "pathway", self.pps_repo.get_all(), nodes
         )
+        self._add_edges(
+            data, "compound", "indicates", "disease", self.cd_repo.get_all(), nodes
+        )
+        self._add_edges(
+            data, "disease", "similar_to", "disease", self.dds_repo.get_all(), nodes
+        )
+        self._add_edges(
+            data, "mirna", "targets", "gene", self.mt_repo.get_all(), nodes
+        )
 
         # 5. 附加节点特征 (v4.0 分层迁移中, 失败则保留空特征并记录警告)
         try:
@@ -208,8 +227,18 @@ class HeteroGraphBuilder:
             "disease": "name",
             "pathway": "id",
             "cell_type": "name",
+            "mirna": "name",
         }.get(node_type, "name")
         return str(record.get(id_field))
+
+    def _collect_mirna_names(self) -> list[str]:
+        """从 miRNA-靶基因边中收集唯一 miRNA 名称."""
+        names: set[str] = set()
+        for rec in self.mt_repo.get_all():
+            name = str(rec.get("mirna_id", "")).strip()
+            if name:
+                names.add(name)
+        return sorted(names)
 
     def _add_edges(
         self,
@@ -270,6 +299,12 @@ class HeteroGraphBuilder:
             return rec.get("compound_a_id"), rec.get("compound_b_id")
         if rel_type == "similar_to" and src_type == "pathway":
             return str(rec.get("pathway_a_id")), str(rec.get("pathway_b_id"))
+        if rel_type == "indicates":
+            return rec.get("compound_id"), rec.get("disease_id")
+        if rel_type == "similar_to" and src_type == "disease":
+            return rec.get("disease_a_id"), rec.get("disease_b_id")
+        if rel_type == "targets" and src_type == "mirna":
+            return rec.get("mirna_id"), rec.get("gene_id")
         return None, None
 
     def _attach_node_features(
@@ -311,7 +346,7 @@ class HeteroGraphBuilder:
                 data["compound"].x = torch.zeros(n_compounds, 6, dtype=torch.float32)
 
         # 其他节点类型暂用最小占位特征
-        for nt in ("disease", "pathway", "cell_type"):
+        for nt in ("disease", "pathway", "cell_type", "mirna"):
             n_nodes = len(node_lists.get(nt, []))
             if n_nodes:
                 data[nt].x = torch.zeros(n_nodes, 1, dtype=torch.float32)

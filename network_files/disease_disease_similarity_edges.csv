@@ -1,0 +1,4 @@
+disease_a,disease_b,score,shared_genes,source,confidence,download_date
+AD,Aging,0.2414,7,disease_gene_associations,0.2414,2026-06-21
+AD,CIRI,0.2923,19,disease_gene_associations,0.2923,2026-06-21
+Aging,CIRI,0.1746,11,disease_gene_associations,0.1746,2026-06-21

@@ -320,6 +320,73 @@ class PathwayPathwaySimilarityEdge(Base):
     download_date: Mapped[str | None] = mapped_column(String(16))
 
 
+class CompoundDiseaseEdge(Base):
+    """化合物-疾病关联边 (CTD)."""
+
+    __tablename__ = "compound_disease_edges"
+
+    compound_id: Mapped[str] = mapped_column(
+        String(128), ForeignKey("compounds.name"), primary_key=True
+    )
+    disease_id: Mapped[str] = mapped_column(
+        String(128), ForeignKey("diseases.name"), primary_key=True
+    )
+    direct_evidence: Mapped[str | None] = mapped_column(String(32))
+    inference_score: Mapped[float | None] = mapped_column(Float)
+    source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    confidence_level: Mapped[str | None] = mapped_column(String(16))
+    download_date: Mapped[str | None] = mapped_column(String(16))
+
+
+class DiseaseDiseaseSimilarityEdge(Base):
+    """疾病-疾病 Jaccard 相似性边."""
+
+    __tablename__ = "disease_disease_similarity_edges"
+
+    disease_a_id: Mapped[str] = mapped_column(
+        String(128), ForeignKey("diseases.name"), primary_key=True
+    )
+    disease_b_id: Mapped[str] = mapped_column(
+        String(128), ForeignKey("diseases.name"), primary_key=True
+    )
+    jaccard: Mapped[float] = mapped_column(Float)
+    shared_genes: Mapped[int | None] = mapped_column(Integer)
+    source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    download_date: Mapped[str | None] = mapped_column(String(16))
+
+
+class MiRNA(Base):
+    """miRNA 实体."""
+
+    __tablename__ = "mirnas"
+
+    name: Mapped[str] = mapped_column(String(64), primary_key=True)
+    sequence: Mapped[str | None] = mapped_column(Text)
+    organism: Mapped[str | None] = mapped_column(String(64), default="Homo sapiens")
+    source: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[DateTime | None] = mapped_column(DateTime, server_default=func.now())
+
+
+class MiRNATargetEdge(Base):
+    """miRNA-靶基因调控边 (TargetScan / miRTarBase)."""
+
+    __tablename__ = "mirna_target_edges"
+
+    mirna_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("mirnas.name"), primary_key=True
+    )
+    gene_id: Mapped[str] = mapped_column(
+        String(64), ForeignKey("genes.symbol"), primary_key=True
+    )
+    source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    score: Mapped[float | None] = mapped_column(Float)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    confidence_level: Mapped[str | None] = mapped_column(String(16))
+    download_date: Mapped[str | None] = mapped_column(String(16))
+
+
 # ---------------------------------------------------------------------------
 # 特征与实验表
 # ---------------------------------------------------------------------------

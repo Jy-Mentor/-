@@ -1,0 +1,22 @@
+compound,disease,direct_evidence,inference_score,source,confidence,confidence_level,download_date
+Apigenin,AD,therapeutic,,CTD,0.9,high,2026-06-21
+Baicalein,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Catechin,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Cinnamaldehyde,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Curcumin,AD,therapeutic,,CTD,0.9,high,2026-06-21
+Curcumin,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+DFO,AD,therapeutic,,CTD,0.9,high,2026-06-21
+DFO,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Edaravone,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Emodin,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Genistein,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Huperzine A,AD,therapeutic,,CTD,0.9,high,2026-06-21
+Magnolol,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Melatonin,AD,therapeutic,,CTD,0.9,high,2026-06-21
+Melatonin,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Quercetin,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Resveratrol,AD,therapeutic,,CTD,0.9,high,2026-06-21
+Resveratrol,Aging,therapeutic,,CTD,0.9,high,2026-06-21
+Resveratrol,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+Tetramethylpyrazine,CIRI,therapeutic,,CTD,0.9,high,2026-06-21
+VC,CIRI,therapeutic,,CTD,0.9,high,2026-06-21

@@ -1,0 +1,13 @@
+{
+  "database": "miRTarBase",
+  "version": "10.0",
+  "release_year": 2025,
+  "download_url": "https://mirtarbase.cuhk.edu.cn/~miRTarBase/miRTarBase_2025/cache/download/10.0/miRTarBase_SE_WR.csv",
+  "subset": "Strong experimental evidences (Reporter assay or Western blot)",
+  "download_date": "2026-06-21",
+  "local_file": "external_data/mirnatarbase/miRTarBase_SE_WR.csv",
+  "raw_records": 27595,
+  "human_records": 23049,
+  "project_gene_filtered_edges": 492,
+  "citation": "Cui S, Yu S, Huang HY, et al. miRTarBase 2025: updates to the collection of experimentally validated microRNA-target interactions. Nucleic Acids Res. 2025;53(D1):D147-D156. doi:10.1093/nar/gkae1072"
+}

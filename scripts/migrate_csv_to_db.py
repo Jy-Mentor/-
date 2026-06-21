@@ -30,17 +30,21 @@ from iron_aging.db.repositories import (
     CellTypeMarkerRepository,
     CellTypeRepository,
     CompoundCompoundSimilarityRepository,
+    CompoundDiseaseRepository,
     CompoundEmbeddingRepository,
     CompoundPropertyRepository,
     CompoundRepository,
     CompoundTargetRepository,
     DatasetRepository,
+    DiseaseDiseaseSimilarityRepository,
     DiseaseGeneRepository,
     DiseaseRepository,
     GeneCoexpRepository,
     GenePathwayRepository,
     GeneRepository,
     LigandReceptorRepository,
+    MiRNARepository,
+    MiRNATargetRepository,
     PathwayPathwaySimilarityRepository,
     PathwayRepository,
     PPIRepository,
@@ -79,6 +83,10 @@ class CSVMigrator:
         self.coexp_repo = GeneCoexpRepository(session)
         self.ccs_repo = CompoundCompoundSimilarityRepository(session)
         self.pps_repo = PathwayPathwaySimilarityRepository(session)
+        self.cd_repo = CompoundDiseaseRepository(session)
+        self.dds_repo = DiseaseDiseaseSimilarityRepository(session)
+        self.mirna_repo = MiRNARepository(session)
+        self.mt_repo = MiRNATargetRepository(session)
         self.prop_repo = CompoundPropertyRepository(session)
         self.emb_repo = CompoundEmbeddingRepository(session)
 
@@ -526,6 +534,94 @@ class CSVMigrator:
         except ValueError:
             return default
 
+    def migrate_compound_disease_edges(self) -> int:
+        df = self._read_csv("ctd_compound_disease.csv")
+        if df is None:
+            return 0
+        records: list[dict[str, Any]] = []
+        for _, row in df.iterrows():
+            compound = str(row.get("compound", "")).strip()
+            disease = str(row.get("disease", "")).strip()
+            if not compound or not disease:
+                continue
+            records.append({
+                "compound_id": compound,
+                "disease_id": disease,
+                "direct_evidence": str(row.get("direct_evidence", "")).strip() or None,
+                "inference_score": self._safe_float(row.get("inference_score")),
+                "source": str(row.get("source", "CTD")).strip() or "CTD",
+                "confidence": self._safe_float(row.get("confidence")),
+                "confidence_level": str(row.get("confidence_level", "")).strip() or None,
+                "download_date": str(row.get("download_date", "")).strip() or None,
+            })
+        count = self.cd_repo.bulk_upsert(records)
+        self.stats["compound_disease_edges"] = count
+        logger.info("迁移 compound_disease_edges: %d", count)
+        return count
+
+    def migrate_disease_disease_similarity_edges(self) -> int:
+        df = self._read_csv("disease_disease_similarity_edges.csv")
+        if df is None:
+            return 0
+        records: list[dict[str, Any]] = []
+        for _, row in df.iterrows():
+            a = str(row.get("disease_a", "")).strip()
+            b = str(row.get("disease_b", "")).strip()
+            score = self._safe_float(row.get("score"))
+            if not a or not b or score is None:
+                continue
+            records.append({
+                "disease_a_id": a,
+                "disease_b_id": b,
+                "jaccard": score,
+                "shared_genes": self._safe_int(row.get("shared_genes")),
+                "source": str(row.get("source", "disease_gene_associations")).strip()
+                or "disease_gene_associations",
+                "confidence": self._safe_float(row.get("confidence")),
+                "download_date": str(row.get("download_date", "")).strip() or None,
+            })
+        count = self.dds_repo.bulk_upsert(records)
+        self.stats["disease_disease_similarity_edges"] = count
+        logger.info("迁移 disease_disease_similarity_edges: %d", count)
+        return count
+
+    def migrate_mirna_target_edges(self) -> int:
+        df = self._read_csv("mirna_target_edges.csv")
+        if df is None:
+            return 0
+        # 先迁移 miRNA 实体
+        mirnas = sorted({
+            str(row.get("mirna", "")).strip()
+            for _, row in df.iterrows()
+            if str(row.get("mirna", "")).strip()
+        })
+        if mirnas:
+            self.mirna_repo.bulk_upsert(
+                [{"name": m, "source": "TargetScan"} for m in mirnas]
+            )
+            logger.info("迁移 mirnas: %d", len(mirnas))
+            self.stats["mirnas"] = len(mirnas)
+
+        records: list[dict[str, Any]] = []
+        for _, row in df.iterrows():
+            mirna = str(row.get("mirna", "")).strip()
+            gene = str(row.get("gene", "")).strip().upper()
+            if not mirna or not gene:
+                continue
+            records.append({
+                "mirna_id": mirna,
+                "gene_id": gene,
+                "source": str(row.get("source", "TargetScan")).strip() or "TargetScan",
+                "score": self._safe_float(row.get("score")),
+                "confidence": self._safe_float(row.get("confidence")),
+                "confidence_level": str(row.get("confidence_level", "")).strip() or None,
+                "download_date": str(row.get("download_date", "")).strip() or None,
+            })
+        count = self.mt_repo.bulk_upsert(records)
+        self.stats["mirna_target_edges"] = count
+        logger.info("迁移 mirna_target_edges: %d", count)
+        return count
+
     def migrate_compound_embeddings(self) -> int:
         df = self._read_csv("compound_attentivefp_embeddings.csv")
         if df is None:
@@ -600,6 +696,9 @@ class CSVMigrator:
         self.migrate_gene_coexp_edges()
         self.migrate_compound_compound_similarity_edges()
         self.migrate_pathway_pathway_similarity_edges()
+        self.migrate_compound_disease_edges()
+        self.migrate_disease_disease_similarity_edges()
+        self.migrate_mirna_target_edges()
         self.session.flush()
 
         # 特征

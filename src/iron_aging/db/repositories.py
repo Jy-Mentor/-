@@ -189,6 +189,26 @@ class PathwayPathwaySimilarityRepository(_SimpleRepository):
     pk_fields = ("pathway_a_id", "pathway_b_id", "source")
 
 
+class CompoundDiseaseRepository(_SimpleRepository):
+    model_class = models.CompoundDiseaseEdge
+    pk_fields = ("compound_id", "disease_id", "source")
+
+
+class DiseaseDiseaseSimilarityRepository(_SimpleRepository):
+    model_class = models.DiseaseDiseaseSimilarityEdge
+    pk_fields = ("disease_a_id", "disease_b_id", "source")
+
+
+class MiRNARepository(_SimpleRepository):
+    model_class = models.MiRNA
+    pk_fields = ("name",)
+
+
+class MiRNATargetRepository(_SimpleRepository):
+    model_class = models.MiRNATargetEdge
+    pk_fields = ("mirna_id", "gene_id", "source")
+
+
 class DifferentialExpressionRepository(_SimpleRepository):
     model_class = models.DifferentialExpression
     pk_fields = ("dataset_id", "gene_id")
