@@ -41,6 +41,10 @@ GENE_LIST_PATH = PROJECT_ROOT / "铁衰老基因.txt"
 CURATED_CSV = NETWORK_DIR / "compound_target_edges_curated.csv"
 CHEMBL_CLEANED_CSV = NETWORK_DIR / "chembl_compound_targets_cleaned.csv"
 STITCH_CSV = EXTERNAL_DIR / "stitch" / "stitch_compound_targets.csv"
+CTD_CSV = NETWORK_DIR / "ctd_compound_targets.csv"
+DGIDB_CSV = NETWORK_DIR / "dgidb_compound_targets.csv"
+SEA_CSV = NETWORK_DIR / "target_predictions_chembl_sea.csv"
+SWISSTARGET_CSV = NETWORK_DIR / "swisstarget_compound_targets.csv"
 OUTPUT_CSV = NETWORK_DIR / "compound_target_edges.csv"
 METADATA_JSON = EXTERNAL_DIR / "compound_target_merged_metadata.json"
 
@@ -122,6 +126,92 @@ def load_stitch(core_genes: set[str]) -> pd.DataFrame:
     return df
 
 
+def load_ctd(core_genes: set[str]) -> pd.DataFrame:
+    if not CTD_CSV.exists():
+        logger.warning("CTD 文件不存在, 跳过: %s", CTD_CSV)
+        return pd.DataFrame(columns=["compound", "gene", "source", "confidence", "confidence_level"])
+
+    df = pd.read_csv(CTD_CSV)
+    df["compound"] = df["compound"].astype(str).str.strip()
+    df["gene"] = df["gene"].astype(str).str.strip().str.upper()
+    df = df[df["gene"].isin(core_genes) & df["gene"].apply(is_valid_gene_symbol)]
+
+    if "confidence" not in df.columns:
+        df["confidence"] = 0.45
+    if "confidence_level" not in df.columns:
+        df["confidence_level"] = "low"
+    if "source" not in df.columns:
+        df["source"] = "CTD"
+
+    logger.info("CTD 有效边: %d", len(df))
+    return df
+
+
+def load_dgidb(core_genes: set[str]) -> pd.DataFrame:
+    if not DGIDB_CSV.exists():
+        logger.warning("DGIdb 文件不存在, 跳过: %s", DGIDB_CSV)
+        return pd.DataFrame(columns=["compound", "gene", "source", "confidence", "confidence_level"])
+
+    df = pd.read_csv(DGIDB_CSV)
+    df["compound"] = df["compound"].astype(str).str.strip()
+    df["gene"] = df["gene"].astype(str).str.strip().str.upper()
+    df = df[df["gene"].isin(core_genes) & df["gene"].apply(is_valid_gene_symbol)]
+
+    if "confidence" not in df.columns:
+        df["confidence"] = 0.45
+    if "confidence_level" not in df.columns:
+        df["confidence_level"] = "low"
+    if "source" not in df.columns:
+        df["source"] = "DGIdb"
+
+    logger.info("DGIdb 有效边: %d", len(df))
+    return df
+
+
+def load_sea_predictions(core_genes: set[str]) -> pd.DataFrame:
+    """加载 ChEMBL SEA-like 预测边; 文件不存在时返回空 DataFrame."""
+    if not SEA_CSV.exists():
+        logger.warning("SEA 预测文件不存在, 跳过: %s", SEA_CSV)
+        return pd.DataFrame(columns=["compound", "gene", "source", "confidence", "confidence_level"])
+
+    df = pd.read_csv(SEA_CSV)
+    df["compound"] = df["compound"].astype(str).str.strip()
+    df["gene"] = df["gene"].astype(str).str.strip().str.upper()
+    df = df[df["gene"].isin(core_genes) & df["gene"].apply(is_valid_gene_symbol)]
+
+    if "confidence" not in df.columns:
+        df["confidence"] = 0.40
+    if "confidence_level" not in df.columns:
+        df["confidence_level"] = "low"
+    if "source" not in df.columns:
+        df["source"] = "ChEMBL_similarity_SEA"
+
+    logger.info("SEA 预测有效边: %d", len(df))
+    return df
+
+
+def load_swisstarget(core_genes: set[str]) -> pd.DataFrame:
+    """加载 SwissTargetPrediction 预测边; 文件不存在时返回空 DataFrame."""
+    if not SWISSTARGET_CSV.exists():
+        logger.warning("SwissTargetPrediction 文件不存在, 跳过: %s", SWISSTARGET_CSV)
+        return pd.DataFrame(columns=["compound", "gene", "source", "confidence", "confidence_level"])
+
+    df = pd.read_csv(SWISSTARGET_CSV)
+    df["compound"] = df["compound"].astype(str).str.strip()
+    df["gene"] = df["gene"].astype(str).str.strip().str.upper()
+    df = df[df["gene"].isin(core_genes) & df["gene"].apply(is_valid_gene_symbol)]
+
+    if "confidence" not in df.columns:
+        df["confidence"] = 0.40
+    if "confidence_level" not in df.columns:
+        df["confidence_level"] = "low"
+    if "source" not in df.columns:
+        df["source"] = "SwissTargetPrediction"
+
+    logger.info("SwissTargetPrediction 有效边: %d", len(df))
+    return df
+
+
 def deduplicate_keep_highest_confidence(df: pd.DataFrame) -> pd.DataFrame:
     """同一 compound-gene 保留置信度最高记录; 如并列, source 合并."""
     if df.empty:
@@ -152,14 +242,26 @@ def main() -> int:
     curated = load_curated(core_genes)
     chembl = load_chembl_cleaned(core_genes)
     stitch = load_stitch(core_genes)
+    ctd = load_ctd(core_genes)
+    dgidb = load_dgidb(core_genes)
+    sea = load_sea_predictions(core_genes)
+    swisstarget = load_swisstarget(core_genes)
 
     # 统一列
     common_cols = ["compound", "gene", "source", "confidence", "confidence_level"]
     curated = curated[[c for c in common_cols if c in curated.columns]]
     chembl = chembl[[c for c in common_cols if c in chembl.columns]]
     stitch = stitch[[c for c in common_cols if c in stitch.columns]]
+    ctd = ctd[[c for c in common_cols if c in ctd.columns]]
+    dgidb = dgidb[[c for c in common_cols if c in dgidb.columns]]
+    sea = sea[[c for c in common_cols if c in sea.columns]]
+    swisstarget = swisstarget[[c for c in common_cols if c in swisstarget.columns]]
 
-    merged = pd.concat([curated, chembl, stitch], ignore_index=True)
+    sources = [curated, chembl, stitch, ctd, dgidb, sea, swisstarget]
+    non_empty = [s for s in sources if not s.empty]
+    merged = pd.concat(non_empty, ignore_index=True) if non_empty else pd.DataFrame(
+        columns=["compound", "gene", "source", "confidence", "confidence_level"]
+    )
     logger.info("合并去重前: %d 条", len(merged))
 
     cleaned = deduplicate_keep_highest_confidence(merged)
@@ -176,12 +278,15 @@ def main() -> int:
     logger.info("已写入清洗后 compound-target 边: %s", OUTPUT_CSV)
 
     metadata = {
-        "source": "curated + ChEMBL(cleaned) + STITCH",
+        "source": "curated + ChEMBL(cleaned) + STITCH + CTD + ChEMBL_SEA_like + SwissTargetPrediction",
         "clean_date": pd.Timestamp.now().isoformat(),
         "stats": {
             "curated": len(curated),
             "chembl_cleaned": len(chembl),
             "stitch": len(stitch),
+            "ctd": len(ctd),
+            "sea": len(sea),
+            "swisstarget": len(swisstarget),
             "merged_unique": len(cleaned),
             "unique_compounds": int(cleaned["compound"].nunique()),
             "unique_genes": int(cleaned["gene"].nunique()),

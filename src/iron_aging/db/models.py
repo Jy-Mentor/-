@@ -282,6 +282,44 @@ class GeneCoexpEdge(Base):
     download_date: Mapped[str | None] = mapped_column(String(16))
 
 
+class CompoundCompoundSimilarityEdge(Base):
+    """化合物-化合物化学相似性边 (RDKit Tanimoto)."""
+
+    __tablename__ = "compound_compound_similarity_edges"
+
+    compound_a_id: Mapped[str] = mapped_column(
+        String(128), ForeignKey("compounds.name"), primary_key=True
+    )
+    compound_b_id: Mapped[str] = mapped_column(
+        String(128), ForeignKey("compounds.name"), primary_key=True
+    )
+    similarity: Mapped[float] = mapped_column(Float)
+    source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    confidence_level: Mapped[str | None] = mapped_column(String(16))
+    download_date: Mapped[str | None] = mapped_column(String(16))
+
+
+class PathwayPathwaySimilarityEdge(Base):
+    """通路-通路基因集 Jaccard 相似性边."""
+
+    __tablename__ = "pathway_pathway_similarity_edges"
+
+    pathway_a_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("pathways.id"), primary_key=True
+    )
+    pathway_b_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("pathways.id"), primary_key=True
+    )
+    jaccard: Mapped[float] = mapped_column(Float)
+    intersection_size: Mapped[int | None] = mapped_column(Integer)
+    union_size: Mapped[int | None] = mapped_column(Integer)
+    source: Mapped[str] = mapped_column(String(64), primary_key=True)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    confidence_level: Mapped[str | None] = mapped_column(String(16))
+    download_date: Mapped[str | None] = mapped_column(String(16))
+
+
 # ---------------------------------------------------------------------------
 # 特征与实验表
 # ---------------------------------------------------------------------------

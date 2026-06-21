@@ -179,6 +179,16 @@ class GeneCoexpRepository(_SimpleRepository):
     pk_fields = ("gene_a_id", "gene_b_id", "source")
 
 
+class CompoundCompoundSimilarityRepository(_SimpleRepository):
+    model_class = models.CompoundCompoundSimilarityEdge
+    pk_fields = ("compound_a_id", "compound_b_id", "source")
+
+
+class PathwayPathwaySimilarityRepository(_SimpleRepository):
+    model_class = models.PathwayPathwaySimilarityEdge
+    pk_fields = ("pathway_a_id", "pathway_b_id", "source")
+
+
 class DifferentialExpressionRepository(_SimpleRepository):
     model_class = models.DifferentialExpression
     pk_fields = ("dataset_id", "gene_id")

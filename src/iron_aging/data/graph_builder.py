@@ -23,6 +23,7 @@ from iron_aging import NETWORK_DIR, PROJECT_ROOT
 from iron_aging.db.repositories import (
     CellTypeMarkerRepository,
     CellTypeRepository,
+    CompoundCompoundSimilarityRepository,
     CompoundRepository,
     CompoundTargetRepository,
     DiseaseGeneRepository,
@@ -31,6 +32,7 @@ from iron_aging.db.repositories import (
     GenePathwayRepository,
     GeneRepository,
     LigandReceptorRepository,
+    PathwayPathwaySimilarityRepository,
     PathwayRepository,
     PPIRepository,
     TFTargetRepository,
@@ -126,6 +128,8 @@ class HeteroGraphBuilder:
         self.ctm_repo = CellTypeMarkerRepository(session)
         self.lr_repo = LigandReceptorRepository(session)
         self.coexp_repo = GeneCoexpRepository(session)
+        self.ccs_repo = CompoundCompoundSimilarityRepository(session)
+        self.pps_repo = PathwayPathwaySimilarityRepository(session)
 
     def build(self, use_cache: bool = True) -> HeteroData:
         """构建 HeteroData."""
@@ -177,6 +181,12 @@ class HeteroGraphBuilder:
         )
         self._add_edges(data, "gene", "lr_pair", "gene", self.lr_repo.get_all(), nodes)
         self._add_edges(data, "gene", "coexp", "gene", self.coexp_repo.get_all(), nodes)
+        self._add_edges(
+            data, "compound", "similar_to", "compound", self.ccs_repo.get_all(), nodes
+        )
+        self._add_edges(
+            data, "pathway", "similar_to", "pathway", self.pps_repo.get_all(), nodes
+        )
 
         # 5. 附加节点特征 (v4.0 分层迁移中, 失败则保留空特征并记录警告)
         try:
@@ -256,6 +266,10 @@ class HeteroGraphBuilder:
             return rec.get("ligand_id"), rec.get("receptor_id")
         if rel_type == "coexp":
             return rec.get("gene_a_id"), rec.get("gene_b_id")
+        if rel_type == "similar_to" and src_type == "compound":
+            return rec.get("compound_a_id"), rec.get("compound_b_id")
+        if rel_type == "similar_to" and src_type == "pathway":
+            return str(rec.get("pathway_a_id")), str(rec.get("pathway_b_id"))
         return None, None
 
     def _attach_node_features(

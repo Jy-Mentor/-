@@ -29,6 +29,7 @@ from iron_aging.db.models import Base
 from iron_aging.db.repositories import (
     CellTypeMarkerRepository,
     CellTypeRepository,
+    CompoundCompoundSimilarityRepository,
     CompoundEmbeddingRepository,
     CompoundPropertyRepository,
     CompoundRepository,
@@ -40,6 +41,7 @@ from iron_aging.db.repositories import (
     GenePathwayRepository,
     GeneRepository,
     LigandReceptorRepository,
+    PathwayPathwaySimilarityRepository,
     PathwayRepository,
     PPIRepository,
     TFTargetRepository,
@@ -75,6 +77,8 @@ class CSVMigrator:
         self.ctm_repo = CellTypeMarkerRepository(session)
         self.lr_repo = LigandReceptorRepository(session)
         self.coexp_repo = GeneCoexpRepository(session)
+        self.ccs_repo = CompoundCompoundSimilarityRepository(session)
+        self.pps_repo = PathwayPathwaySimilarityRepository(session)
         self.prop_repo = CompoundPropertyRepository(session)
         self.emb_repo = CompoundEmbeddingRepository(session)
 
@@ -452,6 +456,76 @@ class CSVMigrator:
         logger.info("迁移 gene_coexp_edges: %d", count)
         return count
 
+    def migrate_compound_compound_similarity_edges(self) -> int:
+        df = self._read_csv("compound_compound_similarity_edges.csv")
+        if df is None:
+            return 0
+        records: list[dict[str, Any]] = []
+        for _, row in df.iterrows():
+            a = str(row.get("compound_A", "")).strip()
+            b = str(row.get("compound_B", "")).strip()
+            similarity = self._safe_float(row.get("similarity"))
+            if a and b and similarity is not None:
+                records.append({
+                    "compound_a_id": a,
+                    "compound_b_id": b,
+                    "similarity": similarity,
+                    "source": str(row.get("source", "RDKit_Morgan_Tanimoto")).strip() or "RDKit_Morgan_Tanimoto",
+                    "confidence": self._safe_float(row.get("confidence")),
+                    "confidence_level": str(row.get("confidence_level", "")).strip() or None,
+                    "download_date": str(row.get("download_date", "")).strip() or None,
+                })
+        count = self.ccs_repo.bulk_upsert(records)
+        self.stats["compound_compound_similarity_edges"] = count
+        logger.info("迁移 compound_compound_similarity_edges: %d", count)
+        return count
+
+    def migrate_pathway_pathway_similarity_edges(self) -> int:
+        df = self._read_csv("pathway_pathway_similarity_edges.csv")
+        if df is None:
+            return 0
+        # 需要把 pathway 名称映射到 pathways.id
+        pathway_map = {
+            (p["name"], p["source"]): p["id"]
+            for p in self.pathway_repo.get_all()
+        }
+        records: list[dict[str, Any]] = []
+        for _, row in df.iterrows():
+            name_a = str(row.get("pathway_A", "")).strip()
+            name_b = str(row.get("pathway_B", "")).strip()
+            jaccard = self._safe_float(row.get("jaccard"))
+            if not name_a or not name_b or jaccard is None:
+                continue
+            # 优先匹配 KEGG_REST 来源, 其次任意来源
+            pid_a = pathway_map.get((name_a, "KEGG_REST"))
+            pid_b = pathway_map.get((name_b, "KEGG_REST"))
+            if pid_a is None or pid_b is None:
+                logger.debug(" pathway 名称未映射到 ID: %s / %s", name_a, name_b)
+                continue
+            records.append({
+                "pathway_a_id": pid_a,
+                "pathway_b_id": pid_b,
+                "jaccard": jaccard,
+                "intersection_size": self._safe_int(row.get("intersection_size")),
+                "union_size": self._safe_int(row.get("union_size")),
+                "source": str(row.get("source", "KEGG_pathway_Jaccard")).strip() or "KEGG_pathway_Jaccard",
+                "confidence": self._safe_float(row.get("confidence")),
+                "confidence_level": str(row.get("confidence_level", "")).strip() or None,
+                "download_date": str(row.get("download_date", "")).strip() or None,
+            })
+        count = self.pps_repo.bulk_upsert(records)
+        self.stats["pathway_pathway_similarity_edges"] = count
+        logger.info("迁移 pathway_pathway_similarity_edges: %d", count)
+        return count
+
+    def _safe_int(self, value: Any, default: int | None = None) -> int | None:
+        if value is None or pd.isna(value) or str(value).strip() == "":
+            return default
+        try:
+            return int(float(value))
+        except ValueError:
+            return default
+
     def migrate_compound_embeddings(self) -> int:
         df = self._read_csv("compound_attentivefp_embeddings.csv")
         if df is None:
@@ -524,6 +598,8 @@ class CSVMigrator:
         self.migrate_cell_type_marker_edges()
         self.migrate_ligand_receptor_edges()
         self.migrate_gene_coexp_edges()
+        self.migrate_compound_compound_similarity_edges()
+        self.migrate_pathway_pathway_similarity_edges()
         self.session.flush()
 
         # 特征

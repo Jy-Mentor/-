@@ -1,0 +1,469 @@
+compound,gene,interaction,action,source,confidence,confidence_level,download_date
+Aloe emodin,ATF3,aloe emodin results in increased expression of ATF3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Apigenin,ABCC1,Apigenin results in decreased activity of ABCC1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Apigenin,CXCL8,Apigenin inhibits the reaction [Bleomycin results in increased expression of CXCL8 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Apigenin,HIF1A,Apigenin inhibits the reaction [Oxygen deficiency promotes the reaction [HIF1A protein binds to EP300 protein]],affects^binding,CTD,0.85,high,2026-06-21
+Apigenin,HMGB1,Apigenin analog inhibits the reaction [Acrolein promotes the reaction [Lipopolysaccharides results in increased expression of HMGB1 protein]],increases^expression,CTD,0.65,medium,2026-06-21
+Apigenin,IL1B,Apigenin inhibits the reaction [Adenosine Triphosphate results in increased cleavage of and results in increased secretion of IL1B protein],increases^cleavage,CTD,0.85,high,2026-06-21
+Apigenin,IL6,Apigenin inhibits the reaction [IL1B protein results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Apigenin,MAPK1,Apigenin results in decreased phosphorylation of MAPK1 protein,decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Apigenin,NLRP3,Apigenin analog inhibits the reaction [Acrolein promotes the reaction [Lipopolysaccharides results in increased expression of NLRP3 protein]],increases^expression,CTD,0.65,medium,2026-06-21
+Apigenin,PTGS2,Apigenin affects the reaction [Tetradecanoylphorbol Acetate results in increased expression of PTGS2 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Apigenin,TLR4,TLR4 protein inhibits the reaction [Apigenin inhibits the reaction [Lipopolysaccharides results in increased phosphorylation of IKBKB protein]],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Artemisinin,IL6,artemisinin results in increased expression of IL6 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Artemisinin,PTGS2,artemisinin results in decreased expression of PTGS2 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+BCP,IL6,caryophyllene results in decreased expression of IL6 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+BCP,IRF1,caryophyllene inhibits the reaction [TNF protein results in increased expression of IRF1 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+BCP,PTGS2,caryophyllene results in decreased expression of PTGS2 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+BCP,SOD1,[beta-thujone co-treated with linalyl acetate co-treated with sabinene co-treated with linalool co-treated with Camphor co-treated with myrcene co-treated with Eucalyptol co-treated with caryophyllene co-treated with spathulenol] results in increased expression of SOD1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+BCP,STAT1,caryophyllene inhibits the reaction [TNF protein results in increased phosphorylation of STAT1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+BCP,ZEB1,[beta-thujone co-treated with linalyl acetate co-treated with sabinene co-treated with linalool co-treated with Camphor co-treated with myrcene co-treated with Eucalyptol co-treated with caryophyllene co-treated with spathulenol] results in increased expression of ZEB1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Baicalein,ABCC1,baicalein results in decreased activity of ABCC1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Baicalein,ALOX15,baicalein results in decreased activity of ALOX15 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Baicalein,GPX4,baicalein inhibits the reaction [Polymyxin B results in decreased expression of GPX4 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Baicalein,HIF1A,baicalein results in decreased degradation of and results in increased expression of HIF1A protein modified form,increases^expression,CTD,0.65,medium,2026-06-21
+Baicalein,HMOX1,baicalein inhibits the reaction [Polymyxin B results in decreased expression of HMOX1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Baicalein,IL1B,"baicalein inhibits the reaction [Cholesterol, LDL analog results in increased expression of IL1B protein]",increases^expression,CTD,0.65,medium,2026-06-21
+Baicalein,IL6,"baicalein inhibits the reaction [Cholesterol, LDL analog results in increased expression of IL6 protein]",increases^expression,CTD,0.65,medium,2026-06-21
+Baicalein,MAPK1,baicalein binds to MAPK1 protein,affects^binding,CTD,0.85,high,2026-06-21
+Baicalein,PTGS2,baicalein inhibits the reaction [Tetradecanoylphorbol Acetate results in increased expression of PTGS2 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Baicalein,SNCA,baicalein inhibits the reaction [SNCA protein binds to SNCA protein],affects^binding,CTD,0.85,high,2026-06-21
+Catechin,CXCL10,Catechin inhibits the reaction [S100B protein results in increased expression of CXCL10 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Catechin,CXCL8,[Catechin co-treated with tert-Butylhydroperoxide co-treated with Hydrocortisone] results in decreased secretion of CXCL8 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Catechin,HBP1,[Catechin co-treated with Grape Seed Proanthocyanidins] results in increased expression of HBP1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Catechin,HIF1A,[Catechin co-treated with Grape Seed Proanthocyanidins] results in increased expression of HIF1A mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Catechin,HMOX1,Catechin results in increased expression of HMOX1 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Catechin,IL1B,Catechin analog inhibits the reaction [Lipopolysaccharides results in increased secretion of IL1B protein],increases^secretion,CTD,0.85,high,2026-06-21
+Catechin,IL6,Catechin analog inhibits the reaction [Lipopolysaccharides results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Catechin,MAPK1,Catechin analog results in decreased phosphorylation of MAPK1 protein,decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Catechin,MPO,Catechin analog inhibits the reaction [Tetradecanoylphorbol Acetate results in increased expression of MPO protein],increases^expression,CTD,0.65,medium,2026-06-21
+Catechin,PTGS2,Catechin results in decreased expression of PTGS2 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Catechin,SP1,Catechin inhibits the reaction [Arsenic Trioxide results in decreased expression of SP1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Catechin,STAT1,Catechin results in decreased expression of STAT1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Catechin,TLR4,[epigallocatechin gallate co-treated with gallocatechol co-treated with epicatechin gallate co-treated with Catechin analog] inhibits the reaction [Tetradecanoylphorbol Acetate results in increased expression of TLR4 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Chrysin,ABCC1,ABCC1 protein affects the reaction [chrysin results in increased transport of Glutathione],affects^reaction,CTD,0.45,low,2026-06-21
+Chrysin,CXCL8,chrysin inhibits the reaction [IL1B protein results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Chrysin,EDN1,chrysin results in increased expression of EDN1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Chrysin,HIF1A,chrysin results in decreased degradation of and results in increased expression of HIF1A protein modified form,increases^expression,CTD,0.65,medium,2026-06-21
+Chrysin,HMOX1,chrysin results in decreased expression of HMOX1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Chrysin,IL1B,chrysin inhibits the reaction [IL1B protein results in increased phosphorylation of NFKBIA protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Chrysin,IL6,chrysin results in decreased expression of IL6 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Chrysin,MAPK1,[chrysin co-treated with Cisplatin] results in increased phosphorylation of MAPK1 protein,increases^phosphorylation,CTD,0.85,high,2026-06-21
+Chrysin,PTGS2,chrysin results in increased expression of PTGS2 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Chrysin,TLR4,chrysin inhibits the reaction [nickel chloride results in increased expression of TLR4 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Cinnamaldehyde,ATF3,cinnamaldehyde results in increased expression of ATF3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Cinnamaldehyde,CXCL8,cinnamaldehyde results in increased expression of and results in increased secretion of CXCL8 protein,increases^secretion,CTD,0.85,high,2026-06-21
+Cinnamaldehyde,EGR1,cinnamaldehyde results in increased expression of EGR1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Cinnamaldehyde,HMOX1,2-(2-amino-3-methoxyphenyl)-4H-1-benzopyran-4-one inhibits the reaction [cinnamaldehyde results in increased expression of HMOX1 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Cinnamaldehyde,IL1B,cinnamaldehyde inhibits the reaction [[Lipopolysaccharides co-treated with Tetradecanoylphorbol Acetate] results in increased secretion of IL1B protein],increases^secretion,CTD,0.85,high,2026-06-21
+Cinnamaldehyde,IL6,[NFE2L2 protein affects the susceptibility to cinnamaldehyde] which affects the expression of IL6 mRNA,affects^expression,CTD,0.65,medium,2026-06-21
+Cinnamaldehyde,KEAP1,cinnamaldehyde results in increased expression of KEAP1 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Cinnamaldehyde,MAPK1,cinnamaldehyde results in increased phosphorylation of and results in increased activity of MAPK1 protein,increases^activity,CTD,0.85,high,2026-06-21
+Cinnamaldehyde,MAPK14,cinnamaldehyde results in increased phosphorylation of and results in increased activity of MAPK14 protein,increases^activity,CTD,0.85,high,2026-06-21
+Cinnamaldehyde,PTGS2,cinnamaldehyde inhibits the reaction [[Lipopolysaccharides co-treated with Tetradecanoylphorbol Acetate] results in increased expression of PTGS2 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Cinnamaldehyde,TLR4,cinnamaldehyde results in increased expression of TLR4 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,ABCC1,Curcumin results in decreased activity of ABCC1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Curcumin,ACSL4,Curcumin inhibits the reaction [Firemaster BP-6 results in increased expression of ACSL4 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,ATF3,Curcumin results in increased expression of ATF3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,CTSB,Curcumin analog results in decreased expression of CTSB mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,CXCL8,Curcumin results in decreased expression of and results in decreased secretion of CXCL8 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Curcumin,EGR1,Curcumin results in decreased expression of EGR1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,ERN1,Curcumin results in decreased expression of ERN1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,FOSL1,Curcumin inhibits the reaction [Tetradecanoylphorbol Acetate promotes the reaction [FOSL1 protein binds to JUNB protein]],affects^binding,CTD,0.85,high,2026-06-21
+Curcumin,GPX4,Curcumin inhibits the reaction [Firemaster BP-6 results in decreased expression of GPX4 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,HIF1A,Curcumin results in decreased activity of HIF1A protein,decreases^activity,CTD,0.85,high,2026-06-21
+Curcumin,HMOX1,Curcumin promotes the reaction [quinocetone results in increased activity of HMOX1 protein],increases^activity,CTD,0.85,high,2026-06-21
+Curcumin,IFNG,Curcumin inhibits the reaction [IFNG protein results in increased expression of and results in increased phosphorylation of STAT1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Curcumin,IGFBP7,Curcumin results in increased expression of IGFBP7 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,IL1B,Curcumin inhibits the reaction [IL1B protein promotes the reaction [Shiga Toxin binds to globotriaosylceramide]],affects^binding,CTD,0.85,high,2026-06-21
+Curcumin,IL6,Curcumin inhibits the reaction [Acids results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Curcumin,KEAP1,Curcumin inhibits the reaction [KEAP1 protein results in increased ubiquitination of NFE2L2 protein],increases^ubiquitination,CTD,0.85,high,2026-06-21
+Curcumin,KLF6,Curcumin results in increased expression of KLF6 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,MAPK1,Curcumin results in decreased activity of MAPK1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Curcumin,MAPK14,Curcumin inhibits the reaction [[TNF protein co-treated with IL1B protein] results in increased phosphorylation of MAPK14 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Curcumin,MPO,Curcumin analog results in decreased activity of MPO protein,decreases^activity,CTD,0.85,high,2026-06-21
+Curcumin,PTGS2,Curcumin promotes the reaction [Fluorouracil results in decreased phosphorylation of and results in decreased activity of PTGS2 protein],decreases^activity,CTD,0.85,high,2026-06-21
+Curcumin,SOD1,Curcumin inhibits the reaction [quinocetone results in decreased activity of SOD1 protein],decreases^activity,CTD,0.85,high,2026-06-21
+Curcumin,SP1,Curcumin results in decreased expression of SP1 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,STAT1,Curcumin inhibits the reaction [IFNG protein results in increased expression of and results in increased phosphorylation of STAT1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Curcumin,TFRC,Curcumin results in increased expression of TFRC mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Curcumin,WWTR1,Curcumin results in decreased expression of and affects the localization of WWTR1 protein,affects^localization,CTD,0.85,high,2026-06-21
+DFO,ACSL4,Deferoxamine inhibits the reaction [beryllium sulfate results in increased expression of ACSL4 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+DFO,CXCL8,Deferoxamine results in increased secretion of CXCL8 protein,increases^secretion,CTD,0.85,high,2026-06-21
+DFO,DUOX1,Deferoxamine inhibits the reaction [Particulate Matter results in increased expression of DUOX1 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+DFO,ERN1,Deferoxamine promotes the reaction [Palmitic Acid results in increased phosphorylation of ERN1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+DFO,GPX4,Deferoxamine inhibits the reaction [[Antimony Potassium Tartrate results in increased abundance of Antimony] which results in decreased expression of GPX4 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+DFO,HIF1A,Deferoxamine promotes the reaction [[HIF1A protein binds to VEGFA promoter] which results in increased expression of VEGFA mRNA],affects^binding,CTD,0.85,high,2026-06-21
+DFO,HMOX1,Deferoxamine inhibits the reaction [Ethacrynic Acid affects the localization of HMOX1 protein],affects^localization,CTD,0.85,high,2026-06-21
+DFO,IL1B,Deferoxamine results in decreased expression of IL1B mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+DFO,IL6,"Deferoxamine inhibits the reaction [2,2',4,4'-tetrabromodiphenyl ether results in increased expression of and results in increased secretion of IL6 protein]",increases^secretion,CTD,0.85,high,2026-06-21
+DFO,LOX,[Deferoxamine results in decreased abundance of Iron] which results in increased expression of LOX mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+DFO,MAPK1,Deferoxamine inhibits the reaction [Nitroprusside results in decreased phosphorylation of MAPK1 protein],decreases^phosphorylation,CTD,0.85,high,2026-06-21
+DFO,PTGS2,Deferoxamine results in increased stability of PTGS2 protein,increases^stability,CTD,0.85,high,2026-06-21
+DFO,SOD1,"Antineoplastic Agents, Immunological inhibits the reaction [[Deferoxamine co-treated with tert-Butylhydroperoxide] results in increased expression of SOD1 mRNA]",increases^expression,CTD,0.65,medium,2026-06-21
+DFO,SP1,[Deferoxamine affects the abundance of Iron] inhibits the reaction [TNF protein results in increased activity of SP1 protein],increases^activity,CTD,0.85,high,2026-06-21
+DFO,TFRC,[Deferoxamine results in decreased abundance of Iron] which results in increased expression of TFRC mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+DFO,TLR4,Deferoxamine results in decreased expression of TLR4 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Daidzein,ABCC1,daidzein promotes the reaction [ABCC1 protein results in increased hydrolysis of Adenosine Triphosphate],increases^hydrolysis,CTD,0.45,low,2026-06-21
+Daidzein,ACSL3,[daidzein co-treated with daidzin co-treated with genistin co-treated with Genistein co-treated with glycitin co-treated with glycitein] results in decreased expression of ACSL3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Daidzein,CXCL8,daidzein results in decreased expression of CXCL8 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Daidzein,IL1B,daidzein inhibits the reaction [IL1B protein results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Daidzein,IL6,daidzein results in decreased secretion of IL6 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Daidzein,MAPK1,AG 1879 inhibits the reaction [daidzein results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Daidzein,PTGS2,[daidzein co-treated with ESR2 protein] results in increased expression of PTGS2 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,ACSL4,"Dimethyl Fumarate inhibits the reaction [1,3-dichloro-2-propanol results in increased expression of ACSL4 protein]",increases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,CD74,Dimethyl Fumarate inhibits the reaction [IFNG protein results in increased expression of CD74 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,CXCL10,Dimethyl Fumarate inhibits the reaction [IFNG protein results in increased expression of CXCL10 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,GPX4,"Dimethyl Fumarate inhibits the reaction [1,3-dichloro-2-propanol results in decreased expression of GPX4 protein]",decreases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,HMOX1,"Dimethyl Fumarate inhibits the reaction [1,3-dichloro-2-propanol results in decreased expression of HMOX1 protein]",decreases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,IFNG,Dimethyl Fumarate inhibits the reaction [nickel sulfate results in increased secretion of IFNG protein],increases^secretion,CTD,0.85,high,2026-06-21
+Dimethyl fumarate,IL1B,Dimethyl Fumarate inhibits the reaction [piperlongumine results in increased expression of IL1B protein],increases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,IRF1,Dimethyl Fumarate inhibits the reaction [IFNG protein results in increased expression of IRF1 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Dimethyl fumarate,NLRP3,Dimethyl Fumarate inhibits the reaction [piperlongumine results in increased expression of NLRP3 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Edaravone,HIF1A,Edaravone inhibits the reaction [HIF1A protein binds to VEGFA promoter],affects^binding,CTD,0.85,high,2026-06-21
+Edaravone,IL1B,Edaravone results in decreased activity of IL1B protein,decreases^activity,CTD,0.85,high,2026-06-21
+Emodin,HMOX1,Emodin results in increased expression of HMOX1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Emodin,IL6,Emodin inhibits the reaction [IL6 protein results in increased phosphorylation of AKT1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Emodin,MAPK1,2-(4-morpholinyl)-8-phenyl-4H-1-benzopyran-4-one promotes the reaction [Emodin results in decreased phosphorylation of MAPK1 protein],decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Emodin,MAPK14,Acetylcysteine inhibits the reaction [Emodin promotes the reaction [Arsenic Trioxide results in increased phosphorylation of and results in increased activity of MAPK14 protein]],increases^activity,CTD,0.85,high,2026-06-21
+Erastin,ACSL4,erastin results in increased expression of ACSL4 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Erastin,GPX4,astaxanthine inhibits the reaction [erastin results in decreased expression of GPX4 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Erastin,HMOX1,"2-(5-benzo(1,3)dioxol-5-yl-2-tert-butyl-3H-imidazol-4-yl)-6-methylpyridine hydrochloride promotes the reaction [erastin results in increased expression of HMOX1 protein]",increases^expression,CTD,0.65,medium,2026-06-21
+Erastin,KEAP1,KEAP1 protein affects the reaction [erastin results in increased expression of HMOX1 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Erastin,MAPK1,erastin results in increased phosphorylation of MAPK1 protein,increases^phosphorylation,CTD,0.85,high,2026-06-21
+Erastin,PTGS2,erastin analog results in increased expression of PTGS2 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Erastin,TFRC,erastin promotes the reaction [osthol results in increased expression of TFRC protein],increases^expression,CTD,0.65,medium,2026-06-21
+Eucalyptol,CXCL8,Eucalyptol inhibits the reaction [Lipopolysaccharides results in increased expression of CXCL8 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Eucalyptol,SOD1,[beta-thujone co-treated with linalyl acetate co-treated with sabinene co-treated with linalool co-treated with Camphor co-treated with myrcene co-treated with Eucalyptol co-treated with caryophyllene co-treated with spathulenol] results in increased expression of SOD1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Eucalyptol,ZEB1,[beta-thujone co-treated with linalyl acetate co-treated with sabinene co-treated with linalool co-treated with Camphor co-treated with myrcene co-treated with Eucalyptol co-treated with caryophyllene co-treated with spathulenol] results in increased expression of ZEB1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,ABCC1,ferrostatin-1 inhibits the reaction [HMOX1 protein results in decreased expression of ABCC1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,ACSL4,ferrostatin-1 results in decreased expression of ACSL4 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,GPX4,ferrostatin-1 affects the reaction [Valproic Acid results in decreased expression of GPX4 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,HIF1A,ferrostatin-1 inhibits the reaction [CLEC1B protein results in decreased expression of HIF1A protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,HMOX1,"ferrostatin-1 affects the reaction [7,8-Dihydro-7,8-dihydroxybenzo(a)pyrene 9,10-oxide affects the expression of HMOX1 protein]",affects^expression,CTD,0.65,medium,2026-06-21
+Fer-1,IL1B,ferrostatin-1 inhibits the reaction [[Polystyrenes results in increased abundance of Microplastics] which results in increased expression of IL1B mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,IL6,ferrostatin-1 inhibits the reaction [[Polystyrenes results in increased abundance of Microplastics] which results in decreased expression of IL6 mRNA],decreases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,PTGS2,ferrostatin-1 inhibits the reaction [[Antimony Potassium Tartrate results in increased abundance of Antimony] which results in increased expression of PTGS2 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,SOD1,ferrostatin-1 inhibits the reaction [Antimony results in decreased expression of SOD1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Fer-1,TFRC,ferrostatin-1 affects the reaction [Valproic Acid results in increased expression of TFRC protein],increases^expression,CTD,0.65,medium,2026-06-21
+Ferulic acid,CXCL8,[Ascorbic Acid co-treated with alpha-Tocopherol co-treated with ferulic acid] inhibits the reaction [[Ozone co-treated with Oxygen] results in increased expression of CXCL8 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Ferulic acid,HMOX1,ferulic acid inhibits the reaction [[sodium arsenite results in increased abundance of Arsenic] which results in decreased expression of HMOX1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Ferulic acid,IL6,[ferulic acid co-treated with betadex analog] inhibits the reaction [Paraquat results in increased expression of IL6 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Ferulic acid,MAPK1,ferulic acid results in decreased activity of MAPK1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Ferulic acid,PTGS2,ferulic acid results in decreased expression of PTGS2 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Fisetin,CXCL8,fisetin inhibits the reaction [Lipopolysaccharides results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Fisetin,HIF1A,fisetin promotes the reaction [Oxygen deficiency promotes the reaction [HIF1A protein binds to EP300 protein]],affects^binding,CTD,0.85,high,2026-06-21
+Fisetin,HMOX1,fisetin inhibits the reaction [amyloid beta-protein (1-42) results in decreased expression of HMOX1 mRNA],decreases^expression,CTD,0.65,medium,2026-06-21
+Fisetin,IL1B,fisetin inhibits the reaction [[Tetradecanoylphorbol Acetate co-treated with Calcimycin] results in increased secretion of IL1B protein],increases^secretion,CTD,0.85,high,2026-06-21
+Fisetin,IL6,fisetin inhibits the reaction [[Tetradecanoylphorbol Acetate co-treated with Calcimycin] results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Fisetin,KEAP1,fisetin results in increased expression of KEAP1 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Fisetin,MAPK1,fisetin inhibits the reaction [Tobacco Smoke Pollution results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Fisetin,SOD1,fisetin inhibits the reaction [amyloid beta-protein (1-42) results in decreased expression of SOD1 mRNA],decreases^expression,CTD,0.65,medium,2026-06-21
+Fisetin,YAP1,fisetin results in increased phosphorylation of and affects the localization of YAP1 protein,affects^localization,CTD,0.85,high,2026-06-21
+Formononetin,ABCC1,formononetin affects the activity of ABCC1 protein,affects^activity,CTD,0.85,high,2026-06-21
+Formononetin,CXCL8,formononetin inhibits the reaction [CXCL8 protein results in increased phosphorylation of NFKBIA protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Formononetin,HIF1A,formononetin results in decreased degradation of and results in increased expression of HIF1A protein modified form,increases^expression,CTD,0.65,medium,2026-06-21
+Formononetin,HMOX1,[formononetin co-treated with Hydrogen Peroxide] results in increased expression of HMOX1 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Formononetin,MAPK1,formononetin inhibits the reaction [Hydrogen Peroxide results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Formononetin,TXNIP,formononetin results in increased expression of TXNIP mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Galangin,ABCC1,galangin results in decreased activity of ABCC1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Galangin,ATG3,[ATG3 mutant form co-treated with galangin] results in decreased activity of CASP3 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Galangin,CXCL8,galangin inhibits the reaction [[Tetradecanoylphorbol Acetate co-treated with Calcimycin] results in increased expression of CXCL8 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Galangin,HIF1A,galangin promotes the reaction [Oxygen deficiency promotes the reaction [HIF1A protein binds to EP300 protein]],affects^binding,CTD,0.85,high,2026-06-21
+Galangin,IL1B,galangin inhibits the reaction [[Tetradecanoylphorbol Acetate co-treated with Calcimycin] results in increased expression of IL1B mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Galangin,IL6,galangin inhibits the reaction [[Tetradecanoylphorbol Acetate co-treated with Calcimycin] results in increased expression of IL6 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,ABCC1,Genistein affects the activity of ABCC1 protein,affects^activity,CTD,0.85,high,2026-06-21
+Genistein,ACSL3,[daidzein co-treated with daidzin co-treated with genistin co-treated with Genistein co-treated with glycitin co-treated with glycitein] results in decreased expression of ACSL3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,ATF3,Genistein results in decreased expression of ATF3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,BCL6,Genistein results in decreased expression of BCL6 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,CXCL8,Genistein inhibits the reaction [CXCL8 protein results in increased phosphorylation of SYK protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Genistein,EDN1,Genistein affects the reaction [cobaltous chloride promotes the reaction [HIF1A protein binds to ARNT protein binds to EDN1 promoter]],affects^binding,CTD,0.85,high,2026-06-21
+Genistein,EGR1,Genistein results in decreased expression of EGR1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,EPHA4,Genistein results in decreased expression of EPHA4 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,GSS,Genistein results in decreased expression of GSS mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,HBP1,Genistein results in decreased expression of HBP1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,HIF1A,Genistein affects the reaction [cobaltous chloride promotes the reaction [HIF1A protein binds to ARNT protein binds to EDN1 promoter]],affects^binding,CTD,0.85,high,2026-06-21
+Genistein,HMOX1,Genistein inhibits the reaction [Cadmium Chloride results in increased expression of HMOX1 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,IFNG,Genistein inhibits the reaction [[Lipopolysaccharides co-treated with IFNG protein] results in increased expression of CXCL8 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,IL1B,Genistein inhibits the reaction [IL1B protein results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Genistein,IL6,Genistein results in decreased secretion of IL6 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Genistein,IRF7,Genistein results in increased expression of IRF7 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,MAP3K14,Genistein results in decreased expression of MAP3K14 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,MAPK1,Genistein inhibits the reaction [Lipopolysaccharides affects the localization of and results in increased phosphorylation of MAPK1 protein],affects^localization,CTD,0.85,high,2026-06-21
+Genistein,PPP2R2B,Genistein results in increased expression of PPP2R2B mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,PTGS2,Genistein affects the expression of PTGS2 mRNA,affects^expression,CTD,0.65,medium,2026-06-21
+Genistein,S100A8,ESR1 promotes the reaction [Genistein results in decreased expression of S100A8 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,SAT1,Genistein results in decreased expression of SAT1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,SLC1A5,Genistein results in increased expression of SLC1A5 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,SLC39A8,Genistein results in increased expression of SLC39A8 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,SOD1,Genistein results in increased expression of SOD1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Genistein,SP1,Genistein promotes the reaction [SP1 protein binds to VDR promoter],affects^binding,CTD,0.85,high,2026-06-21
+Genistein,STAT1,ESR2 promotes the reaction [Genistein results in decreased expression of STAT1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Genistein,TFRC,ESR2 promotes the reaction [Genistein results in increased expression of TFRC protein],increases^expression,CTD,0.65,medium,2026-06-21
+Hesperetin,ABCC1,hesperetin inhibits the reaction [ABCC1 protein results in decreased susceptibility to Etoposide],decreases^reaction,CTD,0.45,low,2026-06-21
+Hesperetin,GPX4,hesperetin binds to GPX4 protein,affects^binding,CTD,0.85,high,2026-06-21
+Hesperetin,HMOX1,[Cisplatin co-treated with hesperetin] results in increased expression of HMOX1 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Hesperetin,IFNG,hesperetin inhibits the reaction [Lipopolysaccharides results in increased expression of IFNG protein],increases^expression,CTD,0.65,medium,2026-06-21
+Hesperetin,IL1B,hesperetin inhibits the reaction [Lipopolysaccharides results in increased expression of IL1B protein],increases^expression,CTD,0.65,medium,2026-06-21
+Hesperetin,IL6,hesperetin inhibits the reaction [Lipopolysaccharides results in increased expression of IL6 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Hesperetin,KEAP1,hesperetin binds to KEAP1 protein,affects^binding,CTD,0.85,high,2026-06-21
+Hesperetin,MAPK1,hesperetin inhibits the reaction [Cisplatin results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Hesperetin,NOX4,hesperetin results in decreased expression of NOX4 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Honokiol,ALOX15,ALOX15 protein promotes the reaction [honokiol results in decreased expression of PPARG protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Honokiol,IL1B,honokiol inhibits the reaction [IL1B protein results in increased phosphorylation of CHUK protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Honokiol,IL6,honokiol inhibits the reaction [TGFB1 protein results in increased expression of IL6 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Honokiol,MAPK1,honokiol inhibits the reaction [Lipopolysaccharides results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Honokiol,PTGS2,ALOX15 protein promotes the reaction [honokiol results in decreased expression of PTGS2 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Kaempferol,ABCC1,kaempferol affects the activity of ABCC1 protein,affects^activity,CTD,0.85,high,2026-06-21
+Kaempferol,CXCL8,kaempferol inhibits the reaction [IL32 protein results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Kaempferol,DUOX1,kaempferol inhibits the reaction [Paraquat results in increased expression of DUOX1 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Kaempferol,HIF1A,kaempferol promotes the reaction [Oxygen deficiency promotes the reaction [HIF1A protein binds to EP300 protein]],affects^binding,CTD,0.85,high,2026-06-21
+Kaempferol,HMOX1,[pterostilbene co-treated with kaempferol] results in increased expression of HMOX1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Kaempferol,IFNG,kaempferol inhibits the reaction [[IL1B protein co-treated with TNF protein co-treated with IFNG protein] results in increased expression of ICAM1 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Kaempferol,IL1B,kaempferol inhibits the reaction [IL1B protein results in increased phosphorylation of MAP3K7 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Kaempferol,IL6,kaempferol inhibits the reaction [Lipopolysaccharides results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Kaempferol,MAPK1,"3',4'-dihydroxyflavone analog inhibits the reaction [kaempferol results in increased phosphorylation of MAPK1 protein]",increases^phosphorylation,CTD,0.85,high,2026-06-21
+Kaempferol,NOX4,kaempferol inhibits the reaction [Paraquat results in increased expression of NOX4 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Kaempferol,PTGS2,kaempferol results in decreased expression of PTGS2 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Kaempferol,SOD1,kaempferol binds to and affects the folding of SOD1 protein mutant form,affects^binding,CTD,0.85,high,2026-06-21
+Kaempferol,TNFAIP3,kaempferol inhibits the reaction [Tetradecanoylphorbol Acetate results in increased expression of TNFAIP3 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Lip-1,KEAP1,liproxstatin-1 results in increased expression of KEAP1 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,ABCC1,Luteolin results in decreased activity of ABCC1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Luteolin,CD74,Luteolin results in decreased expression of CD74 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,CXCL8,Luteolin inhibits the reaction [chromium hexavalent ion results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Luteolin,EGR1,Luteolin results in increased expression of EGR1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,ERN1,Luteolin inhibits the reaction [Thapsigargin results in increased expression of and results in increased phosphorylation of ERN1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Luteolin,GPX4,Luteolin results in decreased expression of GPX4 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,HIF1A,Luteolin results in decreased activity of HIF1A protein,decreases^activity,CTD,0.85,high,2026-06-21
+Luteolin,HMOX1,HMOX1 protein affects the reaction [Luteolin inhibits the reaction [Indican results in increased expression of CCL2 protein]],increases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,IL1B,Luteolin inhibits the reaction [chromium hexavalent ion results in increased secretion of IL1B protein],increases^secretion,CTD,0.85,high,2026-06-21
+Luteolin,IL6,Luteolin inhibits the reaction [chromium hexavalent ion results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Luteolin,KEAP1,Luteolin inhibits the reaction [decabromobiphenyl ether results in decreased expression of KEAP1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,MAPK1,Luteolin results in decreased phosphorylation of and results in decreased activity of MAPK1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Luteolin,NLRP3,Luteolin inhibits the reaction [[Lipopolysaccharides co-treated with Adenosine Triphosphate] results in increased expression of NLRP3 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,NR1D1,Luteolin results in decreased expression of NR1D1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,PTGS2,Luteolin inhibits the reaction [chromium hexavalent ion results in increased expression of PTGS2 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Luteolin,SOD1,Luteolin affects the activity of SOD1 protein,affects^activity,CTD,0.85,high,2026-06-21
+Luteolin,TNFAIP3,Luteolin inhibits the reaction [TNF protein results in increased expression of TNFAIP3 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Magnolol,MAPK1,magnolol results in decreased phosphorylation of MAPK1 protein,decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Melatonin,CTSB,Melatonin inhibits the reaction [[Oxygen deficiency co-treated with Glucose deficiency] results in increased expression of CTSB protein],increases^expression,CTD,0.65,medium,2026-06-21
+Melatonin,HIF1A,Melatonin inhibits the reaction [[Glucose co-treated with Deferoxamine] results in increased expression of HIF1A mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Melatonin,HMOX1,"6-chloro-2,3,4,9-tetrahydro-1H-carbazole-1-carboxamide inhibits the reaction [Melatonin inhibits the reaction [bisphenol A results in decreased expression of HMOX1 protein]]",decreases^expression,CTD,0.65,medium,2026-06-21
+Melatonin,IL1B,Melatonin results in decreased secretion of IL1B protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Melatonin,IL6,Melatonin results in decreased secretion of IL6 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Melatonin,MAPK1,Melatonin inhibits the reaction [arsenite results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Melatonin,MPO,[Melatonin co-treated with coenzyme Q10 co-treated with vinpocetine] inhibits the reaction [Chlorpyrifos results in increased activity of MPO protein],increases^activity,CTD,0.85,high,2026-06-21
+Melatonin,NLRP3,Melatonin inhibits the reaction [arsenite results in increased expression of NLRP3 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Melatonin,NOX4,Melatonin inhibits the reaction [bisphenol A results in increased expression of NOX4 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Melatonin,PTGS2,Melatonin inhibits the reaction [Arsenic Trioxide results in increased expression of PTGS2 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Melatonin,TXNIP,Melatonin inhibits the reaction [arsenite results in increased expression of TXNIP protein],increases^expression,CTD,0.65,medium,2026-06-21
+Naringenin,ABCC1,Glutathione promotes the reaction [naringenin results in increased activity of ABCC1 protein],increases^activity,CTD,0.85,high,2026-06-21
+Naringenin,CXCL8,naringenin inhibits the reaction [Tetradecanoylphorbol Acetate results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Naringenin,E2F1,[naringenin co-treated with bisphenol A] results in increased expression of E2F1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Naringenin,E2F3,[naringenin co-treated with bisphenol A] results in increased expression of E2F3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Naringenin,EGR1,[naringenin co-treated with bisphenol A] results in increased expression of EGR1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Naringenin,HMOX1,naringenin results in increased expression of HMOX1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Naringenin,IL6,[naringenin co-treated with bisphenol A] results in increased expression of IL6 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Naringenin,MAPK1,naringenin results in decreased activity of MAPK1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Naringenin,PTGS2,naringenin inhibits the reaction [Trichloroethylene results in increased expression of PTGS2 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Naringenin,STAT1,[naringenin metabolite co-treated with bisphenol A] results in decreased expression of STAT1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Nobiletin,ABCC1,nobiletin promotes the reaction [ABCC1 protein results in increased hydrolysis of Adenosine Triphosphate],increases^hydrolysis,CTD,0.45,low,2026-06-21
+Nobiletin,CD74,nobiletin results in decreased expression of CD74 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Nobiletin,HMGB1,nobiletin inhibits the reaction [sodium arsenate results in decreased expression of HMGB1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Nobiletin,HMOX1,nobiletin inhibits the reaction [sodium arsenate results in increased expression of HMOX1 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Nobiletin,SNCA,nobiletin inhibits the reaction [sodium arsenate results in increased expression of SNCA mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Nobiletin,SOD1,nobiletin inhibits the reaction [sodium arsenate results in decreased expression of SOD1 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Nobiletin,TXNIP,nobiletin results in decreased expression of TXNIP mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Phloretin,IFNG,Phloretin inhibits the reaction [Lipopolysaccharides results in increased expression of IFNG protein],increases^expression,CTD,0.65,medium,2026-06-21
+Phloretin,IL1B,Phloretin inhibits the reaction [Uric Acid results in increased secretion of IL1B protein],increases^secretion,CTD,0.85,high,2026-06-21
+Phloretin,IL6,Phloretin inhibits the reaction [Lipopolysaccharides results in increased expression of IL6 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Pinocembrin,MAPK1,pinocembrin inhibits the reaction [Benzo(a)pyrene results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Plumbagin,E2F1,plumbagin results in decreased expression of E2F1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Plumbagin,HMOX1,2-(2-amino-3-methoxyphenyl)-4H-1-benzopyran-4-one inhibits the reaction [plumbagin results in increased expression of HMOX1 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Plumbagin,IL1B,DUSP4 protein inhibits the reaction [plumbagin results in increased expression of IL1B protein],increases^expression,CTD,0.65,medium,2026-06-21
+Plumbagin,IL6,plumbagin inhibits the reaction [Cadmium Chloride results in increased expression of IL6 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Plumbagin,MAPK1,plumbagin results in increased phosphorylation of MAPK1 protein,increases^phosphorylation,CTD,0.85,high,2026-06-21
+Plumbagin,NLRP3,DUSP4 protein inhibits the reaction [plumbagin results in increased expression of NLRP3 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,ABCC1,Quercetin results in decreased activity of ABCC1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Quercetin,ALOX15,Quercetin results in decreased expression of ALOX15 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,ATF3,[Quercetin co-treated with Ascorbic Acid] results in increased expression of ATF3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,ATG3,Quercetin results in decreased expression of ATG3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,BRD7,Quercetin results in decreased expression of BRD7 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,CAVIN1,Quercetin inhibits the reaction [Hydrogen Peroxide results in increased expression of CAVIN1 protein],increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,CD74,Quercetin results in decreased expression of CD74 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,CDO1,Quercetin results in decreased expression of CDO1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,CTSB,Quercetin results in increased expression of CTSB mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,CXCL10,Quercetin promotes the reaction [leptomycin B results in decreased secretion of CXCL10 protein],decreases^secretion,CTD,0.85,high,2026-06-21
+Quercetin,CXCL8,[Quercetin co-treated with dinitrophenyl-human serum albumin conjugate] affects the secretion of CXCL8 protein,affects^secretion,CTD,0.85,high,2026-06-21
+Quercetin,DPP4,[Quercetin co-treated with Ascorbic Acid] results in decreased expression of DPP4 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,E2F1,Quercetin results in increased expression of E2F1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,E2F3,[bisphenol A co-treated with Quercetin metabolite] results in decreased expression of E2F3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,EDN1,Quercetin results in decreased secretion of EDN1 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Quercetin,EGR1,Quercetin results in decreased expression of EGR1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,EPHA2,Quercetin results in decreased phosphorylation of EPHA2 protein,decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Quercetin,ERN1,Quercetin results in increased phosphorylation of ERN1 protein,increases^phosphorylation,CTD,0.85,high,2026-06-21
+Quercetin,FBXO31,Quercetin results in decreased expression of FBXO31 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,FOSL1,Quercetin results in increased expression of FOSL1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,HBP1,Quercetin results in decreased expression of HBP1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,HERC2,Quercetin results in increased expression of HERC2 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,HERPUD1,Quercetin results in decreased expression of HERPUD1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,HIF1A,Quercetin inhibits the reaction [benzyloxycarbonylleucyl-leucyl-leucine aldehyde promotes the reaction [HIF1A protein binds to VHL protein]],affects^binding,CTD,0.85,high,2026-06-21
+Quercetin,HMGB1,Quercetin results in increased expression of HMGB1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,HMOX1,[2-(2-amino-3-methoxyphenyl)-4H-1-benzopyran-4-one co-treated with SB 203580] inhibits the reaction [Quercetin results in increased activity of HMOX1 protein],increases^activity,CTD,0.85,high,2026-06-21
+Quercetin,IFNG,Quercetin inhibits the reaction [[TNF protein co-treated with IFNG protein] results in increased phosphorylation of EGFR protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Quercetin,IL1B,Quercetin results in decreased activity of IL1B protein,decreases^activity,CTD,0.85,high,2026-06-21
+Quercetin,IL6,Quercetin inhibits the reaction [IL6 protein promotes the reaction [STAT3 protein binds to CCND1 promoter]],affects^binding,CTD,0.85,high,2026-06-21
+Quercetin,KEAP1,ML385 inhibits the reaction [Quercetin inhibits the reaction [[Cadmium Chloride results in increased abundance of Cadmium] which results in decreased expression of KEAP1 protein]],decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,KLF6,Quercetin results in increased expression of KLF6 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,LACTB,Quercetin results in decreased expression of LACTB mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,LIFR,Quercetin results in decreased expression of LIFR mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,LOX,Quercetin results in decreased expression of LOX mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,MAP3K14,Quercetin results in increased expression of MAP3K14 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,MAPK1,Quercetin inhibits the reaction [IQGAP1 protein binds to MAPK1 protein binds to MAPK3 protein],affects^binding,CTD,0.85,high,2026-06-21
+Quercetin,MAPK14,Quercetin results in increased expression of MAPK14 protein modified form,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,MPO,Quercetin inhibits the reaction [[MPO protein results in increased metabolism of Hydrogen Peroxide] which results in increased chemical synthesis of Hypochlorous Acid],decreases^reaction,CTD,0.45,low,2026-06-21
+Quercetin,NLRP3,Quercetin inhibits the reaction [NLRP3 protein promotes the reaction [Lipopolysaccharides results in increased secretion of IL18 protein]],increases^secretion,CTD,0.85,high,2026-06-21
+Quercetin,NR2F2,Quercetin results in decreased expression of NR2F2 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,PRKD1,Quercetin results in increased expression of PRKD1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,PTBP1,Quercetin results in increased expression of PTBP1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,PTGS2,Quercetin inhibits the reaction [CEBPB protein binds to PTGS2 promoter],affects^binding,CTD,0.85,high,2026-06-21
+Quercetin,RBM3,Quercetin results in decreased expression of RBM3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,SAT1,Quercetin results in increased expression of SAT1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,SMURF2,Quercetin results in increased expression of SMURF2 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,SNCA,Quercetin inhibits the reaction [SNCA protein binds to SNCA protein],affects^binding,CTD,0.85,high,2026-06-21
+Quercetin,SOD1,Quercetin affects the expression of SOD1 protein,affects^expression,CTD,0.65,medium,2026-06-21
+Quercetin,SP1,4-(4-fluorophenyl)-2-(4-hydroxyphenyl)-5-(4-pyridyl)imidazole inhibits the reaction [Quercetin promotes the reaction [SP1 protein binds to PLAT promoter]],affects^binding,CTD,0.85,high,2026-06-21
+Quercetin,STAT1,Quercetin inhibits the reaction [STAT1 protein modified form binds to TRADD protein],affects^binding,CTD,0.85,high,2026-06-21
+Quercetin,TFRC,Quercetin results in decreased expression of TFRC protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,TLR4,Quercetin promotes the reaction [TLR4 protein affects the expression of CDH1 protein],affects^expression,CTD,0.65,medium,2026-06-21
+Quercetin,TNFAIP3,Quercetin inhibits the reaction [Tetradecanoylphorbol Acetate results in increased expression of TNFAIP3 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,TXNIP,Quercetin results in decreased expression of TXNIP mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,WNT5A,FZD4 protein inhibits the reaction [Quercetin results in decreased expression of WNT5A protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,WWTR1,[Quercetin co-treated with Ascorbic Acid] results in decreased expression of WWTR1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Quercetin,YAP1,Quercetin results in decreased expression of YAP1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,ABCC1,[Resveratrol co-treated with Doxorubicin] results in decreased expression of ABCC1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,ACSL3,[Lipopolysaccharides co-treated with Resveratrol] results in decreased expression of ACSL3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,ACSL4,[Plant Extracts co-treated with Resveratrol] results in increased expression of ACSL4 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,ALOX15,Resveratrol binds to and results in decreased activity of ALOX15 protein,affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,ATF3,Resveratrol promotes the reaction [[EGR1 protein binds to ATF3 promoter] which results in increased expression of ATF3 mRNA],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,ATG3,Resveratrol results in decreased expression of ATG3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,BAP1,Resveratrol results in decreased expression of BAP1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,BCL6,Resveratrol results in decreased expression of BCL6 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,CXCL10,Resveratrol results in decreased secretion of CXCL10 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Resveratrol,CXCL8,Resveratrol promotes the reaction [KHSRP protein binds to and results in decreased stability of CXCL8 mRNA],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,DUOX1,[Copper co-treated with Resveratrol] results in decreased expression of DUOX1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,DYRK1A,Resveratrol results in decreased expression of DYRK1A mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,E2F1,[Coumestrol co-treated with Resveratrol] results in increased expression of E2F1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,E2F3,Resveratrol results in decreased expression of E2F3 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,EDN1,Resveratrol results in decreased secretion of EDN1 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Resveratrol,EGR1,Resveratrol promotes the reaction [[EGR1 protein binds to ATF3 promoter] which results in increased expression of ATF3 mRNA],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,EPHA4,Resveratrol results in increased expression of EPHA4 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,ERN1,Resveratrol inhibits the reaction [Ethanol results in increased expression of ERN1 protein modified form],increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,FABP5,[Copper co-treated with Resveratrol] results in increased expression of FABP5 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,FOSL1,[Plant Extracts co-treated with Resveratrol] results in decreased expression of FOSL1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,GMFB,[Plant Extracts co-treated with Resveratrol] results in increased expression of GMFB mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,GPX4,Resveratrol inhibits the reaction [deoxynivalenol results in decreased expression of GPX4 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,GSS,Resveratrol inhibits the reaction [deoxynivalenol results in decreased expression of GSS protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,HIF1A,Resveratrol inhibits the reaction [Oxygen deficiency affects the localization of HIF1A protein],affects^localization,CTD,0.85,high,2026-06-21
+Resveratrol,HMGB1,Resveratrol inhibits the reaction [Glucose results in increased expression of and results in increased acetylation of HMGB1 protein],increases^acetylation,CTD,0.85,high,2026-06-21
+Resveratrol,HMOX1,Resveratrol results in decreased activity of HMOX1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Resveratrol,IFNG,[IL1A protein co-treated with TNF protein co-treated with IFNG protein co-treated with Resveratrol] results in increased activity of NFE2L2 protein,increases^activity,CTD,0.85,high,2026-06-21
+Resveratrol,IGFBP7,[Copper co-treated with Resveratrol] results in increased expression of IGFBP7 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,IL1B,Resveratrol inhibits the reaction [IL1B protein results in increased activity of [RELA protein binds to NFKB1 protein]],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,IL6,Fulvestrant inhibits the reaction [[TNF protein co-treated with Resveratrol] promotes the reaction [CREBBP protein binds to IL6 promoter]],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,IRF9,[Coumestrol co-treated with Resveratrol] results in decreased expression of IRF9 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,KDM6B,[Plant Extracts co-treated with Resveratrol] results in decreased expression of KDM6B mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,KEAP1,Resveratrol inhibits the reaction [NFE2L2 protein binds to KEAP1 protein],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,LACTB,[Plant Extracts co-treated with Resveratrol] results in increased expression of LACTB mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,MAP3K14,Resveratrol results in decreased expression of MAP3K14 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,MAPK1,[ITGA5 protein binds to ITGB3 protein] promotes the reaction [Resveratrol results in increased phosphorylation of MAPK1 protein],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,MAPK14,Resveratrol results in decreased expression of MAPK14 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,MPO,Resveratrol inhibits the reaction [MPO protein results in increased expression of NOS2 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,NLRP3,[Lipopolysaccharides co-treated with Adenosine Triphosphate co-treated with Resveratrol] results in increased expression of NLRP3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,NOX4,[Plant Extracts co-treated with Resveratrol] results in decreased expression of NOX4 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,NR2F2,[Coumestrol co-treated with Resveratrol] results in decreased expression of NR2F2 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,PRKD1,Resveratrol results in decreased phosphorylation of and results in decreased activity of PRKD1 protein,decreases^activity,CTD,0.85,high,2026-06-21
+Resveratrol,PTGS2,2-(2-amino-3-methoxyphenyl)-4H-1-benzopyran-4-one inhibits the reaction [Resveratrol promotes the reaction [PTGS2 protein binds to EP300 protein]],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,SAT1,Resveratrol results in decreased expression of SAT1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,SETD7,[Plant Extracts co-treated with Resveratrol] results in increased expression of SETD7 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,SLC1A5,Resveratrol results in increased expression of SLC1A5 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,SLC39A8,[Coumestrol co-treated with Resveratrol] results in increased expression of SLC39A8 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,SNCA,Resveratrol binds to [SNCA protein binds to SNCA protein],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,SOCS1,SOCS1 protein affects the reaction [Resveratrol results in decreased phosphorylation of STAT3 protein],decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Resveratrol,SOCS2,[Coumestrol co-treated with Resveratrol] results in decreased expression of SOCS2 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,SOD1,Resveratrol affects the secretion of SOD1 protein,affects^secretion,CTD,0.85,high,2026-06-21
+Resveratrol,SP1,Resveratrol inhibits the reaction [SP1 protein binds to HDAC1 protein],affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,STAT1,Resveratrol results in decreased expression of STAT1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,TFRC,Resveratrol results in decreased expression of TFRC mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,TLR4,[Resveratrol co-treated with [Lipopolysaccharides binds to and results in increased activity of TLR4 protein]] results in decreased secretion of IL10 protein,affects^binding,CTD,0.85,high,2026-06-21
+Resveratrol,TNFAIP3,Resveratrol results in increased expression of TNFAIP3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,TXNIP,Resveratrol results in decreased expression of TXNIP mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,WNT5A,[Plant Extracts co-treated with Resveratrol] results in decreased expression of WNT5A mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Resveratrol,ZEB1,Resveratrol inhibits the reaction [Cadmium results in increased methylation of ZEB1 mRNA],increases^methylation,CTD,0.85,high,2026-06-21
+Shikonin,ATF3,shikonin promotes the reaction [HDAC1 protein binds to ATF3 promoter],affects^binding,CTD,0.85,high,2026-06-21
+Shikonin,GPX4,ATF3 protein promotes the reaction [shikonin results in decreased expression of GPX4 protein],decreases^expression,CTD,0.65,medium,2026-06-21
+Shikonin,HIF1A,shikonin results in decreased expression of HIF1A protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Shikonin,MAPK1,Acetylcysteine inhibits the reaction [shikonin results in decreased phosphorylation of MAPK1 protein],decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Sulforaphane,BCL6,sulforaphane results in decreased expression of BCL6 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,CD74,sulforaphane results in decreased expression of CD74 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,CRYAB,sulforaphane results in decreased expression of CRYAB mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,CXCL8,sulforaphane inhibits the reaction [macrophage stimulatory lipopeptide 2 results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+Sulforaphane,E2F1,sulforaphane results in decreased expression of E2F1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,E2F3,sulforaphane results in increased methylation of E2F3 gene,increases^methylation,CTD,0.85,high,2026-06-21
+Sulforaphane,FOSL1,sulforaphane results in increased methylation of FOSL1 gene,increases^methylation,CTD,0.85,high,2026-06-21
+Sulforaphane,GPX4,sulforaphane results in decreased expression of GPX4 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,HIF1A,sulforaphane results in decreased expression of HIF1A protein,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,HMOX1,sulforaphane results in increased expression of and results in increased activity of HMOX1 protein,increases^activity,CTD,0.85,high,2026-06-21
+Sulforaphane,IL1B,sulforaphane inhibits the reaction [IL1B protein affects the localization of NFKBIA protein],affects^localization,CTD,0.85,high,2026-06-21
+Sulforaphane,IL6,"sulforaphane inhibits the reaction [2,2',4,4'-tetrabromodiphenyl ether results in increased secretion of IL6 protein]",increases^secretion,CTD,0.85,high,2026-06-21
+Sulforaphane,IRF7,sulforaphane results in decreased expression of IRF7 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,KEAP1,sulforaphane inhibits the reaction [KEAP1 protein binds to CUL3 protein],affects^binding,CTD,0.85,high,2026-06-21
+Sulforaphane,MAPK1,sulforaphane results in increased phosphorylation of and results in increased activity of MAPK1 protein,increases^activity,CTD,0.85,high,2026-06-21
+Sulforaphane,MPO,sulforaphane results in increased activity of MPO protein,increases^activity,CTD,0.85,high,2026-06-21
+Sulforaphane,PADI4,sulforaphane results in increased expression of PADI4 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,PDE4B,sulforaphane results in decreased expression of PDE4B mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,PPP2R2B,sulforaphane results in decreased expression of PPP2R2B mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,S100A8,sulforaphane results in increased expression of S100A8 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,SAT1,sulforaphane results in increased expression of SAT1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,SLC1A5,sulforaphane results in increased expression of SLC1A5 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,SOD1,sulforaphane results in increased expression of SOD1 protein,increases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,TLR4,sulforaphane results in increased expression of TLR4 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,TNFAIP3,sulforaphane results in decreased expression of TNFAIP3 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Sulforaphane,ZEB1,sulforaphane results in increased expression of ZEB1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+Tetramethylpyrazine,HMOX1,tetramethylpyrazine results in increased expression of and results in increased activity of HMOX1 protein,increases^activity,CTD,0.85,high,2026-06-21
+Tetramethylpyrazine,IL1B,[evodiamine co-treated with tetramethylpyrazine] results in decreased expression of IL1B mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Tetramethylpyrazine,IL6,[evodiamine co-treated with tetramethylpyrazine] results in decreased secretion of IL6 protein,decreases^secretion,CTD,0.85,high,2026-06-21
+Tetramethylpyrazine,MAPK1,tetramethylpyrazine inhibits the reaction [sodium arsenite results in increased phosphorylation of MAPK1 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Tetramethylpyrazine,PTGS2,tetramethylpyrazine inhibits the reaction [sodium arsenite results in increased expression of PTGS2 protein],increases^expression,CTD,0.65,medium,2026-06-21
+VC,ABCC1,[[Ascorbic Acid co-treated with Chir 99021 co-treated with XAV939 co-treated with BMP4 protein co-treated with FGF1 protein co-treated with WNT3A protein co-treated with HGF protein] co-treated with [INHBA protein binds to INHBA protein]] results in decreased expression of ABCC1 mRNA,affects^binding,CTD,0.85,high,2026-06-21
+VC,ATF3,[Quercetin co-treated with Ascorbic Acid] results in increased expression of ATF3 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+VC,CRYAB,[[Ascorbic Acid co-treated with Chir 99021 co-treated with XAV939 co-treated with BMP4 protein co-treated with FGF1 protein co-treated with WNT3A protein co-treated with HGF protein] co-treated with [INHBA protein binds to INHBA protein]] results in increased expression of CRYAB mRNA,affects^binding,CTD,0.85,high,2026-06-21
+VC,CXCL10,Ascorbic Acid results in decreased expression of CXCL10 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+VC,CXCL8,Ascorbic Acid affects the reaction [Homocysteine results in increased secretion of CXCL8 protein],increases^secretion,CTD,0.85,high,2026-06-21
+VC,DPP4,[Quercetin co-treated with Ascorbic Acid] results in decreased expression of DPP4 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+VC,EBF3,[[Ascorbic Acid co-treated with Chir 99021 co-treated with XAV939 co-treated with BMP4 protein co-treated with FGF1 protein co-treated with WNT3A protein co-treated with HGF protein] co-treated with [INHBA protein binds to INHBA protein]] results in increased expression of EBF3 mRNA,affects^binding,CTD,0.85,high,2026-06-21
+VC,EDN1,[Tretinoin co-treated with Ascorbic Acid] results in increased expression of EDN1 mRNA,increases^expression,CTD,0.65,medium,2026-06-21
+VC,HERPUD1,Ascorbic Acid results in decreased expression of HERPUD1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+VC,HIF1A,[benzyloxycarbonylleucyl-leucyl-leucine aldehyde co-treated with Ketoglutaric Acids co-treated with Ascorbic Acid co-treated with ferrous chloride] promotes the reaction [VHL protein binds to HIF1A protein],affects^binding,CTD,0.85,high,2026-06-21
+VC,HMGB1,[Ascorbic Acid co-treated with beta-glycerophosphoric acid co-treated with Dexamethasone] results in decreased expression of HMGB1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+VC,HMOX1,"Ascorbic Acid inhibits the reaction [benzo(a)pyrene-7,8-dione results in increased expression of HMOX1 protein]",increases^expression,CTD,0.65,medium,2026-06-21
+VC,IGFBP7,[[Ascorbic Acid co-treated with Chir 99021 co-treated with XAV939 co-treated with BMP4 protein co-treated with FGF1 protein co-treated with WNT3A protein co-treated with HGF protein] co-treated with [INHBA protein binds to INHBA protein]] results in increased expression of IGFBP7 mRNA,affects^binding,CTD,0.85,high,2026-06-21
+VC,IL1B,IL1B protein inhibits the reaction [[TGFB3 protein co-treated with Ascorbic Acid co-treated with Dexamethasone] results in decreased expression of MMP13 mRNA],decreases^expression,CTD,0.65,medium,2026-06-21
+VC,IL6,Ascorbic Acid inhibits the reaction [Hydrogen Peroxide results in increased secretion of IL6 protein],increases^secretion,CTD,0.85,high,2026-06-21
+VC,KEAP1,[[Ascorbic Acid co-treated with Chir 99021 co-treated with XAV939 co-treated with BMP4 protein co-treated with FGF1 protein co-treated with WNT3A protein co-treated with HGF protein] co-treated with [INHBA protein binds to INHBA protein]] results in decreased expression of KEAP1 mRNA,affects^binding,CTD,0.85,high,2026-06-21
+VC,MAPK1,[juglone co-treated with Ascorbic Acid] results in decreased phosphorylation of MAPK1 protein,decreases^phosphorylation,CTD,0.85,high,2026-06-21
+VC,MAPK14,Ascorbic Acid inhibits the reaction [Fenretinide results in increased phosphorylation of MAPK14 protein],increases^phosphorylation,CTD,0.85,high,2026-06-21
+VC,MPO,Ascorbic Acid inhibits the reaction [[MPO protein co-treated with Hydrogen Peroxide] results in increased oxidation of Albuterol],increases^oxidation,CTD,0.85,high,2026-06-21
+VC,NOX4,Ascorbic Acid inhibits the reaction [Hydrogen Peroxide results in increased expression of NOX4 mRNA],increases^expression,CTD,0.65,medium,2026-06-21
+VC,NR2F2,[[Ascorbic Acid co-treated with Chir 99021 co-treated with XAV939 co-treated with BMP4 protein co-treated with FGF1 protein co-treated with WNT3A protein co-treated with HGF protein] co-treated with [INHBA protein binds to INHBA protein]] results in increased expression of NR2F2 mRNA,affects^binding,CTD,0.85,high,2026-06-21
+VC,PTGS2,[juglone co-treated with Ascorbic Acid] results in decreased expression of PTGS2 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+VC,SOD1,Ascorbic Acid inhibits the reaction [Hydrogen Peroxide results in decreased activity of SOD1 protein],decreases^activity,CTD,0.85,high,2026-06-21
+VC,SP1,Ascorbic Acid results in decreased expression of SP1 protein,decreases^expression,CTD,0.65,medium,2026-06-21
+VC,STAT1,Ascorbic Acid inhibits the reaction [Mercuric Chloride inhibits the reaction [CNTF protein results in increased phosphorylation of STAT1 protein]],increases^phosphorylation,CTD,0.85,high,2026-06-21
+VC,TBX2,[[Ascorbic Acid co-treated with Chir 99021 co-treated with XAV939 co-treated with BMP4 protein co-treated with FGF1 protein co-treated with WNT3A protein co-treated with HGF protein] co-treated with [INHBA protein binds to INHBA protein]] results in increased expression of TBX2 mRNA,affects^binding,CTD,0.85,high,2026-06-21
+VC,WWTR1,[Quercetin co-treated with Ascorbic Acid] results in decreased expression of WWTR1 mRNA,decreases^expression,CTD,0.65,medium,2026-06-21
+Wogonin,CXCL8,CXCL8 protein inhibits the reaction [wogonin inhibits the reaction [Oxygen deficiency results in increased phosphorylation of RELA protein]],increases^phosphorylation,CTD,0.85,high,2026-06-21
+Wogonin,IL1B,CXCL8 protein inhibits the reaction [wogonin inhibits the reaction [Oxygen deficiency results in increased expression of IL1B mRNA]],increases^expression,CTD,0.65,medium,2026-06-21
+Wogonin,IL6,wogonin results in increased secretion of IL6 protein,increases^secretion,CTD,0.85,high,2026-06-21
+Wogonin,MAPK1,wogonin results in decreased phosphorylation of MAPK1 protein,decreases^phosphorylation,CTD,0.85,high,2026-06-21
+Wogonin,TLR4,CXCL8 protein inhibits the reaction [wogonin inhibits the reaction [Oxygen deficiency results in increased expression of TLR4 protein]],increases^expression,CTD,0.65,medium,2026-06-21

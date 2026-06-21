@@ -1,0 +1,15 @@
+compound_A,compound_B,similarity,source,confidence,confidence_level,download_date
+Catechin,Epicatechin,1.0,RDKit_Morgan_Tanimoto,1.0,high,2026-06-21
+Naringenin,Pinocembrin,0.8158,RDKit_Morgan_Tanimoto,0.8158,high,2026-06-21
+Kaempferol,Galangin,0.8056,RDKit_Morgan_Tanimoto,0.8056,high,2026-06-21
+Chrysin,Apigenin,0.8,RDKit_Morgan_Tanimoto,0.8,high,2026-06-21
+Quercetin,Kaempferol,0.7838,RDKit_Morgan_Tanimoto,0.7838,medium,2026-06-21
+Baicalein,Scutellarein,0.7778,RDKit_Morgan_Tanimoto,0.7778,medium,2026-06-21
+Luteolin,Apigenin,0.7778,RDKit_Morgan_Tanimoto,0.7778,medium,2026-06-21
+Daidzein,Formononetin,0.7632,RDKit_Morgan_Tanimoto,0.7632,medium,2026-06-21
+Curcumin,Ferulic acid,0.7429,RDKit_Morgan_Tanimoto,0.7429,medium,2026-06-21
+Quercetin,Galangin,0.7179,RDKit_Morgan_Tanimoto,0.7179,medium,2026-06-21
+Luteolin,Chrysin,0.7105,RDKit_Morgan_Tanimoto,0.7105,medium,2026-06-21
+Baicalein,Oroxylin A,0.7073,RDKit_Morgan_Tanimoto,0.7073,medium,2026-06-21
+Tangeretin,Nobiletin,0.7073,RDKit_Morgan_Tanimoto,0.7073,medium,2026-06-21
+Apigenin,Scutellarein,0.7027,RDKit_Morgan_Tanimoto,0.7027,medium,2026-06-21
