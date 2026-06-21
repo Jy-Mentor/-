@@ -45,6 +45,7 @@ CTD_CSV = NETWORK_DIR / "ctd_compound_targets.csv"
 DGIDB_CSV = NETWORK_DIR / "dgidb_compound_targets.csv"
 SEA_CSV = NETWORK_DIR / "target_predictions_chembl_sea.csv"
 SWISSTARGET_CSV = NETWORK_DIR / "swisstarget_compound_targets.csv"
+BINDINGDB_CSV = NETWORK_DIR / "bindingdb_compound_targets.csv"
 OUTPUT_CSV = NETWORK_DIR / "compound_target_edges.csv"
 METADATA_JSON = EXTERNAL_DIR / "compound_target_merged_metadata.json"
 
@@ -212,6 +213,30 @@ def load_swisstarget(core_genes: set[str]) -> pd.DataFrame:
     return df
 
 
+def load_bindingdb(core_genes: set[str]) -> pd.DataFrame:
+    """加载 BindingDB 亲和力边; 文件不存在时返回空 DataFrame."""
+    if not BINDINGDB_CSV.exists():
+        logger.warning("BindingDB 文件不存在, 跳过: %s", BINDINGDB_CSV)
+        return pd.DataFrame(
+            columns=["compound", "gene", "source", "confidence", "confidence_level"]
+        )
+
+    df = pd.read_csv(BINDINGDB_CSV)
+    df["compound"] = df["compound"].astype(str).str.strip()
+    df["gene"] = df["gene"].astype(str).str.strip().str.upper()
+    df = df[df["gene"].isin(core_genes) & df["gene"].apply(is_valid_gene_symbol)]
+
+    if "confidence" not in df.columns:
+        df["confidence"] = 0.60
+    if "confidence_level" not in df.columns:
+        df["confidence_level"] = "medium"
+    if "source" not in df.columns:
+        df["source"] = "BindingDB"
+
+    logger.info("BindingDB 有效边: %d", len(df))
+    return df
+
+
 def deduplicate_keep_highest_confidence(df: pd.DataFrame) -> pd.DataFrame:
     """同一 compound-gene 保留置信度最高记录; 如并列, source 合并."""
     if df.empty:
@@ -246,6 +271,7 @@ def main() -> int:
     dgidb = load_dgidb(core_genes)
     sea = load_sea_predictions(core_genes)
     swisstarget = load_swisstarget(core_genes)
+    bindingdb = load_bindingdb(core_genes)
 
     # 统一列
     common_cols = ["compound", "gene", "source", "confidence", "confidence_level"]
@@ -256,8 +282,9 @@ def main() -> int:
     dgidb = dgidb[[c for c in common_cols if c in dgidb.columns]]
     sea = sea[[c for c in common_cols if c in sea.columns]]
     swisstarget = swisstarget[[c for c in common_cols if c in swisstarget.columns]]
+    bindingdb = bindingdb[[c for c in common_cols if c in bindingdb.columns]]
 
-    sources = [curated, chembl, stitch, ctd, dgidb, sea, swisstarget]
+    sources = [curated, chembl, stitch, ctd, dgidb, sea, swisstarget, bindingdb]
     non_empty = [s for s in sources if not s.empty]
     merged = pd.concat(non_empty, ignore_index=True) if non_empty else pd.DataFrame(
         columns=["compound", "gene", "source", "confidence", "confidence_level"]
@@ -278,15 +305,17 @@ def main() -> int:
     logger.info("已写入清洗后 compound-target 边: %s", OUTPUT_CSV)
 
     metadata = {
-        "source": "curated + ChEMBL(cleaned) + STITCH + CTD + ChEMBL_SEA_like + SwissTargetPrediction",
+        "source": "curated + ChEMBL(cleaned) + STITCH + CTD + ChEMBL_SEA_like + SwissTargetPrediction + BindingDB",
         "clean_date": pd.Timestamp.now().isoformat(),
         "stats": {
             "curated": len(curated),
             "chembl_cleaned": len(chembl),
             "stitch": len(stitch),
             "ctd": len(ctd),
+            "dgidb": len(dgidb),
             "sea": len(sea),
             "swisstarget": len(swisstarget),
+            "bindingdb": len(bindingdb),
             "merged_unique": len(cleaned),
             "unique_compounds": int(cleaned["compound"].nunique()),
             "unique_genes": int(cleaned["gene"].nunique()),
