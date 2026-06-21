@@ -164,8 +164,9 @@ def _build_link_prediction_data(
         train_data[edge_type].edge_index, leak_set
     )
     logger.info(
-        "构建训练图: 移除 %d 条目标边, 剩余 %d 条消息传递边",
+        "构建训练图: 移除 %d 条目标边 (%s), 该类型剩余 %d 条消息传递边; 其他边类型仍参与消息传递",
         len(all_pos),
+        "->".join(edge_type),
         train_data[edge_type].edge_index.shape[1],
     )
     return train_data, splits, num_src, num_dst

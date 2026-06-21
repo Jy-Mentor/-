@@ -160,12 +160,16 @@ class HeteroLinkPredictionModel(nn.Module):
     def _to_homogeneous_edge_index(
         self, edge_index_dict: dict[tuple[str, str, str], torch.Tensor]
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        """将所有异构边合并为同质边索引及关系类型."""
+        """将所有异构边合并为同质边索引及关系类型.
+
+        关系 ID 固定由 self.edge_types (即 metadata) 的顺序决定,
+        避免不同调用时因字典迭代顺序或缺失边类型导致关系 ID 错位.
+        """
+        rel_to_id = {et: i for i, et in enumerate(self.edge_types)}
         edge_list: list[torch.Tensor] = []
         edge_type_list: list[torch.Tensor] = []
-        for rel_id, ((src_type, _, dst_type), edge_index) in enumerate(
-            edge_index_dict.items()
-        ):
+        for (src_type, _, dst_type), edge_index in edge_index_dict.items():
+            rel_id = rel_to_id[(src_type, _, dst_type)]
             shifted = torch.stack(
                 [
                     edge_index[0] + self.node_type_offset[src_type],

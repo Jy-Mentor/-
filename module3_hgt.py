@@ -882,8 +882,8 @@ def _load_lr_pairs() -> list:
                 rec = str(row.get("receptor", "")).strip().upper()
                 if lig and rec and (lig, rec) not in lr_pairs:
                     lr_pairs.append((lig, rec))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("  L3 LR CSV加载失败: %s", e)
     return lr_pairs
 
 
@@ -4424,8 +4424,8 @@ def train_model(
                     tag="gene_embeddings",
                     global_step=epochs,
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("TensorBoard 嵌入可视化失败: %s", e)
         tb_writer.close()
 
     # 输出边类型重要性 (PyG HGTConv 内置 p_rel)

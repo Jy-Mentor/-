@@ -15,10 +15,13 @@ module3_hgt.py 单元测试
   9. HGT 多层前向传播验证
 """
 
+from __future__ import annotations
+
 import os
 import sys
 import unittest
 import warnings
+from typing import Any
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
@@ -28,14 +31,25 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import torch
 
+# 模块级图缓存, 避免多个 TestCase 重复构建大图
+_GRAPH_CACHE: dict[str, Any] | None = None
+
+
+def _get_cached_graph() -> dict[str, Any]:
+    """获取全局缓存的异构图; 首次调用时构建."""
+    global _GRAPH_CACHE
+    if _GRAPH_CACHE is None:
+        from iron_aging.data.graph_builder import build_heterogeneous_graph
+        _GRAPH_CACHE = build_heterogeneous_graph(use_cache=True)
+    return _GRAPH_CACHE
+
 
 class TestGraphConstruction(unittest.TestCase):
     """测试异质图构建"""
 
     @classmethod
     def setUpClass(cls):
-        from iron_aging.data.graph_builder import build_heterogeneous_graph
-        cls.graph = build_heterogeneous_graph(use_cache=True)
+        cls.graph = _get_cached_graph()
 
     def test_node_counts(self):
         """验证节点数量 (5种节点: gene, pathway, compound, disease, pocket)"""
@@ -201,8 +215,7 @@ class TestEdgeSplitValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from iron_aging.data.graph_builder import build_heterogeneous_graph
-        cls.graph = build_heterogeneous_graph(use_cache=True)
+        cls.graph = _get_cached_graph()
 
     def test_split_ratio(self):
         """验证 train/val/test 比例为 70/15/15"""
@@ -296,8 +309,7 @@ class TestHeCoCompoundMetapath(unittest.TestCase):
 
     def test_compound_metapath_available(self):
         """验证 compound→gene→compound 元路径所需的边类型存在"""
-        from iron_aging.data.graph_builder import build_heterogeneous_graph
-        g = build_heterogeneous_graph(use_cache=True)
+        g = _get_cached_graph()
         ct_edges = g['edges'].get('compound_targets', [])
         self.assertGreater(len(ct_edges), 0,
                            "compound_targets 边存在, 支持 compound→gene→compound 元路径")

@@ -9,7 +9,9 @@
 
 from __future__ import annotations
 
+import copy
 import logging
+from typing import Any
 
 import numpy as np
 import torch
@@ -57,6 +59,7 @@ class HGTTrainer:
         }
         self.best_val_metric = -np.inf
         self.patience_counter = 0
+        self.best_state_dict: dict[str, Any] | None = None
 
     def _infer_edge_type(
         self, edge_label_index: torch.Tensor | None = None
@@ -246,6 +249,7 @@ class HGTTrainer:
         if val_metric > self.best_val_metric:
             self.best_val_metric = val_metric
             self.patience_counter = 0
+            self.best_state_dict = copy.deepcopy(self.model.state_dict())
             return True
         self.patience_counter += 1
         if self.patience_counter >= self.early_stopping_patience:
@@ -311,5 +315,8 @@ class HGTTrainer:
             if not self.step(val_metrics["auc"]):
                 break
 
+        if self.best_state_dict is not None:
+            self.model.load_state_dict(self.best_state_dict)
+            logger.info("已加载最佳模型 (val_auc=%.4f)", self.best_val_metric)
         logger.info("训练结束, 最佳 val_auc=%.4f", self.best_val_metric)
         return self.history

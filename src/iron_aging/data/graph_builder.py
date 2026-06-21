@@ -207,11 +207,8 @@ class HeteroGraphBuilder:
             data, "mirna", "targets", "gene", self.mt_repo.get_all(), nodes
         )
 
-        # 5. 附加节点特征 (v4.0 分层迁移中, 失败则保留空特征并记录警告)
-        try:
-            self._attach_node_features(data, node_lists)
-        except Exception:
-            logger.exception("节点特征附加失败, 将使用空特征继续")
+        # 5. 附加节点特征 (任何失败直接向上传播, 不静默使用空特征)
+        self._attach_node_features(data, node_lists)
 
         logger.info("异构图构建完成")
         if use_cache:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import sys
 from pathlib import Path
 
@@ -174,3 +175,69 @@ def test_hgt_trainer_fit():
     assert 0 < len(history["train_loss"]) <= 10
     assert len(history["train_loss"]) == len(history["val_auc"])
     assert history["train_loss"][0] > history["train_loss"][-1]
+
+
+def test_hgt_trainer_saves_best_checkpoint():
+    """回归测试: 验证 Trainer 在验证指标提升时保存最佳权重, 并在早停后加载."""
+    from torch_geometric.data import HeteroData
+
+    from iron_aging.models.link_predictor import LinkPredictor
+    from iron_aging.training.negative_sampling import negative_sample_edges
+    from iron_aging.training.trainer import HGTTrainer
+
+    data = HeteroData()
+    data["compound"].x = torch.randn(4, 8)
+    data["gene"].x = torch.randn(5, 8)
+    data["compound", "targets", "gene"].edge_index = torch.tensor([[0, 1], [0, 1]])
+
+    class DummyModel(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.predictor = LinkPredictor(8, 16)
+            self.bias = nn.Parameter(torch.zeros(1))
+
+        def forward(self, x_dict, edge_index_dict):
+            return {k: v + self.bias for k, v in x_dict.items()}
+
+    model = DummyModel()
+    initial_state = copy.deepcopy(model.state_dict())
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    trainer = HGTTrainer(
+        model,
+        optimizer,
+        edge_type=("compound", "targets", "gene"),
+        early_stopping_patience=5,
+        loss_type="bce",
+    )
+
+    train_pos = [(0, 0), (1, 1)]
+    val_pos = [(0, 1)]
+    test_pos = [(1, 0)]
+    all_pos = set(train_pos) | set(val_pos) | set(test_pos)
+
+    train_neg = negative_sample_edges(4, 5, 2, all_pos, rng=42)
+    val_neg = negative_sample_edges(4, 5, 2, all_pos, rng=43)
+    test_neg = negative_sample_edges(4, 5, 2, all_pos, rng=44)
+
+    history = trainer.fit(
+        data,
+        train_pos_edges=train_pos,
+        val_pos_edges=val_pos,
+        test_pos_edges=test_pos,
+        train_neg_edges=train_neg,
+        val_neg_edges=val_neg,
+        test_neg_edges=test_neg,
+        num_src=4,
+        num_dst=5,
+        epochs=10,
+        seed=42,
+    )
+
+    assert trainer.best_state_dict is not None, "最佳模型状态应被保存"
+    assert trainer.best_val_metric > -np.inf, "最佳验证指标应被更新"
+    # 训练会改变权重, 但最佳 checkpoint 应在早停/结束时被加载
+    final_state = {k: v.clone() for k, v in model.state_dict().items()}
+    # 最终权重应不同于随机初始状态
+    assert not torch.equal(final_state["bias"], initial_state["bias"])
+    # 历史记录长度应不超过最大 epoch 数
+    assert 0 < len(history["train_loss"]) <= 10

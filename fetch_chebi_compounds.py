@@ -77,7 +77,7 @@ def compute_inchikey14(smiles: str) -> str | None:
 
 
 def mol_descriptors(mol: Any) -> dict[str, Any]:
-    """从 RDKit mol 计算结构描述符;失败时返回 None 字段."""
+    """从 RDKit mol 计算结构描述符;失败时记录警告并返回 None 字段."""
     out: dict[str, Any] = {
         "smiles": None,
         "inchikey": None,
@@ -88,31 +88,20 @@ def mol_descriptors(mol: Any) -> dict[str, Any]:
     }
     if mol is None:
         return out
-    try:
-        out["smiles"] = Chem.MolToSmiles(mol)
-    except Exception:
-        pass
-    try:
-        ik = Chem.MolToInchiKey(mol)
-        out["inchikey"] = ik
-    except Exception:
-        pass
-    try:
-        out["formula"] = rdMolDescriptors.CalcMolFormula(mol)
-    except Exception:
-        pass
-    try:
-        out["exact_mass"] = round(Descriptors.ExactMolWt(mol), 6)
-    except Exception:
-        pass
-    try:
-        out["molecular_weight"] = round(Descriptors.MolWt(mol), 6)
-    except Exception:
-        pass
-    try:
-        out["charge"] = mol.GetFormalCharge()
-    except Exception:
-        pass
+
+    _desc_calls = [
+        ("smiles", lambda m: Chem.MolToSmiles(m)),
+        ("inchikey", lambda m: Chem.MolToInchiKey(m)),
+        ("formula", lambda m: rdMolDescriptors.CalcMolFormula(m)),
+        ("exact_mass", lambda m: round(Descriptors.ExactMolWt(m), 6)),
+        ("molecular_weight", lambda m: round(Descriptors.MolWt(m), 6)),
+        ("charge", lambda m: m.GetFormalCharge()),
+    ]
+    for key, fn in _desc_calls:
+        try:
+            out[key] = fn(mol)
+        except Exception:
+            logger.warning("RDKit 描述符 %s 计算失败", key, exc_info=True)
     return out
 
 

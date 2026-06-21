@@ -65,3 +65,57 @@ def test_link_predictor_forward(device):
 
     out = predictor(src_emb, dst_emb)
     assert out.shape == (10, 1)
+
+
+def test_rgcn_edge_type_mapping_stable(device):
+    """回归测试: RGCN 关系 ID 固定由 metadata 顺序决定, 不受字典迭代顺序影响."""
+    from torch_geometric.data import HeteroData
+
+    from iron_aging.models.hetero_link_prediction import HeteroLinkPredictionModel
+
+    metadata = (
+        ["gene", "compound"],
+        [
+            ("gene", "interacts", "gene"),
+            ("compound", "targets", "gene"),
+        ],
+    )
+    model = HeteroLinkPredictionModel(
+        metadata=metadata,
+        in_dims={"gene": 4, "compound": 4},
+        hidden_dim=8,
+        out_dim=4,
+        encoder_type="rgcn",
+        num_nodes_dict={"gene": 3, "compound": 2},
+        num_layers=1,
+        dropout=0.0,
+    ).to(device)
+
+    edge_a = torch.tensor([[0, 1], [1, 2]], dtype=torch.long, device=device)
+    edge_b = torch.tensor([[0], [0]], dtype=torch.long, device=device)
+
+    # 顺序 1: A 在前, B 在后
+    _, edge_type_1 = model._to_homogeneous_edge_index(
+        {("gene", "interacts", "gene"): edge_a, ("compound", "targets", "gene"): edge_b}
+    )
+    # 顺序 2: B 在前, A 在后
+    _, edge_type_2 = model._to_homogeneous_edge_index(
+        {("compound", "targets", "gene"): edge_b, ("gene", "interacts", "gene"): edge_a}
+    )
+
+    # metadata 中 A 的 rel_id=0, B 的 rel_id=1
+    assert edge_type_1[:2].tolist() == [0, 0]
+    assert edge_type_1[2:].tolist() == [1]
+    assert edge_type_2[:1].tolist() == [1]
+    assert edge_type_2[1:].tolist() == [0, 0]
+
+    # 完整前向传播不应报错, 且输出节点嵌入形状正确
+    data = HeteroData()
+    data["gene"].x = torch.randn(3, 4, device=device)
+    data["compound"].x = torch.randn(2, 4, device=device)
+    data["gene", "interacts", "gene"].edge_index = edge_a
+    data["compound", "targets", "gene"].edge_index = edge_b
+
+    out = model(data.x_dict, data.edge_index_dict)
+    assert out["gene"].shape == (3, 4)
+    assert out["compound"].shape == (2, 4)
