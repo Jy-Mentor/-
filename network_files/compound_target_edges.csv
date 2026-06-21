@@ -293,7 +293,7 @@ Dimethyl fumarate,HMOX1,CTD|STITCH,0.869,high
 Dimethyl fumarate,IFNG,CTD,0.85,high
 Dimethyl fumarate,IL1B,CTD,0.65,medium
 Dimethyl fumarate,IRF1,CTD,0.65,medium
-Dimethyl fumarate,KEAP1,ChEMBL|DGIdb,1.0,high
+Dimethyl fumarate,KEAP1,ChEMBL|DGIdb|DrugBank_dhimmel_mirror,1.0,high
 Dimethyl fumarate,NLRP3,CTD,0.65,medium
 Dimethyl fumarate,NQO1,STITCH,0.743,medium
 Dimethyl fumarate,POR,STITCH,0.473,low
@@ -482,7 +482,7 @@ Galangin,IL6,CTD,0.65,medium
 Galangin,MTOR,STITCH,0.734,medium
 Galangin,RB1,STITCH,0.7,medium
 Galangin,SQLE,STITCH,0.424,low
-Genistein,ABCC1,CTD|STITCH,0.85,high
+Genistein,ABCC1,CTD|DrugBank_dhimmel_mirror|STITCH,0.85,high
 Genistein,ACSL3,CTD,0.65,medium
 Genistein,ALOX15,ChEMBL,0.6,low
 Genistein,AR,STITCH,0.9,high
@@ -505,6 +505,7 @@ Genistein,EDN1,CTD|STITCH,0.85,high
 Genistein,EGFR,BindingDB|STITCH,0.899,high
 Genistein,EGR1,CTD,0.65,medium
 Genistein,EPHA4,CTD,0.65,medium
+Genistein,ESR1,DrugBank_dhimmel_mirror,0.65,medium
 Genistein,FGF2,STITCH,0.806,high
 Genistein,FOXM1,STITCH,0.842,high
 Genistein,GDF15,STITCH,0.837,high
@@ -557,6 +558,7 @@ Hesperetin,KDM5A,BindingDB,0.4,low
 Hesperetin,KEAP1,CTD,0.85,high
 Hesperetin,MAPK1,CTD,0.85,high
 Hesperetin,MAPK14,BindingDB,0.4,low
+Hesperetin,MTTP,DrugBank_dhimmel_mirror,0.85,high
 Hesperetin,NOX4,CTD,0.65,medium
 Honokiol,ALOX15,CTD,0.65,medium
 Honokiol,ALOX5,BindingDB,0.55,low
@@ -660,20 +662,22 @@ Melatonin,ALOX5,STITCH,0.8,high
 Melatonin,CTSB,CTD,0.65,medium
 Melatonin,CXCL10,STITCH,0.9,high
 Melatonin,CXCL8,STITCH,0.9,high
-Melatonin,CYP1B1,BindingDB,0.4,low
+Melatonin,CYP1B1,BindingDB|DrugBank_dhimmel_mirror,0.552,low
 Melatonin,EDN1,STITCH,0.8,high
 Melatonin,EP300,STITCH,0.81,high
+Melatonin,ESR1,DrugBank_dhimmel_mirror,0.65,medium
 Melatonin,GJA1,STITCH,0.834,high
 Melatonin,HIF1A,CTD,0.65,medium
 Melatonin,HMOX1,CTD|STITCH,0.83,high
 Melatonin,HSPB1,STITCH,0.8,high
 Melatonin,HTR2B,BindingDB|STITCH,0.836,high
+Melatonin,IDO1,DrugBank_dhimmel_mirror,0.552,low
 Melatonin,IFNG,DGIdb,0.1286,low
 Melatonin,IL1B,CTD|DGIdb,0.85,high
 Melatonin,IL6,CTD,0.85,high
 Melatonin,MAPK1,CTD|STITCH,0.85,high
 Melatonin,MAPK3,STITCH,0.549,low
-Melatonin,MPO,BindingDB|CTD|ChEMBL|STITCH,0.85,high
+Melatonin,MPO,BindingDB|CTD|ChEMBL|DrugBank_dhimmel_mirror|STITCH,0.85,high
 Melatonin,MTOR,STITCH,0.722,medium
 Melatonin,NFE2L2,STITCH,0.818,high
 Melatonin,NLRP3,CTD,0.65,medium
@@ -709,7 +713,7 @@ N-acetylcysteine,NQO1,STITCH,0.415,low
 N-acetylcysteine,SLC7A11,STITCH,0.854,high
 N-acetylcysteine,TNF,STITCH,0.804,high
 N-acetylcysteine,TP53,STITCH,0.83,high
-Naringenin,ABCC1,CTD|ChEMBL,0.85,high
+Naringenin,ABCC1,CTD|ChEMBL|DrugBank_dhimmel_mirror,0.85,high
 Naringenin,CXCL8,CTD,0.85,high
 Naringenin,CYP1B1,BindingDB,0.55,low
 Naringenin,DPP4,BindingDB|ChEMBL,0.8,medium
@@ -759,7 +763,7 @@ Plumbagin,MAPK3,STITCH,0.7,medium
 Plumbagin,NFE2L1,STITCH,0.673,medium
 Plumbagin,NLRP3,CTD,0.65,medium
 Plumbagin,SOD1,STITCH,0.826,high
-Quercetin,ABCC1,CTD|ChEMBL|STITCH|curated,0.95,high
+Quercetin,ABCC1,CTD|ChEMBL|DrugBank_dhimmel_mirror|STITCH|curated,0.95,high
 Quercetin,ABCC5,STITCH,0.7,medium
 Quercetin,ACSL4,curated,0.95,high
 Quercetin,AHR,STITCH,0.711,medium
@@ -839,7 +843,7 @@ Quercetin,NOX4,BindingDB|ChEMBL|STITCH,0.8,medium
 Quercetin,NQO1,STITCH|curated,0.95,high
 Quercetin,NR2F2,CTD,0.65,medium
 Quercetin,NUAK2,BindingDB|ChEMBL,0.6,low
-Quercetin,PIM1,STITCH,0.9,high
+Quercetin,PIM1,DrugBank_dhimmel_mirror|STITCH,0.9,high
 Quercetin,PIM3,BindingDB,0.9,high
 Quercetin,PLK1,BindingDB,0.55,low
 Quercetin,POR,STITCH,0.7,medium
@@ -856,6 +860,7 @@ Quercetin,SESN2,STITCH,0.824,high
 Quercetin,SIRT1,STITCH|curated,0.95,high
 Quercetin,SIRT3,STITCH,0.441,low
 Quercetin,SIRT6,BindingDB|STITCH|curated,0.95,high
+Quercetin,SLC16A1,DrugBank_dhimmel_mirror,0.552,low
 Quercetin,SLC7A11,curated,0.95,high
 Quercetin,SMURF2,CTD,0.65,medium
 Quercetin,SNCA,BindingDB|CTD,0.85,high
@@ -904,7 +909,7 @@ Resveratrol,CREB1,STITCH,0.764,medium
 Resveratrol,CS,STITCH,0.7,medium
 Resveratrol,CXCL10,CTD|STITCH,0.85,high
 Resveratrol,CXCL8,CTD|STITCH,0.9,high
-Resveratrol,CYP1B1,BindingDB,0.75,medium
+Resveratrol,CYP1B1,BindingDB|DrugBank_dhimmel_mirror,0.75,medium
 Resveratrol,DPP4,BindingDB|ChEMBL,0.95,high
 Resveratrol,DUOX1,CTD,0.65,medium
 Resveratrol,DYRK1A,CTD,0.65,medium
@@ -969,7 +974,7 @@ Resveratrol,PRKAA2,STITCH,0.733,medium
 Resveratrol,PRKCA,STITCH,0.9,high
 Resveratrol,PRKD1,CTD|DGIdb,0.85,high
 Resveratrol,PTEN,STITCH,0.9,high
-Resveratrol,PTGS2,BindingDB|CTD|ChEMBL|STITCH,0.9,high
+Resveratrol,PTGS2,BindingDB|CTD|ChEMBL|DrugBank_dhimmel_mirror|STITCH,0.9,high
 Resveratrol,RB1,STITCH,0.736,medium
 Resveratrol,SAT1,CTD,0.65,medium
 Resveratrol,SESN2,STITCH,0.824,high

@@ -1,0 +1,15 @@
+compound,gene,drugbank_id,category,known_action,actions,confidence,confidence_level,source,download_date
+Dimethyl fumarate,KEAP1,DB08908,target,yes,binder,0.85,high,DrugBank_dhimmel_mirror,2026-06-21
+Genistein,ABCC1,DB01645,transporter,unknown,inhibitor,0.552,low,DrugBank_dhimmel_mirror,2026-06-21
+Genistein,ESR1,DB01645,target,unknown,nan,0.65,medium,DrugBank_dhimmel_mirror,2026-06-21
+Hesperetin,MTTP,DB01094,target,yes,antagonist,0.85,high,DrugBank_dhimmel_mirror,2026-06-21
+Melatonin,CYP1B1,DB01065,enzyme,unknown,substrate|inhibitor,0.552,low,DrugBank_dhimmel_mirror,2026-06-21
+Melatonin,ESR1,DB01065,target,unknown,antagonist,0.65,medium,DrugBank_dhimmel_mirror,2026-06-21
+Melatonin,IDO1,DB01065,enzyme,unknown,substrate,0.552,low,DrugBank_dhimmel_mirror,2026-06-21
+Melatonin,MPO,DB01065,target,unknown,inhibitor,0.65,medium,DrugBank_dhimmel_mirror,2026-06-21
+Naringenin,ABCC1,DB03467,transporter,unknown,inhibitor,0.552,low,DrugBank_dhimmel_mirror,2026-06-21
+Quercetin,ABCC1,DB04216,transporter,unknown,inhibitor|inducer,0.552,low,DrugBank_dhimmel_mirror,2026-06-21
+Quercetin,PIM1,DB04216,target,unknown,nan,0.65,medium,DrugBank_dhimmel_mirror,2026-06-21
+Quercetin,SLC16A1,DB04216,transporter,unknown,inhibitor,0.552,low,DrugBank_dhimmel_mirror,2026-06-21
+Resveratrol,CYP1B1,DB02709,enzyme,unknown,inhibitor,0.552,low,DrugBank_dhimmel_mirror,2026-06-21
+Resveratrol,PTGS2,DB02709,target,unknown,inhibitor,0.65,medium,DrugBank_dhimmel_mirror,2026-06-21

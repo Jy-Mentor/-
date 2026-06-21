@@ -46,6 +46,8 @@ DGIDB_CSV = NETWORK_DIR / "dgidb_compound_targets.csv"
 SEA_CSV = NETWORK_DIR / "target_predictions_chembl_sea.csv"
 SWISSTARGET_CSV = NETWORK_DIR / "swisstarget_compound_targets.csv"
 BINDINGDB_CSV = NETWORK_DIR / "bindingdb_compound_targets.csv"
+DRUGBANK_CSV = NETWORK_DIR / "drugbank_compound_targets.csv"
+DTC_CSV = NETWORK_DIR / "drugtargetcommons_compound_targets.csv"
 OUTPUT_CSV = NETWORK_DIR / "compound_target_edges.csv"
 METADATA_JSON = EXTERNAL_DIR / "compound_target_merged_metadata.json"
 
@@ -237,6 +239,50 @@ def load_bindingdb(core_genes: set[str]) -> pd.DataFrame:
     return df
 
 
+def load_drugbank(core_genes: set[str]) -> pd.DataFrame:
+    """加载 DrugBank 化合物-靶点边; 文件不存在时返回空 DataFrame."""
+    if not DRUGBANK_CSV.exists():
+        logger.warning("DrugBank 文件不存在, 跳过: %s", DRUGBANK_CSV)
+        return pd.DataFrame(columns=["compound", "gene", "source", "confidence", "confidence_level"])
+
+    df = pd.read_csv(DRUGBANK_CSV)
+    df["compound"] = df["compound"].astype(str).str.strip()
+    df["gene"] = df["gene"].astype(str).str.strip().str.upper()
+    df = df[df["gene"].isin(core_genes) & df["gene"].apply(is_valid_gene_symbol)]
+
+    if "confidence" not in df.columns:
+        df["confidence"] = 0.60
+    if "confidence_level" not in df.columns:
+        df["confidence_level"] = "medium"
+    if "source" not in df.columns:
+        df["source"] = "DrugBank"
+
+    logger.info("DrugBank 有效边: %d", len(df))
+    return df
+
+
+def load_drugtargetcommons(core_genes: set[str]) -> pd.DataFrame:
+    """加载 DrugTargetCommons 化合物-靶点边; 文件不存在时返回空 DataFrame."""
+    if not DTC_CSV.exists():
+        logger.warning("DrugTargetCommons 文件不存在, 跳过: %s", DTC_CSV)
+        return pd.DataFrame(columns=["compound", "gene", "source", "confidence", "confidence_level"])
+
+    df = pd.read_csv(DTC_CSV)
+    df["compound"] = df["compound"].astype(str).str.strip()
+    df["gene"] = df["gene"].astype(str).str.strip().str.upper()
+    df = df[df["gene"].isin(core_genes) & df["gene"].apply(is_valid_gene_symbol)]
+
+    if "confidence" not in df.columns:
+        df["confidence"] = 0.50
+    if "confidence_level" not in df.columns:
+        df["confidence_level"] = "low"
+    if "source" not in df.columns:
+        df["source"] = "DrugTargetCommons"
+
+    logger.info("DrugTargetCommons 有效边: %d", len(df))
+    return df
+
+
 def deduplicate_keep_highest_confidence(df: pd.DataFrame) -> pd.DataFrame:
     """同一 compound-gene 保留置信度最高记录; 如并列, source 合并."""
     if df.empty:
@@ -272,6 +318,8 @@ def main() -> int:
     sea = load_sea_predictions(core_genes)
     swisstarget = load_swisstarget(core_genes)
     bindingdb = load_bindingdb(core_genes)
+    drugbank = load_drugbank(core_genes)
+    dtc = load_drugtargetcommons(core_genes)
 
     # 统一列
     common_cols = ["compound", "gene", "source", "confidence", "confidence_level"]
@@ -283,8 +331,10 @@ def main() -> int:
     sea = sea[[c for c in common_cols if c in sea.columns]]
     swisstarget = swisstarget[[c for c in common_cols if c in swisstarget.columns]]
     bindingdb = bindingdb[[c for c in common_cols if c in bindingdb.columns]]
+    drugbank = drugbank[[c for c in common_cols if c in drugbank.columns]]
+    dtc = dtc[[c for c in common_cols if c in dtc.columns]]
 
-    sources = [curated, chembl, stitch, ctd, dgidb, sea, swisstarget, bindingdb]
+    sources = [curated, chembl, stitch, ctd, dgidb, sea, swisstarget, bindingdb, drugbank, dtc]
     non_empty = [s for s in sources if not s.empty]
     merged = pd.concat(non_empty, ignore_index=True) if non_empty else pd.DataFrame(
         columns=["compound", "gene", "source", "confidence", "confidence_level"]
@@ -305,7 +355,10 @@ def main() -> int:
     logger.info("已写入清洗后 compound-target 边: %s", OUTPUT_CSV)
 
     metadata = {
-        "source": "curated + ChEMBL(cleaned) + STITCH + CTD + ChEMBL_SEA_like + SwissTargetPrediction + BindingDB",
+        "source": (
+            "curated + ChEMBL(cleaned) + STITCH + CTD + ChEMBL_SEA_like + "
+            "SwissTargetPrediction + BindingDB + DrugBank + DrugTargetCommons"
+        ),
         "clean_date": pd.Timestamp.now().isoformat(),
         "stats": {
             "curated": len(curated),
@@ -316,6 +369,8 @@ def main() -> int:
             "sea": len(sea),
             "swisstarget": len(swisstarget),
             "bindingdb": len(bindingdb),
+            "drugbank": len(drugbank),
+            "drugtargetcommons": len(dtc),
             "merged_unique": len(cleaned),
             "unique_compounds": int(cleaned["compound"].nunique()),
             "unique_genes": int(cleaned["gene"].nunique()),
