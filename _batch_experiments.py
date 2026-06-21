@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import sys
+import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
@@ -61,7 +62,23 @@ def main() -> None:
         name = f"rgcn_seed{seed}"
         logger.info("=" * 60)
         logger.info("运行 %s", name)
-        summary.append(run_experiment(name, "rgcn", seed))
+        try:
+            summary.append(run_experiment(name, "rgcn", seed))
+        except Exception:
+            logger.error("实验 %s 失败:", name)
+            traceback.print_exc()
+            summary.append({
+                "experiment": name,
+                "encoder": "rgcn",
+                "seed": seed,
+                "epochs": 50,
+                "status": "failed",
+                "best_val_auc": None,
+                "test_auc": None,
+                "test_ap": None,
+                "model_path": None,
+                "error": traceback.format_exc(),
+            })
 
     # 2) 同 seed 下 HGT/GAT/RGCN 对比
     encoders = ["hgt", "gat", "rgcn"]
@@ -70,7 +87,23 @@ def main() -> None:
         name = f"{encoder}_compare_seed{common_seed}"
         logger.info("=" * 60)
         logger.info("运行 %s", name)
-        summary.append(run_experiment(name, encoder, common_seed))
+        try:
+            summary.append(run_experiment(name, encoder, common_seed))
+        except Exception:
+            logger.error("实验 %s 失败:", name)
+            traceback.print_exc()
+            summary.append({
+                "experiment": name,
+                "encoder": encoder,
+                "seed": common_seed,
+                "epochs": 50,
+                "status": "failed",
+                "best_val_auc": None,
+                "test_auc": None,
+                "test_ap": None,
+                "model_path": None,
+                "error": traceback.format_exc(),
+            })
 
     output_path = Path("L3_results") / "_batch_summary.json"
     output_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -78,14 +111,26 @@ def main() -> None:
 
     # 控制台打印表格
     print("\n" + "=" * 80)
-    print(f"{'Experiment':<30} {'Encoder':<8} {'Seed':<8} {'Val AUC':<10} {'Test AUC':<10} {'Test AP':<10}")
+    header = (
+        f"{'Experiment':<30} {'Encoder':<8} {'Seed':<8} "
+        f"{'Val AUC':<10} {'Test AUC':<10} {'Test AP':<10} {'Status':<8}"
+    )
+    print(header)
     print("-" * 80)
     for r in summary:
+        val_auc = f"{r['best_val_auc']:.4f}" if r['best_val_auc'] is not None else "N/A"
+        test_auc = f"{r['test_auc']:.4f}" if r['test_auc'] is not None else "N/A"
+        test_ap = f"{r['test_ap']:.4f}" if r['test_ap'] is not None else "N/A"
         print(
             f"{r['experiment']:<30} {r['encoder']:<8} {r['seed']:<8} "
-            f"{r['best_val_auc']:<10.4f} {r['test_auc']:<10.4f} {r['test_ap']:<10.4f}"
+            f"{val_auc:<10} {test_auc:<10} {test_ap:<10} {r['status']:<8}"
         )
     print("=" * 80)
+
+    failed = [r for r in summary if r["status"] == "failed"]
+    if failed:
+        logger.warning("%d 个实验失败", len(failed))
+        sys.exit(1)
 
 
 if __name__ == "__main__":
