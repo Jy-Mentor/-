@@ -7,7 +7,7 @@
 paths:
   base_dir: "."
   data_dir: "L3"
-  output_dir: "L3_results"
+  output_dir: "L3_results_phase24_lr_ciri"
   network_dir: "network_files"
   l1_results_dir: "L1/l1_results"
 

@@ -182,7 +182,7 @@ FERROAGING_GENES = None  # will be set after BASE_DIR is defined
 # 路径配置
 # ============================================================
 BASE_DIR = Path(__file__).parent
-OUTPUT_DIR = BASE_DIR / "L3_results"
+OUTPUT_DIR = BASE_DIR / "L3_results_phase24_lr_ciri"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 FIGS_DIR = OUTPUT_DIR / "figures"
 FIGS_DIR.mkdir(exist_ok=True)
