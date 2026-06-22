@@ -4354,78 +4354,171 @@ def _load_disease_genes_for_ranking(disgenet_file: Path) -> set:
     return disease_genes
 
 
+def _normalize(arr: np.ndarray) -> np.ndarray:
+    """Min-Max归一化到[0,1]."""
+    return (arr - arr.min()) / (arr.max() - arr.min() + 1e-8)
+
+
+def _compute_network_proximity(
+    graph_data: dict, seed_genes: set[str], gene_names: list[str]
+) -> np.ndarray:
+    """计算每个基因到种子基因集的网络邻近度.
+
+    使用 gene_coexp 与 regulates 边构建无向基因图, 通过最短路径距离度量.
+    邻近度 = exp(-distance / scale), distance 为到最近种子基因的最短路径长度.
+    参考: Menche et al., Science 2015; Barabasi network medicine.
+    """
+    import networkx as nx
+
+    n = len(gene_names)
+    G = nx.Graph()
+    G.add_nodes_from(range(n))
+    for edge_key in ("gene_coexp", "regulates"):
+        for src, dst in graph_data["edges"].get(edge_key, []):
+            if 0 <= src < n and 0 <= dst < n:
+                G.add_edge(src, dst)
+
+    seed_indices = [i for i, g in enumerate(gene_names) if g in seed_genes]
+    if not seed_indices:
+        logger.warning("  种子基因集为空, 网络邻近度全部置0")
+        return np.zeros(n)
+
+    try:
+        all_shortest = dict(nx.all_pairs_shortest_path_length(G))
+    except Exception:
+        logger.warning("  最短路径计算失败, 使用BFS逐点计算")
+        all_shortest = {}
+        for i in range(n):
+            try:
+                all_shortest[i] = nx.single_source_shortest_path_length(G, i)
+            except Exception:
+                all_shortest[i] = {}
+
+    max_dist = n  # 不可达时的惩罚距离
+    proximity = np.zeros(n)
+    for i in range(n):
+        dists = [all_shortest.get(i, {}).get(seed, max_dist) for seed in seed_indices]
+        min_dist = min(dists)
+        proximity[i] = np.exp(-min_dist / 2.0)
+    return proximity
+
+
 def compute_hub_ranking(
     model, graph_data: dict, x_hgt: dict, device: str = "cpu"
 ) -> pd.DataFrame:
-    """计算基因hub排名 - 加权多源得分 (参考 GNN4DM, 2024)"""
+    """计算基因hub排名 - 基于模型任务头 + 网络拓扑 + 网络邻近度.
+
+    设计原则:
+      1. 不使用嵌入L2范数作为重要性代理 (HGT/pyHGT 原论文未支持此做法).
+      2. 不使用硬编码生物先验权重 (避免人为操纵特定基因排名).
+      3. 使用训练好的任务预测头直接衡量基因在通路/化合物靶点任务中的重要性.
+      4. 使用网络最短路径邻近度度量基因到铁衰老/疾病种子基因集的拓扑距离.
+      5. 保留度中心性作为网络连通性指标 (log变换缓解长尾).
+
+    参考:
+      - HGT (Hu et al., WWW 2020): 嵌入用于链接预测/分类, 而非范数排序.
+      - DeepPurpose (Huang et al., Bioinformatics 2020): MLP预测头用于DTI.
+      - Network medicine (Menche et al., Science 2015; Barabasi 2011):
+        疾病模块与网络邻近度.
+    """
     logger.info("=" * 60)
     logger.info("计算Hub基因排名")
 
-    gene_emb = x_hgt["gene"].detach().cpu().numpy()
     gene_names = graph_data["gene"]["names"]
+    n_genes = len(gene_names)
 
-    # ---- 1. 嵌入重要性: L2范数 (模型学到的语义重要性) ----
-    emb_norm = np.linalg.norm(gene_emb, axis=1)
-    emb_norm_norm = emb_norm / (emb_norm.max() + 1e-8)
+    # ---- 1. 任务重要性: 使用模型训练好的预测头 ----
+    # 1a. 基因-通路归属预测重要性: 每个基因对所有通路的最大预测概率
+    # 1b. 化合物-靶点预测重要性: 每个基因对所有化合物的平均预测结合概率
+    model.eval()
+    with torch.no_grad():
+        gene_emb = x_hgt["gene"]
+        pathway_emb = x_hgt.get("pathway")
+        compound_emb = x_hgt.get("compound")
 
-    # ---- 2. 度中心性: 图结构重要性 ----
+        gp_importance = np.zeros(n_genes)
+        if pathway_emb is not None and pathway_emb.size(0) > 0:
+            n_pathways = pathway_emb.size(0)
+            g_idx = torch.arange(n_genes, device=device).repeat(n_pathways)
+            p_idx = torch.arange(n_pathways, device=device).repeat_interleave(n_genes)
+            gp_logits = model.predict_gene_pathway(
+                gene_emb[g_idx], pathway_emb[p_idx]
+            ).squeeze()
+            gp_probs = torch.sigmoid(gp_logits).view(n_pathways, n_genes).T
+            gp_importance = gp_probs.max(dim=1).values.cpu().numpy()
+            logger.info(
+                "  基因-通路任务重要性: mean=%.4f, max=%.4f",
+                gp_importance.mean(),
+                gp_importance.max(),
+            )
+
+        ct_importance = np.zeros(n_genes)
+        if compound_emb is not None and compound_emb.size(0) > 0:
+            n_compounds = compound_emb.size(0)
+            c_idx = torch.arange(n_compounds, device=device).repeat_interleave(n_genes)
+            g_idx = torch.arange(n_genes, device=device).repeat(n_compounds)
+            ct_logits = model.predict_compound_target(
+                compound_emb[c_idx], gene_emb[g_idx]
+            ).squeeze()
+            ct_probs = torch.sigmoid(ct_logits).view(n_compounds, n_genes).T
+            ct_importance = ct_probs.mean(dim=1).cpu().numpy()
+            logger.info(
+                "  化合物-靶点任务重要性: mean=%.4f, max=%.4f",
+                ct_importance.mean(),
+                ct_importance.max(),
+            )
+
+    gp_importance_norm = _normalize(gp_importance)
+    ct_importance_norm = _normalize(ct_importance)
+    task_importance = 0.5 * gp_importance_norm + 0.5 * ct_importance_norm
+
+    # ---- 2. 度中心性: 图结构连通性 ----
     degrees = defaultdict(int)
-    for edge_key in [
+    for edge_key in (
         "gene_coexp",
         "regulates",
         "enriched_in",
         "gene_disease",
         "pathway_to_gene",
         "disease_to_gene",
-    ]:
+    ):
         for src, dst in graph_data["edges"].get(edge_key, []):
             degrees[src] += 1
             degrees[dst] += 1
 
-    degree_arr = np.array([degrees.get(i, 0) for i in range(len(gene_names))])
+    degree_arr = np.array([degrees.get(i, 0) for i in range(n_genes)])
     # log变换避免长尾分布过度放大少数高度连接基因
     degree_norm = np.log1p(degree_arr) / (np.log1p(degree_arr.max()) + 1e-8)
 
-    # ---- 3. 生物学先验: 铁死亡/衰老/铁衰老基因集成员 ----
-    all_ferroptosis = PURE_FERROPTOSIS | SHARED_GENES
-    all_senescence = PURE_SENESCENCE | SHARED_GENES
-    all_ferroaging = FERROAGING_GENES
-
-    # 疾病关联得分: 从 DisGeNET curated 数据加载 (Piñero et al., NAR 2020)
-    # GitHub 镜像: https://github.com/dhimmel/disgenet (无需注册, Open Database License)
-    # 原始项目: https://github.com/DisGeNET/DisGeNET-SQLite
-    # 替代硬编码的3个疾病基因列表, 全部数据来自外部数据库
+    # ---- 3. 网络邻近度: 到铁衰老/疾病种子基因集的最短路径 ----
+    # 替代硬编码 bio_prior 权重, 使用数据驱动的网络距离.
+    all_ferroaging = FERROAGING_GENES if FERROAGING_GENES else set()
     disease_genes_set = _load_disease_genes_for_ranking(
         BASE_DIR / "network_files" / "disgenet_disease_genes.csv"
     )
-
-    bio_prior = np.zeros(len(gene_names))
-    for i, gene in enumerate(gene_names):
-        score = 0.0
-        if gene in all_ferroaging:
-            score += 0.5  # 铁衰老基因: 最高权重
-        if gene in all_ferroptosis:
-            score += 0.3  # 铁死亡
-        if gene in all_senescence:
-            score += 0.3  # 衰老
-        if gene in disease_genes_set:
-            score += 0.2  # 疾病关联 (CIRI/AD/Aging)
-        bio_prior[i] = min(score, 1.0)  # 截断到[0,1]
+    seed_genes = all_ferroaging | disease_genes_set
+    proximity = _compute_network_proximity(graph_data, seed_genes, gene_names)
+    proximity_norm = _normalize(proximity)
+    logger.info(
+        "  网络邻近度: 种子基因 %d 个, mean=%.4f, max=%.4f",
+        len(seed_genes),
+        proximity.mean(),
+        proximity.max(),
+    )
 
     # ---- 4. 加权综合得分 ----
-    # 权重设计依据:
-    #   - 嵌入重要性 0.40: 模型自主学习到的语义重要度
-    #   - 度中心性   0.20: 图结构连通性 (log变换降权)
-    #   - 生物学先验 0.40: 铁死亡/衰老/铁衰老/疾病文献支持
-    w_emb, w_deg, w_bio = 0.40, 0.20, 0.40
-    hub_score = w_emb * emb_norm_norm + w_deg * degree_norm + w_bio * bio_prior
+    # 权重依据: 任务头(学习得到) > 网络拓扑 > 网络邻近度
+    w_task, w_deg, w_prox = 0.50, 0.30, 0.20
+    hub_score = w_task * _normalize(task_importance) + w_deg * degree_norm + w_prox * proximity_norm
 
     ranking = pd.DataFrame(
         {
             "gene": gene_names,
-            "embedding_norm": emb_norm,
+            "task_importance": task_importance,
+            "gp_importance": gp_importance,
+            "ct_importance": ct_importance,
             "degree": degree_arr,
-            "bio_prior": bio_prior,
+            "network_proximity": proximity,
             "hub_score": hub_score,
         }
     ).sort_values("hub_score", ascending=False)
@@ -4460,9 +4553,14 @@ def compute_hub_ranking(
 
 
 def compute_compound_target_ranking(
-    model, graph_data: dict, x_hgt: dict
-) -> pd.DataFrame:
-    """计算化合物-靶点排名 (使用模型预测头而非余弦相似度)"""
+    model, graph_data: dict, x_hgt: dict, top_k: int = 10
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """计算化合物-靶点排名 (使用模型预测头而非余弦相似度).
+
+    返回:
+      - global_ranking: 全局所有化合物-基因对按结合概率排序
+      - per_compound_topk: 每个化合物内部 Top-K 靶点, 避免全局排序被高活跃度化合物主导
+    """
     logger.info("=" * 60)
     logger.info("计算化合物-靶点结合排名 (使用模型预测头)")
 
@@ -4503,6 +4601,29 @@ def compute_compound_target_ranking(
 
     ranking = pd.DataFrame(results).sort_values("binding_probability", ascending=False)
 
+    # 每个化合物内部 Top-K 靶点
+    per_compound_rows = []
+    for cname in compound_names:
+        cdf = ranking[ranking["compound"] == cname].sort_values(
+            "binding_probability", ascending=False
+        )
+        for rank, (_, row) in enumerate(cdf.head(top_k).iterrows(), start=1):
+            per_compound_rows.append(
+                {
+                    "compound": cname,
+                    "rank_in_compound": rank,
+                    "gene": row["gene"],
+                    "binding_probability": row["binding_probability"],
+                }
+            )
+    per_compound_topk = pd.DataFrame(per_compound_rows)
+    logger.info(
+        "  化合物-靶点全局对数: %d; 每化合物 Top-%d: %d 条",
+        len(ranking),
+        top_k,
+        len(per_compound_topk),
+    )
+
     # 特别关注BCP-ACSL4
     bcp_acsl4 = ranking[(ranking["compound"] == "BCP") & (ranking["gene"] == "ACSL4")]
     if not bcp_acsl4.empty:
@@ -4515,7 +4636,7 @@ def compute_compound_target_ranking(
             f"BCP排名={acsl4_rank_in_bcp}/{len(bcp_acsl4_rank)}"
         )
 
-    return ranking
+    return ranking, per_compound_topk
 
 
 def _load_lr_pairs_for_flow(gene_names: list) -> list:
@@ -5614,7 +5735,9 @@ def main():
     hub_ranking = compute_hub_ranking(ema_model, graph_data, x_hgt, device)
 
     # 4. 化合物-靶点排名 (使用EMA模型统一嵌入与预测头)
-    compound_ranking = compute_compound_target_ranking(ema_model, graph_data, x_hgt)
+    compound_ranking, compound_topk_per_compound = compute_compound_target_ranking(
+        ema_model, graph_data, x_hgt, top_k=10
+    )
 
     # 5. 跨细胞通讯注意力流 (使用EMA模型统一嵌入与预测头)
     comm_flow = compute_attention_flow(ema_model, graph_data, x_hgt)
@@ -5661,6 +5784,11 @@ def main():
 
     compound_ranking.to_csv(OUTPUT_DIR / "L3_compound_target_ranking.csv", index=False)
     logger.info("  化合物-靶点排名: L3_compound_target_ranking.csv")
+
+    compound_topk_per_compound.to_csv(
+        OUTPUT_DIR / "L3_compound_target_topk_per_compound.csv", index=False
+    )
+    logger.info("  每化合物Top-K靶点: L3_compound_target_topk_per_compound.csv")
 
     # 化合物级汇总 (8个药物对铁衰老基因集的能力)
     compound_names = graph_data["compound"]["names"]

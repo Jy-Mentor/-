@@ -174,8 +174,11 @@ def test_hgt_trainer_fit():
 
     assert 0 < len(history["train_loss"]) <= 10
     assert len(history["train_loss"]) == len(history["val_auc"])
-    # 训练应产出有限数值；小样本+短周期不保证单调下降，故不断言前后半段均值
-    assert all(torch.isfinite(torch.tensor(loss)) for loss in history["train_loss"])
+    # 使用前后半段均值比较, 避免小样本随机波动导致偶发失败
+    mid = len(history["train_loss"]) // 2
+    mean_first = sum(history["train_loss"][:mid]) / mid
+    mean_second = sum(history["train_loss"][mid:]) / (len(history["train_loss"]) - mid)
+    assert mean_first > mean_second
 
 
 def test_hgt_trainer_saves_best_checkpoint():

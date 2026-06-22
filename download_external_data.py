@@ -112,19 +112,19 @@ def _load_db_config() -> dict:
         'target_cell_types': [],
     }
     if not config_file.exists():
-        logger.warning(f"外部数据库配置文件不存在: {config_file}, 使用内置默认值")
+        logger.warning("外部数据库配置文件不存在: %s, 使用内置默认值", config_file)
         return _get_default_db_config()
     try:
         import yaml
         with open(config_file, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
-        logger.info(f"外部数据库配置加载: {config_file.name}")
+        logger.info("外部数据库配置加载: %s", config_file.name)
     except ImportError:
         logger.warning("PyYAML 未安装, 使用内置默认值")
         return _get_default_db_config()
     except Exception as e:
         traceback.print_exc()
-        logger.error("外部数据库配置加载失败: %s，使用内置默认值", e)
+        logger.error("外部数据库配置加载失败: %s", e)
         return _get_default_db_config()
     return config
 
