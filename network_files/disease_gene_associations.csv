@@ -12,6 +12,7 @@ CIRI,CD82,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_
 CIRI,CTSB,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,CXCL10,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,DPP4,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,EDN1,stroke,umls:C0038454,0.217929230788994,DisGeNET_curated_github_mirror_CIRI,0.217929230788994,2026-06-22
 CIRI,EGR1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,EMP1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,FBXO31,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
@@ -22,6 +23,7 @@ CIRI,HMGB1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta
 CIRI,HMOX1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,IFNG,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,IL1B,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,IL6,stroke,umls:C0038454,0.257632824328829,DisGeNET_curated_github_mirror_CIRI,0.257632824328829,2026-06-22
 CIRI,IRF1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,IRF7,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,IRF9,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
@@ -34,6 +36,7 @@ CIRI,LPCAT3,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_met
 CIRI,MAPK1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,MAPK14,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,MCU,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,MPO,brain ischemia,umls:C0007786,0.21,DisGeNET_curated_github_mirror_CIRI,0.21,2026-06-22
 CIRI,NR1D1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,PADI4,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
 CIRI,PDE4B,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22

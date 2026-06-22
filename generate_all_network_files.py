@@ -896,73 +896,27 @@ def _trrust_fallback(output_path):
 # 来源: GenAge, AlzGene, DisGeNET
 # ================================================================
 def generate_disease_gene_associations():
-    """从 DisGeNET/GEO DE 生成疾病-基因关联.
+    """调用 _regenerate_disease_gene_associations 生成疾病-基因关联.
 
     - AD/Aging: DisGeNET curated github mirror (真实 score)
-    - CIRI: L3/L1_genome_wide_de.csv 元分析差异基因 (padj<0.05, |log2FC|>0.5, >=2 datasets)
+    - CIRI-DisGeNET: DisGeNET 中 stroke / brain ischemia / cerebral infarction
+    - CIRI-GEO: L3/L1_genome_wide_de.csv 元分析差异基因 (padj<0.05, |log2FC|>0.5, >=2 datasets)
     """
     log.info("=" * 60)
     log.info("[8/8] 生成 disease_gene_associations.csv")
+    log.info("  使用 _regenerate_disease_gene_associations.py 合并 DisGeNET 与 GEO DE 来源")
 
-    output_path = OUTPUT_DIR / "disease_gene_associations.csv"
-
-    # 1. 确保 DisGeNET 解析文件存在
-    disgenet_file = OUTPUT_DIR / "disgenet_disease_genes.csv"
-    if not disgenet_file.exists():
-        log.info("  未找到 DisGeNET 解析文件, 调用 _parse_disgenet_ciri.py")
-        import subprocess
-        import sys
-        try:
-            subprocess.run([sys.executable, str(BASE_DIR / "_parse_disgenet_ciri.py")], check=True)
-        except Exception as e:
-            log.warning(f"  DisGeNET 解析失败: {e}, 将使用 fallback")
-            return _disease_gene_fallback(output_path)
-
-    # 2. 读取 DisGeNET 数据 (AD/Aging)
-    disgenet = pd.read_csv(disgenet_file)
-    ad_aging = disgenet[disgenet["disease"].isin(["AD", "Aging"])].copy()
-    ad_aging["source"] = "DisGeNET_curated_github_mirror"
-    ad_aging["confidence"] = ad_aging["score"]
-    ad_aging["download_date"] = DOWNLOAD_DATE
-
-    # 3. 从 L1 DE 提取 CIRI 基因
-    de_file = BASE_DIR / "L3" / "L1_genome_wide_de.csv"
-    ciri_rows = []
-    if de_file.exists():
-        de = pd.read_csv(de_file)
-        sig = de[(de["padj"] < 0.05) & (de["log2FC"].abs() > 0.5)].copy()
-        gene_ds_counts = sig.groupby("gene")["dataset"].nunique()
-        ciri_genes = gene_ds_counts[gene_ds_counts >= 2].index.tolist()
-        for gene in ciri_genes:
-            ciri_rows.append({
-                "disease": "CIRI",
-                "gene": gene.upper(),
-                "disease_name": "cerebral ischemia-reperfusion injury (GEO DE meta)",
-                "disease_id": "NA",
-                "score": 0.0,
-                "source": "GEO_DE_meta_analysis",
-                "confidence": 0.7,
-                "download_date": DOWNLOAD_DATE,
-            })
-    else:
-        log.warning(f"  L1 DE 文件不存在: {de_file}, CIRI 关联为空")
-
-    ciri_df = pd.DataFrame(ciri_rows)
-
-    # 4. 合并并筛选核心基因集
-    combined = pd.concat([
-        ad_aging[["disease", "gene", "disease_name", "disease_id", "score", "source", "confidence", "download_date"]],
-        ciri_df
-    ], ignore_index=True)
-    combined = combined[combined["gene"].isin(CORE_GENE_SET)].copy()
-    combined = combined.drop_duplicates(subset=["disease", "gene"]).sort_values(["disease", "gene"])
-
-    combined.to_csv(output_path, index=False)
-    log.info(f"  → 保存 {len(combined)} 条 disease-gene 关系到 {output_path}")
-    ad_aging_count = len(combined[combined['disease'].isin(['AD', 'Aging'])])
-    ciri_count = len(combined[combined['disease'] == 'CIRI'])
-    log.info(f"      AD/Aging: {ad_aging_count}, CIRI: {ciri_count}")
-    return True
+    try:
+        import _regenerate_disease_gene_associations
+        if hasattr(_regenerate_disease_gene_associations, "main"):
+            rc = _regenerate_disease_gene_associations.main()
+        else:
+            rc = 0
+        return rc == 0
+    except Exception:
+        log.error("  重建 disease-gene 关联时出错")
+        traceback.print_exc()
+        return False
 
 
 def _disease_gene_fallback(output_path):
