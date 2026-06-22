@@ -163,10 +163,18 @@ def _pubchem_batch_properties(cids: list) -> dict:
     return {p["CID"]: p for p in props}
 
 
-def _compute_fingerprint(smiles: str, fp_type: str, n_bits: int = 2048):
+def _compute_fingerprint(
+    smiles: str, fp_type: str, n_bits: int = 2048, compound_name: str | None = None
+):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         size = 167 if fp_type == "maccs" else n_bits
+        logger.warning(
+            "化合物 %s 的 SMILES 解析失败, %s 指纹使用零向量 (SMILES=%s)",
+            compound_name or "UNKNOWN",
+            fp_type,
+            smiles[:50],
+        )
         return np.zeros(size, dtype=np.int8)
     if fp_type == "morgan":
         fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=n_bits)
@@ -178,6 +186,12 @@ def _compute_fingerprint(smiles: str, fp_type: str, n_bits: int = 2048):
     elif fp_type == "rdkit":
         fp = RDKFingerprint(mol, fpSize=n_bits)
     else:
+        logger.warning(
+            "化合物 %s 遇到未知指纹类型 %s, 使用零向量 (SMILES=%s)",
+            compound_name or "UNKNOWN",
+            fp_type,
+            smiles[:50],
+        )
         return np.zeros(n_bits, dtype=np.int8)
     arr = np.zeros((n_bits,), dtype=np.int8)
     Chem.DataStructs.ConvertToNumpyArray(fp, arr)
@@ -455,7 +469,7 @@ def main():
         cols = [f"{fp_name.capitalize()}_{i}" for i in range(n_bits)]
         rows = []
         for r in records:
-            arr = _compute_fingerprint(r["smiles"], fp_name, n_bits)
+            arr = _compute_fingerprint(r["smiles"], fp_name, n_bits, compound_name=r["compound"])
             fp_row = {"Compound": r["compound"]}
             for c, v in zip(cols, arr):
                 fp_row[c] = int(v)

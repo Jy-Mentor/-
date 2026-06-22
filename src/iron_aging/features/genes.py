@@ -82,8 +82,11 @@ class GeneFeatureBuilder:
                 mean_control=("mean_control", "mean"),
                 min_padj=("padj", "min"),
             )
-            .fillna(0)
         )
+        n_filled = int(agg.isna().sum().sum())
+        if n_filled > 0:
+            logger.warning("L1 聚合结果存在 %d 个 NaN, 将填充为 0", n_filled)
+        agg = agg.fillna(0)
         raw_expression = (agg.pop("mean_case") + agg.pop("mean_control")) / 2
         agg["mean_expression"] = np.log2(raw_expression + 1)
         gene_dict = agg.to_dict("index")
@@ -122,11 +125,15 @@ class GeneFeatureBuilder:
                 if ct and g:
                     celltype_map[g].add(ct)
         else:
-            logger.warning("细胞类型标记文件缺失: %s", self.celltype_marker_path)
+            logger.error(
+                "细胞类型标记文件缺失: %s, 所有基因的细胞类型 one-hot 特征将置为零向量",
+                self.celltype_marker_path,
+            )
 
         cell_types = sorted({ct for s in celltype_map.values() for ct in s})
         if not cell_types:
             cell_types = ["Neuron", "Microglia", "Astrocyte", "Oligodendrocyte", "Endothelial", "Pericyte"]
+            logger.error("未从文件读取到任何细胞类型, 使用默认类别但所有基因特征为零向量: %s", cell_types)
 
         ct_index = {ct: i for i, ct in enumerate(cell_types)}
         features: dict[str, np.ndarray] = {}
@@ -151,7 +158,10 @@ class GeneFeatureBuilder:
                 if receptor:
                     lr_role[receptor]["receptor"] = True
         else:
-            logger.warning("配体-受体对文件缺失: %s", self.lr_pair_path)
+            logger.error(
+                "配体-受体对文件缺失: %s, 所有基因的配体/受体特征将置为零向量",
+                self.lr_pair_path,
+            )
 
         features: dict[str, np.ndarray] = {}
         for gene in genes:

@@ -78,7 +78,24 @@ def _build_project_info() -> pd.DataFrame:
     )
 
 
+def _count_compounds() -> str:
+    smiles_path = PROJECT_ROOT / "network_files" / "compound_smiles.csv"
+    try:
+        df = pd.read_csv(smiles_path)
+        n = df["compound"].nunique()
+        return f"{n} 个"
+    except Exception as e:
+        logger.warning("无法统计 compound_smiles.csv: %s", e)
+        return "未知"
+
+
 def _build_optimization_comparison() -> pd.DataFrame:
+    version = "未知"
+    version_file = PROJECT_ROOT / "VERSION"
+    if version_file.exists():
+        version = version_file.read_text(encoding="utf-8").strip()
+    has_changelog = (PROJECT_ROOT / "CHANGELOG.md").exists()
+
     return pd.DataFrame(
         {
             "优化项": [
@@ -106,7 +123,7 @@ def _build_optimization_comparison() -> pd.DataFrame:
                 "无版本号/CHANGELOG",
             ],
             "优化后": [
-                "63 个 (20+43)",
+                _count_compounds(),
                 "MoleculeNet BBBP + ChEMBL 子集",
                 "6 + PCA + 4 + 64 = 动态维度",
                 "0.40/0.20/0.40 (原始)",
@@ -115,7 +132,7 @@ def _build_optimization_comparison() -> pd.DataFrame:
                 "validate_inputs.py 多维验证",
                 "l2_integrated_analysis.py 联合分析",
                 "ruff 全通过 (E/W/F/I)",
-                "SemVer 2.0.0 + CHANGELOG.md",
+                f"SemVer {version} + CHANGELOG.md ({'存在' if has_changelog else '缺失'})",
             ],
             "验证方法": [
                 "network_files/compound_smiles.csv 统计",
@@ -220,7 +237,33 @@ def _build_issue_log(report: Dict[str, Any]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _run_quick_check(command: list[str], timeout: int = 60) -> str:
+    """运行一个快速检查命令并返回结果摘要."""
+    try:
+        result = subprocess.run(
+            command,
+            cwd=str(PROJECT_ROOT),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+        )
+        if result.returncode == 0:
+            return "通过 (returncode=0)"
+        return f"失败 (returncode={result.returncode}): {result.stderr[:200]}"
+    except subprocess.TimeoutExpired:
+        return "超时 (未在限制时间内完成)"
+    except Exception as e:
+        return f"无法运行: {e}"
+
+
 def _build_test_analysis() -> pd.DataFrame:
+    ruff_result = _run_quick_check(["ruff", "check", "."])
+    import_module3 = _run_quick_check([sys.executable, "-c", "import module3_hgt"])
+    import_l2 = _run_quick_check([sys.executable, "-c", "import l2_integrated_analysis"])
+    validate = _run_quick_check([sys.executable, "validate_inputs.py"])
+
     return pd.DataFrame(
         {
             "测试项": [
@@ -251,13 +294,13 @@ def _build_test_analysis() -> pd.DataFrame:
                 "JSON + CSV + 联合基因表生成",
             ],
             "实际结果": [
-                "0 issues",
-                "导入成功",
-                "导入成功",
-                "returncode=0",
-                "运行中/待确认",
-                "已生成",
-                "待联合分析完成后确认",
+                ruff_result,
+                import_module3,
+                import_l2,
+                "未运行 (完整运行耗时较长，需单独执行)",
+                "未运行 (完整运行耗时较长，需单独执行)",
+                validate,
+                "未运行 (完整运行耗时较长，需单独执行)",
             ],
         }
     )

@@ -492,6 +492,7 @@ def _load_gene_pathway_map(core_gene_names: set = None) -> dict:
             )
         except Exception as e:
             logger.warning(f"  MSigDB 加载失败: {e}")
+            traceback.print_exc()
     # 来源2: 本地KEGG/Reactome富集CSV
     pw_enrich_file = BASE_DIR / "network_files" / "gene_pathway_enrichment.csv"
     if pw_enrich_file.exists():
@@ -509,6 +510,7 @@ def _load_gene_pathway_map(core_gene_names: set = None) -> dict:
             logger.info(f"  KEGG/Reactome CSV 补充: {len(gene_to_pathway)} 通路")
         except Exception as e:
             logger.warning(f"  KEGG/Reactome CSV 加载失败: {e}")
+            traceback.print_exc()
     return gene_to_pathway
 
 
@@ -530,6 +532,7 @@ def _load_pathway_keyword_config() -> dict:
             config = yaml.safe_load(f)
     except Exception as e:
         logger.warning(f"  PyYAML 加载失败: {e}, 使用简单解析")
+        traceback.print_exc()
         config = _parse_node_config_simple(config_file)
 
     kw_map = config.get("target_keywords", {}) if config else {}
@@ -558,6 +561,7 @@ def _load_celltype_name_config() -> dict:
             config = yaml.safe_load(f)
     except Exception as e:
         logger.warning(f"  PyYAML 加载失败: {e}, 使用简单解析")
+        traceback.print_exc()
         config = _parse_node_config_simple(config_file)
 
     ct_map = config.get("celltype_name_map", {}) if config else {}
@@ -596,6 +600,7 @@ def _load_celltype_marker_map(cell_types: list) -> dict:
             logger.info(f"  PanglaoDB 细胞类型标记: {len(celltype_marker)} 种细胞类型")
         except Exception as e:
             logger.warning(f"  PanglaoDB 加载失败: {e}")
+            traceback.print_exc()
     # 来源2: 本地CSV
     ct_marker_file = BASE_DIR / "network_files" / "celltype_marker_genes.csv"
     if ct_marker_file.exists():
@@ -612,6 +617,7 @@ def _load_celltype_marker_map(cell_types: list) -> dict:
             logger.info(f"  本地CSV补充: {len(celltype_marker)} 种细胞类型")
         except Exception as e:
             logger.warning(f"  本地CSV加载失败: {e}")
+            traceback.print_exc()
     return celltype_marker
 
 
@@ -635,6 +641,7 @@ def _load_lr_pairs() -> list:
             logger.info(f"  CellChatDB LR对: {len(lr_pairs)}")
         except Exception as e:
             logger.warning(f"  CellChatDB 加载失败: {e}")
+            traceback.print_exc()
     # 来源2: 本地CSV
     lr_net_file = BASE_DIR / "network_files" / "ligand_receptor_pairs.csv"
     if lr_net_file.exists():
@@ -647,6 +654,7 @@ def _load_lr_pairs() -> list:
                     lr_pairs.append((lig, rec))
         except Exception as e:
             logger.warning(f"  本地LR CSV加载失败: {e}")
+            traceback.print_exc()
     # 来源3: L3目录
     lr_csv_file = BASE_DIR / "L3" / "ligand_receptor_pairs.csv"
     if lr_csv_file.exists():
@@ -689,6 +697,7 @@ def _load_compound_props(compounds: list) -> dict:
             )
         except Exception as e:
             logger.warning(f"  PubChem 加载失败: {e}")
+            traceback.print_exc()
     # 缺失化合物使用零向量占位符 (不添加硬编码数值)
     for comp in compounds:
         if comp not in compound_props:
@@ -794,6 +803,7 @@ def _load_acsl4_pocket_features() -> np.ndarray:
         return normed.astype(np.float32)
     except Exception as e:
         logger.warning(f"  ACSL4 口袋特征加载失败: {e}, 使用1维占位符")
+        traceback.print_exc()
         return np.array([1.0], dtype=np.float32)
 
 
@@ -813,10 +823,12 @@ def _compute_fingerprint_from_smiles(
         from rdkit.Chem import AllChem, MACCSkeys, RDKFingerprint
         from rdkit.Chem.AtomPairs import Pairs as AtomPairs
     except ImportError:
+        logger.warning("RDKit 未安装, %s 指纹使用零向量 (fp_type=%s)", smiles[:20], fp_type)
         return np.zeros(n_bits if fp_type != "maccs" else 167, dtype=np.float32)
 
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
+        logger.warning("SMILES 解析失败, 指纹使用零向量: %s (fp_type=%s)", smiles[:50], fp_type)
         return np.zeros(n_bits if fp_type != "maccs" else 167, dtype=np.float32)
 
     if fp_type == "morgan":
@@ -841,6 +853,7 @@ def _compute_fingerprint_from_smiles(
     elif fp_type == "rdkit":
         fp = RDKFingerprint(mol, fpSize=n_bits)
     else:
+        logger.warning("未知指纹类型 %s, 使用零向量 (SMILES=%s)", fp_type, smiles[:50])
         return np.zeros(n_bits, dtype=np.float32)
 
     arr = np.zeros((n_bits,), dtype=np.int8)
@@ -879,6 +892,7 @@ def _load_pubchem_props_and_smiles(
         )
     except Exception as e:
         logger.warning(f"  PubChem 属性加载失败: {e}")
+        traceback.print_exc()
     return pubchem_smiles, pubchem_props
 
 
@@ -909,6 +923,7 @@ def _load_l4_descriptors(
             )
         except Exception as e:
             logger.warning(f"  L4 药物描述符加载失败: {e}")
+            traceback.print_exc()
     for comp in compounds:
         if comp not in descriptors and comp in pubchem_props:
             descriptors[comp] = pubchem_props[comp]
@@ -939,6 +954,7 @@ def _load_single_fingerprint(
                     rows[comp] = fp_df.loc[file_name].values.astype(float)
         except Exception as e:
             logger.warning(f"  {fp_name} L4 指纹加载失败: {e}")
+            traceback.print_exc()
 
     for comp in compounds:
         if comp in rows:
@@ -1015,6 +1031,7 @@ def _merge_fingerprints_pca(
         )
     except Exception as e:
         logger.warning(f"  指纹 PCA 失败: {e}")
+        traceback.print_exc()
     return fingerprints
 
 
@@ -1131,6 +1148,7 @@ def _load_compound_smiles(compounds: list) -> dict:
             logger.info(f"  化合物 SMILES: {len(smiles_map)}/{len(compounds)} 个")
         except Exception as e:
             logger.warning(f"  compound_smiles.csv 加载失败: {e}")
+            traceback.print_exc()
 
     # 回退1: 内置校验过的核心化合物 SMILES
     fallback = {
@@ -1346,6 +1364,7 @@ def _compute_attentivefp_embeddings(
             logger.info(f"  加载 AttentiveFP 大规模预训练权重: {PRETRAIN_CKPT}")
         except Exception as e:
             logger.warning(f"  预训练权重加载失败: {e}; 使用随机初始化")
+            traceback.print_exc()
     else:
         logger.warning(f"  未找到 AttentiveFP 预训练权重: {PRETRAIN_CKPT}")
         # 自动尝试运行预训练脚本 (MoleculeNet BBBP + ChEMBL 子集)
@@ -1383,6 +1402,7 @@ def _compute_attentivefp_embeddings(
                     logger.warning("  自动预训练后仍未生成权重文件, 使用随机初始化")
             except Exception as e:
                 logger.warning(f"  自动预训练失败: {e}; 使用随机初始化")
+                traceback.print_exc()
                 logger.warning(
                     "  可手动运行: python module3_pretrain_tcm.py --chembl_samples 50000 --epochs 3"
                 )
@@ -1425,6 +1445,7 @@ def _compute_attentivefp_embeddings(
             logger.info(f"  AttentiveFP 嵌入已保存: {save_path}")
         except Exception as e:
             logger.warning(f"  保存 AttentiveFP 嵌入失败: {e}")
+            traceback.print_exc()
 
     logger.info(
         f"  AttentiveFP 嵌入: {len(valid_compounds)}/{len(compounds)} 个化合物, 维度 {out_channels}"
@@ -1453,6 +1474,7 @@ def _load_compound_targets(compounds: list, gene_to_idx: dict) -> list:
             logger.info(f"  STITCH 化合物-靶点: {len(compound_targets)} 条")
         except Exception as e:
             logger.warning(f"  STITCH 加载失败: {e}")
+            traceback.print_exc()
     # 来源2: 本地CSV
     ct_csv_file = BASE_DIR / "network_files" / "compound_target_edges.csv"
     if ct_csv_file.exists():
@@ -1466,6 +1488,7 @@ def _load_compound_targets(compounds: list, gene_to_idx: dict) -> list:
             logger.info(f"  本地CSV补充: {len(compound_targets)} 条化合物-靶点")
         except Exception as e:
             logger.warning(f"  本地CSV加载失败: {e}")
+            traceback.print_exc()
     return list(compound_targets)
 
 
@@ -1540,6 +1563,7 @@ def _load_ciri_genes_from_de(
         return ciri_genes
     except Exception as e:
         logger.warning(f"  CIRI DE 基因提取失败: {e}")
+        traceback.print_exc()
         if fallback_to_disease_csv:
             return _load_ciri_genes_from_disease_csv(gene_to_idx)
         return []
@@ -1570,6 +1594,7 @@ def _load_ciri_genes_from_disease_csv(gene_to_idx: dict) -> list:
                 sources.append(f"{dg_ciri_file.name}")
         except Exception as e:
             logger.warning(f"  DisGeNET CIRI 回退加载失败: {e}")
+            traceback.print_exc()
 
     # 来源2: OpenTargets CIRI 专用文件
     ot_file = BASE_DIR / "network_files" / "opentargets_ciri_genes.csv"
@@ -1587,6 +1612,7 @@ def _load_ciri_genes_from_disease_csv(gene_to_idx: dict) -> list:
                 sources.append(f"{ot_file.name}")
         except Exception as e:
             logger.warning(f"  OpenTargets CIRI 回退加载失败: {e}")
+            traceback.print_exc()
 
     # 来源3: 通用本地 CSV
     csv_file = BASE_DIR / "network_files" / "disease_gene_associations.csv"
@@ -1604,6 +1630,7 @@ def _load_ciri_genes_from_disease_csv(gene_to_idx: dict) -> list:
                 sources.append(f"{csv_file.name}")
         except Exception as e:
             logger.warning(f"  通用 CSV CIRI 回退加载失败: {e}")
+            traceback.print_exc()
 
     result = [g for g in ciri_genes if g in gene_to_idx]
     if result:
@@ -1647,6 +1674,7 @@ def _load_disgenet_disease_genes(
         )
     except Exception as e:
         logger.warning(f"  DisGeNET 加载失败: {e}")
+        traceback.print_exc()
 
 
 def _load_local_disease_csv(diseases: list, gene_to_idx: dict, disease_genes: dict) -> None:
@@ -1666,6 +1694,7 @@ def _load_local_disease_csv(diseases: list, gene_to_idx: dict, disease_genes: di
         )
     except Exception as e:
         logger.warning(f"  本地CSV加载失败: {e}")
+        traceback.print_exc()
 
 
 def _load_ciri_l1_de_genes(gene_to_idx: dict, disease_genes: dict) -> None:
@@ -1699,6 +1728,7 @@ def _load_opentargets_ciri_genes(gene_to_idx: dict, disease_genes: dict) -> None
             logger.info(f"  OpenTargets CIRI 补充: {len(ot_genes)} 个基因 (score>=0.1)")
     except Exception as e:
         logger.warning(f"  OpenTargets CIRI 加载失败: {e}")
+        traceback.print_exc()
 
 
 def _load_disgenet_ciri_genes(gene_to_idx: dict, disease_genes: dict) -> None:
@@ -1720,6 +1750,7 @@ def _load_disgenet_ciri_genes(gene_to_idx: dict, disease_genes: dict) -> None:
             logger.info(f"  DisGeNET CIRI 补充: {len(dg_ciri_genes)} 个基因 (curated)")
     except Exception as e:
         logger.warning(f"  DisGeNET CIRI 加载失败: {e}")
+        traceback.print_exc()
 
 
 def _load_disease_genes(diseases: list, gene_to_idx: dict) -> dict:
@@ -1783,8 +1814,17 @@ def _build_gene_features_matrix(
                 mean_control=("mean_control", "mean"),
                 min_padj=("padj", "min"),
             )
-            .fillna(0)
         )
+        n_nan = int(agg.isna().sum().sum())
+        if n_nan > 0:
+            nan_cols = agg.isna().sum()
+            nan_cols = nan_cols[nan_cols > 0].to_dict()
+            logger.warning(
+                "L1 全基因组差异表达聚合结果存在 %d 个 NaN, 列分布: %s; 将填充为 0。",
+                n_nan,
+                nan_cols,
+            )
+        agg = agg.fillna(0)
         raw_expression = (agg.pop("mean_case") + agg.pop("mean_control")) / 2
         agg["mean_expression"] = np.log2(raw_expression + 1)
         gene_feat_dict = agg.to_dict("index")
@@ -2111,7 +2151,16 @@ def _build_gene_coexp_edges(gene_list: list, gene_to_idx: dict, n_genes: int) ->
         )
         common_genes = [g for g in gene_list if g in pivot.index]
         if len(common_genes) >= 5:
-            sub = pivot.loc[common_genes].fillna(0)
+            sub = pivot.loc[common_genes]
+            n_nan = int(sub.isna().sum().sum())
+            if n_nan > 0:
+                nan_ratio = n_nan / (sub.shape[0] * sub.shape[1])
+                logger.warning(
+                    "基因共表达矩阵存在 %d 个 NaN (占比 %.3f), 将填充为 0 后计算相关。",
+                    n_nan,
+                    nan_ratio,
+                )
+            sub = sub.fillna(0)
             corr = sub.T.corr()
             for i, g1 in enumerate(common_genes):
                 for j, g2 in enumerate(common_genes):
@@ -4299,6 +4348,7 @@ def _load_disease_genes_for_ranking(disgenet_file: Path) -> set:
             )
         except Exception as e:
             logger.warning(f"  DisGeNET 加载失败 ({disgenet_file.name}): {e}")
+            traceback.print_exc()
     else:
         logger.warning(f"  DisGeNET 文件不存在: {disgenet_file}, 疾病关联得分将为空")
     return disease_genes
@@ -4495,6 +4545,7 @@ def _load_lr_pairs_for_flow(gene_names: list) -> list:
             )
         except Exception as e:
             logger.warning(f"  CellChatDB 加载失败: {e}")
+            traceback.print_exc()
     # 来源2: 本地CSV (回退)
     if not lr_pairs:
         lr_csv = BASE_DIR / "network_files" / "ligand_receptor_pairs.csv"
@@ -4511,6 +4562,7 @@ def _load_lr_pairs_for_flow(gene_names: list) -> list:
                 )
             except Exception as e:
                 logger.warning(f"  本地LR CSV加载失败: {e}")
+                traceback.print_exc()
     if not lr_pairs:
         logger.warning("  ⚠ 无LR配对数据可用, 通讯流将被跳过!")
     return lr_pairs
@@ -4678,6 +4730,7 @@ def compute_gnn_explainability(
             )
         except Exception as e:
             logger.warning(f"  IG归因异常: {e}, 使用零填充")
+            traceback.print_exc()
             gene_feat_importance = (
                 np.zeros(x_dict["gene"].shape[0]) if "gene" in x_dict else None
             )
@@ -4707,6 +4760,7 @@ def compute_gnn_explainability(
             logger.info("  方法C (梯度敏感): 跨类型梯度敏感性计算完成")
         except Exception as e:
             logger.warning(f"  方法C (梯度敏感) 失败: {e}")
+            traceback.print_exc()
 
         # ---- 融合: 边类型重要性 = p_rel (已由HGT学习) ----
         # p_rel 是 HGT 论文设计用于边类型重要性的原生参数
@@ -4790,6 +4844,7 @@ def compute_gnn_explainability(
 
         except Exception as e:
             logger.warning(f"  方法D (梯度边重要性) 失败: {e}")
+            traceback.print_exc()
 
         # ---- 导出边类型重要性CSV (供生物学分析) ----
         try:
@@ -4817,6 +4872,7 @@ def compute_gnn_explainability(
                 logger.info(f"  边类型重要性已导出: {csv_path}")
         except Exception as e:
             logger.warning(f"  CSV导出失败: {e}")
+            traceback.print_exc()
 
         explain_results = {
             "edge_type_importance": edge_type_importance,
@@ -5529,6 +5585,7 @@ def main():
     except Exception as e:
         logger.warning(f"图缓存加载失败，回退到本地构建: {e}")
         traceback.print_exc()
+        traceback.print_exc()
         graph_data = build_heterogeneous_graph()
 
     # 2. 训练模型 (超参数从 config.yaml 加载, 替代硬编码)
@@ -6142,26 +6199,16 @@ class TemporalSnapshotGenerator:
     动态异质图快照生成器 (条件可用)
 
     若L1数据中存在GSE104036等多时间点表达差异,
-    构建 {time: HeteroData} 序列用于时序分析
+    构建 {time: HeteroData} 序列用于时序分析。
 
-    时间编码: 正弦位置编码, 拼接到节点特征后
+    节点特征必须使用真实表达数据; 禁止用正弦/余弦等函数
+    构造合成时间编码作为基因节点特征。
     """
 
     def __init__(self, timepoints: list, hidden_dim: int, use_temporal: bool = True):
         self.timepoints = timepoints
         self.hidden_dim = hidden_dim
         self.use_temporal = use_temporal and len(timepoints) > 1
-
-        if self.use_temporal:
-            # 时间编码: sin/cos 位置编码
-            self._time_encodings = {}
-            for i, t in enumerate(timepoints):
-                pe = np.zeros(hidden_dim, dtype=np.float32)
-                for k in range(hidden_dim // 2):
-                    denom = 10000 ** (2 * k / hidden_dim)
-                    pe[2 * k] = np.sin(i / denom)
-                    pe[2 * k + 1] = np.cos(i / denom)
-                self._time_encodings[t] = pe
 
     def generate_snapshots(
         self, graph_data: dict, expression_data: dict = None
@@ -6171,33 +6218,62 @@ class TemporalSnapshotGenerator:
 
         Args:
             graph_data: 基础异质图数据
-            expression_data: {timepoint: {gene: expression_vector}}
+            expression_data: {timepoint: {gene: expression_vector}} 真实表达数据
         Returns:
             snapshots: {timepoint: graph_data_copy} 或空dict
         """
         if not self.use_temporal:
             return {}
 
+        if not expression_data:
+            logger.warning(
+                "TemporalSnapshotGenerator: 未提供真实时序表达数据, "
+                "跳过动态快照生成, 避免使用合成时间编码。"
+            )
+            return {}
+
         snapshots = {}
         for tp in self.timepoints:
+            if tp not in expression_data:
+                logger.warning(
+                    "TemporalSnapshotGenerator: 时间点 %s 在 expression_data 中缺失, 跳过。",
+                    tp,
+                )
+                continue
+
             snap = copy.deepcopy(graph_data)
+            tp_expr = expression_data[tp]
+            n_genes = snap["gene"].x.size(0)
+            time_feat = np.zeros((n_genes, self.hidden_dim), dtype=np.float32)
+            gene_nodes = snap["gene"].get("name", list(range(n_genes)))
+            for i, gene in enumerate(gene_nodes):
+                if gene in tp_expr:
+                    expr_vec = tp_expr[gene]
+                    if isinstance(expr_vec, (int, float)):
+                        expr_vec = [float(expr_vec)]
+                    expr_vec = np.asarray(expr_vec, dtype=np.float32)
+                    if expr_vec.size >= self.hidden_dim:
+                        time_feat[i] = expr_vec[: self.hidden_dim]
+                    elif expr_vec.size > 0:
+                        repeats = int(np.ceil(self.hidden_dim / expr_vec.size))
+                        padded = np.tile(expr_vec, repeats)[: self.hidden_dim]
+                        time_feat[i] = padded
+                    else:
+                        logger.warning(
+                            "TemporalSnapshotGenerator: 基因 %s 在时间点 %s 的表达向量为空, "
+                            "使用零向量。", gene, tp
+                        )
+                else:
+                    logger.warning(
+                        "TemporalSnapshotGenerator: 基因 %s 在时间点 %s 无表达数据, "
+                        "使用零向量。", gene, tp
+                    )
 
-            # 注入时间编码到基因特征
-            time_feat = self._time_encodings.get(tp, np.zeros(self.hidden_dim))
-            if expression_data and tp in expression_data:
-                # TODO: 用真实表达数据更新基因特征
-                pass
-
-            # 将时间编码拼接为额外的特征维度
             snap["gene"]["_time_enc"] = time_feat
             snap["_timepoint"] = tp
             snapshots[tp] = snap
 
         return snapshots
-
-    def get_time_encoding(self, timepoint) -> np.ndarray:
-        """获取指定时间点的时间编码"""
-        return self._time_encodings.get(timepoint, np.zeros(self.hidden_dim))
 
 
 if __name__ == "__main__":

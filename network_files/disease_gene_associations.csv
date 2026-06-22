@@ -1,86 +1,55 @@
-disease,gene,source,confidence,download_date
-AD,ACSL4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,CD74,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,E2F1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,E2F3,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,GPX4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,GSS,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,HMOX1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,IL1B,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,IL6,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,KEAP1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,MAPK1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,MAPK14,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,NLRP3,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,PTGS2,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,SOD1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,TFRC,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-AD,TLR4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,E2F1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,GPX4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,GSS,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,HIF1A,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,HMGB1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,HMOX1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,IFNG,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,IL1B,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,IL6,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,MAPK1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,MAPK14,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,PTGS2,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,SOD1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-Aging,TLR4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,ACSL4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,ALOX15,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,ATG3,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,BAP1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,BCL6,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,BRD7,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,CD74,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,CTSB,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,CXCL10,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,DPP4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,EGR1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,FBXL5,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,FBXO31,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,GMFB,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,GPX4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,HBP1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,HERC2,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,HIF1A,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,HMGB1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,HMOX1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,IFNG,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,IL1B,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,IRF1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,IRF7,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,IRF9,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,KDM6B,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,KEAP1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,KLF6,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,LCN2,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,LGMN,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,LPCAT3,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,MAPK1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,MAPK14,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,MCU,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,NR1D1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,PADI4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,PDE4B,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,PPP2R2B,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,PTGS2,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,RUNX3,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SAT1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SLC1A5,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SLC39A8,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SMARCB1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SNCA,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SOCS1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SOCS2,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SOD1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,SP1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,STAT1,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,TFRC,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,TLR4,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,TNFAIP3,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
-CIRI,TXNIP,DisGeNET_GenAge_AlzGene_literature,0.7,2026-06-22
+disease,gene,disease_name,disease_id,score,source,confidence,download_date
+AD,HMOX1,alzheimer disease,umls:C0002395,0.22853702869214,DisGeNET_curated_github_mirror,0.22853702869214,2026-06-22
+AD,IL1B,alzheimer disease,umls:C0002395,0.382807609868084,DisGeNET_curated_github_mirror,0.382807609868084,2026-06-22
+AD,MPO,alzheimer disease,umls:C0002395,0.227842505031283,DisGeNET_curated_github_mirror,0.227842505031283,2026-06-22
+CIRI,ALOX15,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,ATG3,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,BAP1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,BCL6,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,BRD7,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,CD74,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,CD82,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,CTSB,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,CXCL10,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,DPP4,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,EGR1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,EMP1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,FBXO31,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,GMFB,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,HBP1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,HIF1A,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,HMGB1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,HMOX1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,IFNG,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,IL1B,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,IRF1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,IRF7,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,IRF9,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,KDM6B,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,KEAP1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,KLF6,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,LCN2,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,LGMN,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,LPCAT3,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,MAPK1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,MAPK14,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,MCU,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,NR1D1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,PADI4,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,PDE4B,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,PPP2R2B,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,PTGS2,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,RUNX3,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SAT1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SLC1A5,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SMARCB1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SNCA,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SOCS1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SOCS2,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SOD1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SP1,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,SPATA2,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,TFRC,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,TLR4,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,TNFAIP3,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22
+CIRI,TXNIP,cerebral ischemia-reperfusion injury (GEO DE meta),NA,0.0,GEO_DE_meta_analysis,0.7,2026-06-22

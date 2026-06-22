@@ -20,10 +20,13 @@ DrugBank 官方完整数据需注册许可。本脚本使用 Daniel Himmelstein 
 
 from __future__ import annotations
 
+import base64
 import json
 import logging
 import re
+import time
 import traceback
+from io import StringIO
 from pathlib import Path
 from typing import Any
 
@@ -44,9 +47,11 @@ OUTPUT_CSV = NETWORK_DIR / "drugbank_compound_targets.csv"
 METADATA_JSON = EXTERNAL_DIR / "drugbank_download_metadata.json"
 GENE_LIST_PATH = BASE_DIR / "铁衰老基因.txt"
 
-DRUGBANK_REPO_RAW = "https://raw.githubusercontent.com/dhimmel/drugbank/gh-pages/data"
-DRUGBANK_DRUGS_URL = f"{DRUGBANK_REPO_RAW}/drugbank.tsv"
-DRUGBANK_PROTEINS_URL = f"{DRUGBANK_REPO_RAW}/proteins.tsv"
+DRUGBANK_REPO_OWNER = "dhimmel"
+DRUGBANK_REPO = "drugbank"
+DRUGBANK_REPO_REF = "gh-pages"
+DRUGBANK_DRUGS_PATH = "data/drugbank.tsv"
+DRUGBANK_PROTEINS_PATH = "data/proteins.tsv"
 MYGENE_URL = "https://mygene.info/v3/query"
 
 
@@ -70,6 +75,36 @@ def normalize_name(name: str) -> str:
     return s
 
 
+def _download_github_file_bytes(owner: str, repo: str, path: str, ref: str | None = None) -> bytes:
+    """通过 GitHub Contents API 下载文件并返回原始 bytes.
+
+    用于替代 raw.githubusercontent.com, 后者在中国大陆网络环境下
+    经常出现连接重置/超时(错误 10054)。GitHub Contents API 通过
+    api.github.com 返回 base64 编码内容, 稳定性更好。
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}"
+    headers = {
+        "User-Agent": "fetch_drugbank_compound_targets.py",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    params = {"ref": ref} if ref else {}
+
+    for attempt in range(3):
+        try:
+            resp = requests.get(url, params=params, headers=headers, timeout=60)
+            resp.raise_for_status()
+            payload = resp.json()
+            if "content" not in payload:
+                raise ValueError(f"GitHub API 响应缺少 content: {list(payload.keys())}")
+            return base64.b64decode(payload["content"])
+        except Exception:
+            traceback.print_exc()
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+            else:
+                raise
+
+
 def load_compound_names(csv_path: Path) -> dict[str, str]:
     """读取项目化合物名称,返回 {normalized_name: original_name}."""
     df = pd.read_csv(csv_path)
@@ -81,14 +116,13 @@ def load_compound_names(csv_path: Path) -> dict[str, str]:
     return mapping
 
 
-def download_tsv(url: str, session: requests.Session) -> pd.DataFrame:
-    """从 URL 下载 TSV 并返回 DataFrame."""
-    logger.info("下载 %s", url)
-    resp = session.get(url, timeout=120)
-    resp.raise_for_status()
-    from io import StringIO
-
-    return pd.read_csv(StringIO(resp.text), sep="\t", low_memory=False)
+def download_tsv(path: str, session: requests.Session) -> pd.DataFrame:
+    """通过 GitHub Contents API 下载 TSV 并返回 DataFrame."""
+    logger.info("通过 GitHub Contents API 下载 %s", path)
+    raw_bytes = _download_github_file_bytes(
+        DRUGBANK_REPO_OWNER, DRUGBANK_REPO, path, ref=DRUGBANK_REPO_REF
+    )
+    return pd.read_csv(StringIO(raw_bytes.decode("utf-8")), sep="\t", low_memory=False)
 
 
 def map_entrez_to_symbols(
@@ -191,8 +225,8 @@ def main() -> int:
 
     session = requests.Session()
 
-    drugs_df = download_tsv(DRUGBANK_DRUGS_URL, session)
-    proteins_df = download_tsv(DRUGBANK_PROTEINS_URL, session)
+    drugs_df = download_tsv(DRUGBANK_DRUGS_PATH, session)
+    proteins_df = download_tsv(DRUGBANK_PROTEINS_PATH, session)
     logger.info(
         "DrugBank 药物: %d, 蛋白记录: %d", len(drugs_df), len(proteins_df)
     )

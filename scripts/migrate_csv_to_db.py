@@ -186,15 +186,32 @@ class CSVMigrator:
         return count
 
     def migrate_datasets(self) -> int:
-        # 当前项目未提供 dataset CSV, 创建占位数据集以支持后续 DE 迁移
-        records = [
-            {"accession": "GSE16561", "organism": "Homo sapiens", "source": "placeholder"},
-            {"accession": "GSE37587", "organism": "Homo sapiens", "source": "placeholder"},
-            {"accession": "GSE61616", "organism": "Homo sapiens", "source": "placeholder"},
-        ]
+        # 优先从真实 CSV 读取 GEO 数据集元数据；缺失时跳过并记录警告，禁止插入占位数据
+        df = self._read_csv("datasets.csv")
+        if df is None or df.empty:
+            logger.warning(
+                "未找到 datasets.csv，跳过 dataset 迁移。"
+                "如需迁移数据集元数据，请将真实 GEO 元数据保存为 network_files/datasets.csv"
+            )
+            self.stats["datasets"] = 0
+            return 0
+
+        records: list[dict[str, Any]] = []
+        for _, row in df.iterrows():
+            accession = str(row.get("accession", "")).strip()
+            if not accession:
+                continue
+            records.append({
+                "accession": accession,
+                "organism": str(row.get("organism", "Homo sapiens")).strip() or "Homo sapiens",
+                "source": str(row.get("source", "GEO")).strip() or "GEO",
+                "title": str(row.get("title", "")).strip() or None,
+                "platform": str(row.get("platform", "")).strip() or None,
+                "n_samples": self._safe_int(row.get("n_samples")),
+            })
         count = self.dataset_repo.bulk_upsert(records)
         self.stats["datasets"] = count
-        logger.info("迁移 datasets (占位): %d", count)
+        logger.info("迁移 datasets: %d", count)
         return count
 
     def migrate_ppi_edges(self) -> int:
@@ -635,11 +652,22 @@ class CSVMigrator:
             return 0
         emb_cols = [c for c in df.columns if c.startswith("emb_")]
         records: list[dict[str, Any]] = []
+        n_missing = 0
         for _, row in df.iterrows():
             compound = str(row.get("compound", "")).strip()
             if not compound or not emb_cols:
                 continue
-            vector = [self._safe_float(row.get(c), 0.0) for c in emb_cols]
+            vector = []
+            for c in emb_cols:
+                val = row.get(c)
+                if val is None or pd.isna(val) or str(val).strip() == "":
+                    n_missing += 1
+                    logger.warning(
+                        "化合物 %s 的 embedding 列 %s 缺失，使用 0.0 填充", compound, c
+                    )
+                    vector.append(0.0)
+                else:
+                    vector.append(float(val))
             records.append(
                 {
                     "compound_id": compound,

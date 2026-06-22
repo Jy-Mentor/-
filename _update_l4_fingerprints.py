@@ -3,6 +3,7 @@ Generate real RDKit descriptors and fingerprints for newly added TCM monomers
 and append them to the L4/药物指纹/ CSV files.
 """
 
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,9 @@ from rdkit import Chem
 from rdkit.Chem import AllChem, Descriptors, MACCSkeys, RDKFingerprint, rdMolDescriptors
 from rdkit.Chem.rdMolDescriptors import GetHashedAtomPairFingerprintAsBitVect
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
 BASE_DIR = Path(__file__).parent
 FP_DIR = BASE_DIR / "L4" / "药物指纹"
 NETWORK_DIR = BASE_DIR / "network_files"
@@ -18,10 +22,18 @@ NETWORK_DIR = BASE_DIR / "network_files"
 NEW_COMPOUNDS = ["Baicalein", "Wogonin", "Luteolin", "Kaempferol", "Hesperetin", "Resveratrol"]
 
 
-def _compute_fingerprint(smiles: str, fp_type: str, n_bits: int = 2048):
+def _compute_fingerprint(
+    smiles: str, fp_type: str, n_bits: int = 2048, compound_name: str | None = None
+):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         size = 167 if fp_type == "maccs" else n_bits
+        logger.warning(
+            "化合物 %s 的 SMILES 解析失败, %s 指纹使用零向量 (SMILES=%s)",
+            compound_name or "UNKNOWN",
+            fp_type,
+            smiles[:50],
+        )
         return np.zeros(size, dtype=np.int8)
     if fp_type == "morgan":
         fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=n_bits)
@@ -33,15 +45,26 @@ def _compute_fingerprint(smiles: str, fp_type: str, n_bits: int = 2048):
     elif fp_type == "rdkit":
         fp = RDKFingerprint(mol, fpSize=n_bits)
     else:
+        logger.warning(
+            "化合物 %s 遇到未知指纹类型 %s, 使用零向量 (SMILES=%s)",
+            compound_name or "UNKNOWN",
+            fp_type,
+            smiles[:50],
+        )
         return np.zeros(n_bits, dtype=np.int8)
     arr = np.zeros((n_bits,), dtype=np.int8)
     Chem.DataStructs.ConvertToNumpyArray(fp, arr)
     return arr
 
 
-def _compute_descriptors(smiles: str):
+def _compute_descriptors(smiles: str, compound_name: str | None = None):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
+        logger.warning(
+            "化合物 %s 的 SMILES 解析失败, 跳过描述符计算 (SMILES=%s)",
+            compound_name or "UNKNOWN",
+            smiles[:50],
+        )
         return {}
     return {
         "MolWt": Descriptors.MolWt(mol),
@@ -66,7 +89,7 @@ def main():
     desc_rows = []
     for comp in NEW_COMPOUNDS:
         smi = smiles_map.get(comp, "")
-        d = _compute_descriptors(smi)
+        d = _compute_descriptors(smi, compound_name=comp)
         if not d:
             continue
         desc_rows.append({
@@ -93,7 +116,7 @@ def main():
         rows = []
         for comp in NEW_COMPOUNDS:
             smi = smiles_map.get(comp, "")
-            arr = _compute_fingerprint(smi, fp_name, n_bits)
+            arr = _compute_fingerprint(smi, fp_name, n_bits, compound_name=comp)
             row = {"Compound": comp}
             for c, v in zip(cols, arr):
                 row[c] = int(v)

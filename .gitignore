@@ -69,6 +69,24 @@ test_module3_output.log
 ruff_report*.json
 ruff_report*.txt
 
+# 网络文件备份与隔离区
+*.bak
+network_files/quarantine/
+
+# 一次性数据审查/重构临时文件
+L1/ferroaging_*.csv
+L1/L1 数据集/
+data_audit_report.md
+_extract_*.py
+_download_ferrdb_v2.py
+_fetch_ferrdb_v2.py
+_inspect_geo.py
+_audit_data_files.py
+_compare_gene_sets.py
+_reconstruct_ferroaging_genes.py
+铁衰老基因_95_candidate.txt
+铁衰老基因_95_reconstructed.txt
+
 # Trae IDE 配置（可选）
 .trae/
 

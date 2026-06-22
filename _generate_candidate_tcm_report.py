@@ -50,16 +50,18 @@ def _read_json(path: Path) -> dict:
         return json.load(f)
 
 
-def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, dict, dict]:
+def load_data(
+    experiment: str = "gat_hgt_iron_aging_seed42_v2",
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, dict, dict]:
     candidates = _read_csv(OUTPUT_DIR / "iron_aging_ciri_candidates.csv")
     bbb = _read_csv(NETWORK_DIR / "tcm_bbb_evaluation.csv")
     comparison = _read_csv(
-        L3_DIR / "gat_hgt_iron_aging_seed42_v2" / "mechanism_analysis" / "key_compounds_comparison.csv"
+        L3_DIR / experiment / "mechanism_analysis" / "key_compounds_comparison.csv"
     )
     mechanism = _read_csv(
-        L3_DIR / "gat_hgt_iron_aging_seed42_v2" / "mechanism_analysis" / "mechanism_table_top20.csv"
+        L3_DIR / experiment / "mechanism_analysis" / "mechanism_table_top20.csv"
     )
-    metrics = _read_json(L3_DIR / "gat_hgt_iron_aging_seed42_v2" / "metrics.json")
+    metrics = _read_json(L3_DIR / experiment / "metrics.json")
     summary = _read_json(OUTPUT_DIR / "candidate_summary.json")
     return candidates, bbb, comparison, mechanism, metrics, summary
 
@@ -99,16 +101,13 @@ def generate_report(
         how="left",
     )
 
-    # 动态获取 BCP 关键统计，避免硬编码
-    bcp_row = candidates[candidates["compound"] == "BCP"]
-    if not bcp_row.empty:
-        bcp_ia_count = int(bcp_row.iloc[0]["iron_aging_target_count"])
-        bcp_bridge_count = int(bcp_row.iloc[0]["bridge_target_count"])
-        bcp_bbb_pass = bcp_row.iloc[0].get("BBB_pass", "未评估")
-    else:
-        bcp_ia_count = 0
-        bcp_bridge_count = 0
-        bcp_bbb_pass = "未评估"
+    # 动态提取最优先候选，供全文引用，避免硬编码
+    top_candidate = candidates.iloc[0]
+    top_name = str(top_candidate["compound"])
+    top_bbb_pass = top_candidate.get("BBB_pass", "未评估")
+    top_ia_count = int(top_candidate.get("iron_aging_target_count", 0))
+    top_bridge_count = int(top_candidate.get("bridge_target_count", 0))
+    top_ferrdb = top_candidate.get("ferrdb_role", "—")
 
     lines: list[str] = []
 
@@ -271,14 +270,23 @@ def generate_report(
     if not comparison.empty:
         lines.append(comparison.to_markdown(index=False))
         lines.append("")
-    lines.append(
-        f"BCP(β-石竹烯)在关键化合物比较中表现突出: {bcp_ia_count} 个铁衰老靶点、"
-        f"{bcp_bridge_count} 个桥接靶点、BBB 评估为 {bcp_bbb_pass}，"
-        "且 FerrDb 标注为铁死亡抑制剂；VC 虽评分较高但 BBB 渗透性差(Poor)。"
-    )
+    top_mech = comparison.iloc[0] if not comparison.empty else None
+    if top_mech is not None:
+        top_mech_name = str(top_mech.get("compound", top_name))
+        lines.append(
+            f"{top_mech_name}在关键化合物比较中评分最高，"
+            f"具有 {top_ia_count} 个铁衰老靶点、{top_bridge_count} 个桥接靶点、"
+            f"BBB 评估为 {top_bbb_pass}。"
+        )
+    else:
+        lines.append(
+            f"{top_name}在关键化合物比较中评分最高，"
+            f"具有 {top_ia_count} 个铁衰老靶点、{top_bridge_count} 个桥接靶点、"
+            f"BBB 评估为 {top_bbb_pass}。"
+        )
     lines.append("")
 
-    lines.append("### 5.2 机制解释表(BCP / VC / Fer-1 / DFO)")
+    lines.append("### 5.2 机制解释表(Top 候选化合物)")
     lines.append("")
     if not mechanism.empty:
         mech_display = mechanism[[
@@ -340,19 +348,25 @@ def generate_report(
     # 结论
     lines.append("## 7. 结论与建议")
     lines.append("")
+
     lines.append(
         "综合铁衰老靶点覆盖、CIRI 桥接靶点数量、BBB 渗透性、外部数据库证据及多靶点协同潜力，"
-        f"**BCP(β-石竹烯)** 是最值得优先推进的中药单体: 具有 BBB {bcp_bbb_pass} 渗透性、"
-        f"FerrDb 铁死亡抑制剂身份、{bcp_ia_count} 个铁衰老靶点及 {bcp_bridge_count} 个桥接靶点，"
-        "并在前期研究中已显示神经保护/抗炎活性。"
+        f"**{top_name}** 是当前评分最高的候选中药单体: 具有 BBB {top_bbb_pass} 渗透性、"
+        f"{top_ia_count} 个铁衰老靶点及 {top_bridge_count} 个桥接靶点"
+        f"(FerrDb 角色: {top_ferrdb})。"
     )
     lines.append("")
-    lines.append(
-        "其他高优先级候选包括 **Quercetin、Resveratrol、Genistein、Luteolin、"
-        "Curcumin、Melatonin、Kaempferol、Apigenin、Baicalein**，"
-        "这些单体均覆盖核心 CIRI 病理通路，但部分 BBB 渗透性为 Moderate 或存在 FerrDb 双重角色，"
-        "建议结合衍生物设计或递送系统优化。"
-    )
+
+    other_top = candidates.head(9).tail(8)
+    other_names = [str(r["compound"]) for _, r in other_top.iterrows()]
+    if other_names:
+        lines.append(
+            "其他高优先级候选包括 **" + "、".join(other_names) + "**，"
+            "这些单体均覆盖核心 CIRI 病理通路，但部分 BBB 渗透性为 Moderate 或存在 FerrDb 双重角色，"
+            "建议结合衍生物设计或递送系统优化。"
+        )
+    else:
+        lines.append("其他高优先级候选数量不足，建议扩大化合物库或放宽评分阈值后重新评估。")
     lines.append("")
     lines.append("下一步建议:")
     lines.append("")
@@ -378,10 +392,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="生成候选中药单体(CIRI via iron aging)综合分析报告")
     parser.add_argument("--top-n", type=int, default=15, help="报告中详细展示的候选单体数量")
     parser.add_argument("--output", type=str, default=None, help="输出 Markdown 路径")
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        default="gat_hgt_iron_aging_seed42_v2",
+        help="L3_results 下的实验目录名",
+    )
     args = parser.parse_args()
 
     try:
-        candidates, bbb, comparison, mechanism, metrics, summary = load_data()
+        candidates, bbb, comparison, mechanism, metrics, summary = load_data(experiment=args.experiment)
     except Exception:
         logger.exception("加载输入数据失败")
         traceback.print_exc()

@@ -3111,6 +3111,13 @@ def main():  # noqa: C901
     # 4e. 单基因分析 (核心基因集)
     if all_gene_dfs:
         combined_genes = pd.concat(all_gene_dfs, ignore_index=True)
+        # 表达量不应为负; 对 ComBat/批次校正可能产生的负值 clipped 到 0
+        for col in ('mean_case', 'mean_control'):
+            if col in combined_genes.columns:
+                n_neg = (combined_genes[col] < 0).sum()
+                if n_neg > 0:
+                    logger.warning(f"  {col} 出现 {n_neg} 个负值, 已 clipped 到 0")
+                    combined_genes[col] = combined_genes[col].clip(lower=0)
         combined_genes.to_csv(OUTPUT_DIR / 'L1_gene_level_analysis.csv', index=False)
         logger.info(f"  genes: {OUTPUT_DIR / 'L1_gene_level_analysis.csv'}")
         n_genes_core = combined_genes['gene'].nunique()
@@ -3120,6 +3127,12 @@ def main():  # noqa: C901
     # 4e2. 全基因组差异分析 (模块三节点特征)
     if all_full_de_dfs:
         combined_full_de = pd.concat(all_full_de_dfs, ignore_index=True)
+        for col in ('mean_case', 'mean_control'):
+            if col in combined_full_de.columns:
+                n_neg = (combined_full_de[col] < 0).sum()
+                if n_neg > 0:
+                    logger.warning(f"  {col} 出现 {n_neg} 个负值, 已 clipped 到 0")
+                    combined_full_de[col] = combined_full_de[col].clip(lower=0)
         combined_full_de.to_csv(OUTPUT_DIR / 'L1_genome_wide_de.csv', index=False)
         logger.info(f"  genome-wide DE: {OUTPUT_DIR / 'L1_genome_wide_de.csv'}")
         n_genes_gw = combined_full_de['gene'].nunique()

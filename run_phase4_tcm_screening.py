@@ -107,6 +107,12 @@ def build_acsl4_compound_ranking() -> pd.DataFrame:
 
     # Composite score: binding probability (50%) + embedding similarity (50%)
     prob = merged["ACSL4_binding_probability"].fillna(merged["ACSL4_probability"])
+    n_sim_missing = int(merged["ACSL4_embedding_similarity"].isna().sum())
+    if n_sim_missing > 0:
+        logger.warning(
+            "%d 个化合物缺失 ACSL4 嵌入相似度, 复合评分中按 0.0 处理。",
+            n_sim_missing,
+        )
     sim = merged["ACSL4_embedding_similarity"].fillna(0.0)
     merged["ACSL4_binding_probability"] = prob
     merged["composite_score"] = 0.5 * prob + 0.5 * sim
@@ -170,6 +176,12 @@ def build_acsl4_explainability() -> pd.DataFrame:
         columns={"gene": "neighbor_gene", "hub_score": "neighbor_hub_score", "rank": "neighbor_rank"}
     )
     neighbors = neighbors.merge(neighbor_hub, on="neighbor_gene", how="left")
+    n_hub_missing = int(neighbors["neighbor_hub_score"].isna().sum())
+    if n_hub_missing > 0:
+        logger.warning(
+            "%d 个 ACSL4 PPI 邻居基因缺失 hub 分, edge_contribution 中按 0.0 处理。",
+            n_hub_missing,
+        )
     neighbors["edge_contribution"] = neighbors["score"] / 1000.0 * neighbors["neighbor_hub_score"].fillna(0.0)
     neighbors = neighbors.sort_values("edge_contribution", ascending=False).head(20)
 
@@ -181,11 +193,14 @@ def build_acsl4_explainability() -> pd.DataFrame:
         avg_hub = pathway_df[pathway_df["pathway"] == pw]["gene"].map(
             hub_df.set_index("gene")["hub_score"]
         ).mean()
+        if pd.isna(avg_hub):
+            logger.warning("通路 %s 无可用成员基因 hub 分, avg_member_hub_score 按 0.0 处理。", pw)
+            avg_hub = 0.0
         pathway_contrib.append(
             {
                 "pathway": pw,
                 "member_gene_count": int(n_genes),
-                "avg_member_hub_score": float(avg_hub) if pd.notna(avg_hub) else 0.0,
+                "avg_member_hub_score": float(avg_hub),
             }
         )
     pathway_contrib_df = pd.DataFrame(pathway_contrib)

@@ -20,6 +20,7 @@ import argparse
 import logging
 import sys
 import time
+import traceback
 from pathlib import Path
 
 import pandas as pd
@@ -138,6 +139,7 @@ def fetch_genage(session, cache_path):
 
     except Exception as e:
         log.warning("  GenAge HTML 解析失败: %s", e)
+        traceback.print_exc()
         return pd.DataFrame(columns=["gene"])
 
 
@@ -195,6 +197,7 @@ def fetch_cellage(session, cache_path):
 
     except Exception as e:
         log.warning("  CellAge HTML 解析失败: %s", e)
+        traceback.print_exc()
         return pd.DataFrame(columns=["gene"])
 
 
@@ -249,6 +252,7 @@ def fetch_disgenet(session, disease_name, cache_path, api_key=None):
             return df
         except Exception as e:
             log.warning("  DisGeNET 手动文件读取失败: %s", e)
+            traceback.print_exc()
             return pd.DataFrame(columns=["gene", "score"])
 
     # 若无 API key，提示手动下载
@@ -318,6 +322,7 @@ def fetch_disgenet(session, disease_name, cache_path, api_key=None):
             time.sleep(2 ** attempt)
         except Exception as e:
             log.warning("  DisGeNET 解析失败: %s", e)
+            traceback.print_exc()
             break
 
     return pd.DataFrame(columns=["gene", "score"])
@@ -366,6 +371,7 @@ def fetch_alzgene(session, cache_path):
 
         except Exception as e:
             log.warning("  AlzGene 手动文件读取失败: %s", e)
+            traceback.print_exc()
             return pd.DataFrame(columns=["gene"])
 
     # 尝试自动抓取
@@ -407,7 +413,9 @@ def fetch_alzgene(session, cache_path):
                     break
                 if found:
                     break
-            except Exception:
+            except Exception as exc:
+                log.warning("AlzGene 候选链接 %s 访问失败: %s", dc, exc)
+                traceback.print_exc()
                 continue
 
     except requests.RequestException as e:

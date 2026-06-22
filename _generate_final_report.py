@@ -105,10 +105,10 @@ def generate_report(experiment: str) -> str:
         lines.append(f"- 基因层面有记录: {gene}/{total} ({gene_rate:.2%})")
         lines.append("")
         lines.append(
-            "说明: pair 匹配支持率为 0 表示模型给出的具体化合物-基因对"
-            "在本地外部数据库中均为新预测；而 88% 的化合物和 75% 的基因"
-            "在本地数据库中已有相关记录，说明模型倾向于在已知生物活性化合物"
-            "和已知靶点基因之间发现新的关联。"
+            f"说明: pair 匹配支持率为 0 表示模型给出的具体化合物-基因对"
+            f"在本地外部数据库中均为新预测；而 {comp_rate:.2%} 的化合物和 {gene_rate:.2%} 的基因"
+            f"在本地数据库中已有相关记录，说明模型倾向于在已知生物活性化合物"
+            f"和已知靶点基因之间发现新的关联。"
         )
         lines.append("")
         source_counts = val_summary.get("source_counts", {})
@@ -150,17 +150,30 @@ def generate_report(experiment: str) -> str:
     # 7. 生物学解读
     lines.append("## 7. 生物学解读")
     lines.append("")
+
+    go_terms = []
+    if go is not None and not go.empty and "Description" in go.columns:
+        go_terms = go.head(5)["Description"].astype(str).tolist()
+    kegg_terms = []
+    if kegg is not None and not kegg.empty and "Description" in kegg.columns:
+        kegg_terms = kegg.head(5)["Description"].astype(str).tolist()
+    bcp_targets = []
+    if bcp is not None and not bcp.empty and "gene_name" in bcp.columns:
+        bcp_targets = bcp.head(5)["gene_name"].astype(str).tolist()
+
     lines.append(
-        "Top 预测基因主要富集于 p53 介导的 DNA 损伤应答、细胞对辐射应激反应、"
-        "Ras 信号转导、核质运输、G1/S 细胞周期转换等生物学过程；"
-        "KEGG 通路显著涉及细胞衰老、p53 信号通路、细胞周期、铂类药物耐药等。"
+        f"Top 预测基因主要富集于 {', '.join(go_terms) if go_terms else '（未获取到 GO 富集结果）'} 等生物学过程；"
+        f"KEGG 通路显著涉及 {', '.join(kegg_terms) if kegg_terms else '（未获取到 KEGG 富集结果）'}。"
         "这些通路与铁死亡调控、细胞应激反应及 CIRI（脑缺血再灌注损伤）后的细胞命运决定高度相关。"
     )
     lines.append("")
-    lines.append(
-        "BCP 的高分预测靶点包括 MDM2、CDKN2A、NDRG1、CTSB、SQSTM1 等，"
-        "其中 MDM2-p53 轴、CDKN2A 细胞周期调控、SQSTM1/p62 自噬调控均为铁死亡与细胞衰老交叉调控的关键节点。"
-    )
+    if bcp_targets:
+        lines.append(
+            f"BCP 的高分预测靶点包括 {', '.join(bcp_targets)} 等，"
+            "这些靶点涉及铁死亡与细胞衰老交叉调控的关键节点。"
+        )
+    else:
+        lines.append("BCP 预测靶点结果未获取，需运行 _extract_topk_predictions.py 生成。")
     lines.append("")
 
     # 8. 局限性与下一步
@@ -170,14 +183,34 @@ def generate_report(experiment: str) -> str:
         "1. **外部验证覆盖有限**: 本地数据库未覆盖全部已发表文献，"
         "pair 匹配支持率为 0 不能等同于预测错误，而是提示这些为潜在新关联。"
     )
+    diversity_note = ""
+    if top100 is not None and not top100.empty and "gene_name" in top100.columns:
+        gene_counts = top100["gene_name"].value_counts()
+        if not gene_counts.empty:
+            max_gene = gene_counts.index[0]
+            max_count = int(gene_counts.iloc[0])
+            n_unique = top100["gene_name"].nunique()
+            diversity_note = (
+                f"Top-100 预测共覆盖 {n_unique} 个唯一基因，"
+                f"出现频次最高的基因为 {max_gene} ({max_count} 次)。"
+            )
+            if max_count > 20:
+                diversity_note += "模型对部分基因存在明显偏好，建议引入更严格的多样性约束。"
+            else:
+                diversity_note += "基因分布相对分散。"
     lines.append(
-        "2. **预测多样性不足**: Top-100 预测中唯一基因数较少，"
-        "模型对 CDKN1A 等基因存在过度偏好，后续可引入多样性约束或负采样策略。"
+        f"2. **预测多样性**: {diversity_note if diversity_note else 'Top-100 预测结果未获取，无法评估多样性。'}"
     )
-    lines.append(
-        "3. **机制验证**: 建议对 BCP-MDM2、BCP-CDKN2A、BCP-SQSTM1 等高分预测"
-        "进行分子对接、细胞实验或扰动实验验证。"
-    )
+    if bcp_targets:
+        top_pairs = ", ".join([f"BCP-{g}" for g in bcp_targets[:3]])
+        lines.append(
+            f"3. **机制验证**: 建议对 {top_pairs} 等高分预测"
+            "进行分子对接、细胞实验或扰动实验验证。"
+        )
+    else:
+        lines.append(
+            "3. **机制验证**: 建议对 BCP 高分预测靶点进行分子对接、细胞实验或扰动实验验证。"
+        )
     lines.append(
         "4. **数据更新**: 持续整合 ChEMBL、BindingDB、SwissTargetPrediction、"
         "STITCH 等数据库最新版本，扩大外部验证覆盖面。"
